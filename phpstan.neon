@@ -1,0 +1,41 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+        - routes
+
+    # Rule level: 8 (strictest)
+    level: 8
+
+    # Ignore errors in specific directories
+    excludePaths:
+        - bootstrap
+        - storage
+        - vendor
+        - node_modules
+
+    # Ignore specific errors (use sparingly)
+    ignoreErrors:
+        # Add specific error patterns here if needed
+
+    # Check missing types
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+
+    # Report unused variables and parameters
+    checkUninitializedProperties: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+
+    # Laravel specific
+    noUnnecessaryCollectionCall: true
+    noUnnecessaryCollectionCallOnly: []
+    noUnnecessaryCollectionCallExcept: []
+
+    # Better error output
+    parallel:
+        maximumNumberOfProcesses: 8
+        processTimeout: 300.0
