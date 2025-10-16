@@ -1,0 +1,429 @@
+# SalonPro - Git Ignore File
+
+# ============================================
+# Laravel Specific
+# ============================================
+
+# Environment files
+/.env
+/.env.backup
+/.env.production
+/.env.staging
+/.env.local
+/.env.*.local
+
+# Laravel application
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitkeep
+!/storage/app/public
+/storage/app/public/*
+!/storage/app/public/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/testing/*
+!/storage/framework/testing/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/debugbar
+
+# Laravel Telescope
+/storage/telescope
+
+# Laravel Backup
+/storage/app/backups
+
+# ============================================
+# Dependencies
+# ============================================
+
+# Composer
+/vendor/
+composer.lock
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ============================================
+# Frontend Build
+# ============================================
+
+# Vite build output
+/public/build
+/public/hot
+/public/storage
+/public/css
+/public/js
+/public/mix-manifest.json
+
+# Vue.js
+.DS_Store
+dist/
+dist-ssr/
+*.local
+
+# ============================================
+# IDEs and Editors
+# ============================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# PHPStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim
+
+# NetBeans
+nbproject/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Eclipse
+.buildpath
+.project
+.settings/
+
+# ============================================
+# Operating System Files
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# Testing
+# ============================================
+
+# PHPUnit
+.phpunit.result.cache
+/phpunit.xml
+coverage/
+coverage.xml
+.phpunit.cache/
+
+# Pest PHP
+.pest/
+
+# Browser testing
+tests/Browser/screenshots/
+tests/Browser/console/
+
+# Coverage reports
+.phpunit.cache
+coverage.xml
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ============================================
+# Logs
+# ============================================
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Laravel logs
+storage/logs/*.log
+
+# ============================================
+# Temporary Files
+# ============================================
+
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# Database
+# ============================================
+
+*.sqlite
+*.sqlite3
+*.db
+
+# Database dumps
+*.sql
+*.sql.gz
+database/dumps/
+
+# ============================================
+# Documentation
+# ============================================
+
+# API documentation (auto-generated)
+/public/docs/
+.scribe/
+
+# ============================================
+# Security & Credentials
+# ============================================
+
+# SSH keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+
+# SSL certificates
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# API keys and secrets
+secrets.json
+credentials.json
+service-account.json
+
+# ============================================
+# Backup Files
+# ============================================
+
+*.bak
+*.backup
+*.old
+*~
+*.orig
+
+# ============================================
+# Compiled Files
+# ============================================
+
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+*.pyo
+
+# ============================================
+# Package Files
+# ============================================
+
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# ============================================
+# Development Tools
+# ============================================
+
+# Laravel Sail
+docker-compose.override.yml
+.docker/
+
+# Laravel Homestead
+Homestead.yaml
+Homestead.json
+.vagrant/
+
+# Laravel Valet
+.valet-link
+
+# ============================================
+# Production Files
+# ============================================
+
+# Deployment
+.deployment
+deploy.php
+deploy.yml
+
+# Build artifacts
+build/
+dist/
+
+# ============================================
+# Cache & Session
+# ============================================
+
+# Redis dump
+dump.rdb
+
+# Session files
+sessions/
+
+# Cache
+cache/
+*.cache
+
+# ============================================
+# Meilisearch
+# ============================================
+
+# Meilisearch data
+/meilisearch/data/
+data.ms/
+
+# ============================================
+# Custom Project Files
+# ============================================
+
+# Development notes (keep PROGRESS.md but ignore local notes)
+TODO.local.md
+NOTES.local.md
+
+# Local scripts
+scripts/local/
+
+# Test data
+test-data/
+sample-data/
+
+# Uploads (if not using S3)
+/public/uploads/
+
+# ============================================
+# CI/CD
+# ============================================
+
+.github/workflows/*.local.yml
+
+# ============================================
+# Analytics & Monitoring
+# ============================================
+
+# New Relic
+newrelic.ini
+
+# Sentry
+.sentryclirc
+
+# ============================================
+# Optimization
+# ============================================
+
+# Optimized class loader
+/bootstrap/cache/*.php
+
+# Route cache
+/bootstrap/cache/routes-v7.php
+
+# Config cache
+/bootstrap/cache/config.php
+
+# Services cache
+/bootstrap/cache/services.php
+
+# Events cache
+/bootstrap/cache/events.php
+
+# Packages cache
+/bootstrap/cache/packages.php
+
+# ============================================
+# Miscellaneous
+# ============================================
+
+# Sitemap
+sitemap.xml
+
+# Robots
+robots.txt.local
+
+# Asset source files
+/resources/raw/
+
+# Documentation work files
+*.draft.md
+
+# Performance profiling
+*.prof
+*.cpuprofile
+*.heapprofile
+
+# Debug files
+debug.log
+error.log
+
+# Email testing (Mailhog, MailCatcher)
+.mailhog
+.mailcatcher
