@@ -21,6 +21,9 @@
                 <router-link to="/employees" class="inline-flex items-center px-1 pt-1 text-sm font-medium hover:text-blue-200">
                   Çalışanlar
                 </router-link>
+                <router-link to="/services" class="inline-flex items-center px-1 pt-1 text-sm font-medium hover:text-blue-200">
+                  Hizmetler
+                </router-link>
               </div>
             </div>
             <div class="flex items-center">
