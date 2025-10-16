@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\API\{AuthController,BranchController,CustomerController,EmployeeController,ServiceCategoryController,ServiceController};
+use App\Http\Controllers\API\{AppointmentController,AuthController,BranchController,CustomerController,EmployeeController,ServiceCategoryController,ServiceController};
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -39,5 +39,10 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('services', ServiceController::class);
         Route::post('services/{service}/restore', [ServiceController::class, 'restore'])->name('services.restore');
         Route::delete('services/{service}/force', [ServiceController::class, 'forceDestroy'])->name('services.force-destroy');
+
+        // Appointments
+        Route::apiResource('appointments', AppointmentController::class);
+        Route::post('appointments/{appointment}/restore', [AppointmentController::class, 'restore'])->name('appointments.restore');
+        Route::delete('appointments/{appointment}/force', [AppointmentController::class, 'forceDestroy'])->name('appointments.force-destroy');
     });
 });

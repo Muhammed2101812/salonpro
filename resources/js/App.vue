@@ -24,6 +24,9 @@
                 <router-link to="/services" class="inline-flex items-center px-1 pt-1 text-sm font-medium hover:text-blue-200">
                   Hizmetler
                 </router-link>
+                <router-link to="/appointments" class="inline-flex items-center px-1 pt-1 text-sm font-medium hover:text-blue-200">
+                  Randevular
+                </router-link>
               </div>
             </div>
             <div class="flex items-center">

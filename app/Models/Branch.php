@@ -54,4 +54,12 @@ class Branch extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * Get the appointments for the branch.
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

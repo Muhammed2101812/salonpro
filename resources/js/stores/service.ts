@@ -4,7 +4,7 @@ import api from '@/services/api';
 
 interface ServiceCategory {
   id: string;
-  name: { tr: string; en?: string };
+  name: string;
   description?: string;
   is_active: boolean;
   services_count?: number;
@@ -15,7 +15,7 @@ interface ServiceCategory {
 interface Service {
   id: string;
   service_category_id: string;
-  name: { tr: string; en?: string };
+  name: string;
   description?: string;
   price: string | number;
   duration_minutes: number;
