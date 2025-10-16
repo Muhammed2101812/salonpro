@@ -26,9 +26,7 @@ class UpdateBranchRequest extends FormRequest
         $branchId = $this->route('branch'); // Get the branch ID from route parameter
 
         return [
-            'name' => ['sometimes', 'array'],
-            'name.tr' => ['required_with:name', 'string', 'max:255'],
-            'name.en' => ['required_with:name', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255'],
             'code' => ['sometimes', 'string', 'max:50', 'unique:branches,code,'.$branchId],
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -47,15 +45,14 @@ class UpdateBranchRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name.tr' => 'branch name (Turkish)',
-            'name.en' => 'branch name (English)',
-            'code' => 'branch code',
-            'phone' => 'phone number',
-            'email' => 'email address',
-            'address' => 'address',
-            'city' => 'city',
-            'country' => 'country code',
-            'is_active' => 'active status',
+            'name' => 'şube adı',
+            'code' => 'şube kodu',
+            'phone' => 'telefon',
+            'email' => 'e-posta',
+            'address' => 'adres',
+            'city' => 'şehir',
+            'country' => 'ülke kodu',
+            'is_active' => 'aktif durumu',
         ];
     }
 }

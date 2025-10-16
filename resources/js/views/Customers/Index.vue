@@ -2,16 +2,16 @@
   <div class="p-8">
     <div class="mb-8 flex justify-between items-center">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Customers</h1>
-        <p class="mt-2 text-gray-600">Manage your salon customers</p>
+        <h1 class="text-3xl font-bold text-gray-900">Müşteriler</h1>
+        <p class="mt-2 text-gray-600">Salon müşterilerinizi yönetin</p>
       </div>
       <button @click="openCreateModal" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition">
-        Add Customer
+        Müşteri Ekle
       </button>
     </div>
 
     <div v-if="customerStore.loading" class="text-center py-12">
-      <p class="text-gray-600">Loading...</p>
+      <p class="text-gray-600">Yükleniyor...</p>
     </div>
 
     <div v-else-if="customerStore.error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
@@ -22,12 +22,12 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cinsiyet</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şube</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -38,14 +38,14 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ customer.phone }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ customer.email || '-' }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">{{ customer.gender || '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ customer.branch?.name?.tr || '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ customer.branch?.name || '-' }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-              <button @click="openEditModal(customer)" class="text-blue-600 hover:text-blue-900">Edit</button>
-              <button @click="handleDelete(customer.id)" class="text-red-600 hover:text-red-900">Delete</button>
+              <button @click="openEditModal(customer)" class="text-blue-600 hover:text-blue-900">Düzenle</button>
+              <button @click="handleDelete(customer.id)" class="text-red-600 hover:text-red-900">Sil</button>
             </td>
           </tr>
           <tr v-if="customerStore.customers.length === 0">
-            <td colspan="6" class="px-6 py-12 text-center text-gray-500">No customers found</td>
+            <td colspan="6" class="px-6 py-12 text-center text-gray-500">Müşteri bulunamadı</td>
           </tr>
         </tbody>
       </table>
@@ -53,60 +53,60 @@
 
     <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 class="text-2xl font-bold mb-6">{{ isEdit ? 'Edit Customer' : 'Add Customer' }}</h2>
+        <h2 class="text-2xl font-bold mb-6">{{ isEdit ? 'Müşteri Düzenle' : 'Müşteri Ekle' }}</h2>
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ad *</label>
               <input v-model="form.first_name" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Soyad *</label>
               <input v-model="form.last_name" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Telefon *</label>
               <input v-model="form.phone" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
               <input v-model="form.email" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Branch *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Şube *</label>
               <select v-model="form.branch_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <option value="">Select a branch</option>
+                <option value="">Şube seçin</option>
                 <option v-for="branch in branchStore.branches" :key="branch.id" :value="branch.id">
-                  {{ branch.name?.tr || branch.name }}
+                  {{ branch.name }}
                 </option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cinsiyet</label>
               <select v-model="form.gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="">Cinsiyet seçin</option>
+                <option value="male">Erkek</option>
+                <option value="female">Kadın</option>
+                <option value="other">Diğer</option>
               </select>
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Doğum Tarihi</label>
             <input v-model="form.date_of_birth" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
             <textarea v-model="form.notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
           </div>
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeModal" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+            <button type="button" @click="closeModal" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">İptal</button>
             <button type="submit" :disabled="customerStore.loading" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition">
-              {{ customerStore.loading ? 'Saving...' : 'Save' }}
+              {{ customerStore.loading ? 'Kaydediliyor...' : 'Kaydet' }}
             </button>
           </div>
         </form>
@@ -192,7 +192,7 @@ const handleSubmit = async () => {
 };
 
 const handleDelete = async (id: string) => {
-  if (confirm('Are you sure you want to delete this customer?')) {
+  if (confirm('Bu müşteriyi silmek istediğinize emin misiniz?')) {
     try {
       await customerStore.deleteCustomer(id);
     } catch (error) {

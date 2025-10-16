@@ -30,4 +30,19 @@ class UpdateEmployeeRequest extends FormRequest
             'is_active' => ['boolean'],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'branch_id' => 'şube',
+            'user_id' => 'kullanıcı',
+            'first_name' => 'ad',
+            'last_name' => 'soyad',
+            'phone' => 'telefon',
+            'email' => 'e-posta',
+            'specialties' => 'uzmanlık alanları',
+            'commission_rate' => 'komisyon oranı',
+            'is_active' => 'aktif durumu',
+        ];
+    }
 }

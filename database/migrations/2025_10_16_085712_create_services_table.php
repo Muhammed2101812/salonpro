@@ -13,10 +13,10 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('service_category_id')->constrained()->cascadeOnDelete();
-            $table->json('name');
+            $table->string('name'); // Hizmet Adı (Türkçe)
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2);
-            $table->integer('duration_minutes');
+            $table->decimal('price', 10, 2); // TL cinsinden fiyat
+            $table->integer('duration_minutes'); // Dakika cinsinden süre
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();

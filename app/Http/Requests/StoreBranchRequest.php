@@ -24,9 +24,7 @@ class StoreBranchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'array'],
-            'name.tr' => ['required', 'string', 'max:255'],
-            'name.en' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:branches,code'],
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -45,15 +43,14 @@ class StoreBranchRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name.tr' => 'branch name (Turkish)',
-            'name.en' => 'branch name (English)',
-            'code' => 'branch code',
-            'phone' => 'phone number',
-            'email' => 'email address',
-            'address' => 'address',
-            'city' => 'city',
-            'country' => 'country code',
-            'is_active' => 'active status',
+            'name' => 'şube adı',
+            'code' => 'şube kodu',
+            'phone' => 'telefon',
+            'email' => 'e-posta',
+            'address' => 'adres',
+            'city' => 'şehir',
+            'country' => 'ülke kodu',
+            'is_active' => 'aktif durumu',
         ];
     }
 }

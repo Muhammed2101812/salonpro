@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('service_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->json('name');
+            $table->string('name'); // Kategori Adı (Türkçe)
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

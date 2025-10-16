@@ -34,16 +34,16 @@ class UpdateCustomerRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'branch_id' => 'branch',
-            'first_name' => 'first name',
-            'last_name' => 'last name',
-            'phone' => 'phone number',
-            'email' => 'email address',
-            'date_of_birth' => 'date of birth',
-            'gender' => 'gender',
-            'address' => 'address',
-            'notes' => 'notes',
-            'is_active' => 'active status',
+            'branch_id' => 'şube',
+            'first_name' => 'ad',
+            'last_name' => 'soyad',
+            'phone' => 'telefon',
+            'email' => 'e-posta',
+            'date_of_birth' => 'doğum tarihi',
+            'gender' => 'cinsiyet',
+            'address' => 'adres',
+            'notes' => 'notlar',
+            'is_active' => 'aktif durumu',
         ];
     }
 }

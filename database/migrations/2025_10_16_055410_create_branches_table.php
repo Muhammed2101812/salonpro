@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->json('name'); // {tr: "Şube Adı", en: "Branch Name"}
+            $table->string('name'); // Şube Adı (Türkçe)
             $table->string('code')->unique();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
