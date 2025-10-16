@@ -1,15 +1,15 @@
 <template>
   <div class="p-8">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p class="mt-2 text-gray-600">Welcome to SalonPro Management System</p>
+      <h1 class="text-3xl font-bold text-gray-900">Gösterge Paneli</h1>
+      <p class="mt-2 text-gray-600">SalonPro Yönetim Sistemine Hoş Geldiniz</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">Total Branches</p>
+            <p class="text-sm font-medium text-gray-600">Toplam Şube</p>
             <p class="text-2xl font-bold text-gray-900">{{ branchStore.branches.length }}</p>
           </div>
           <div class="bg-blue-100 rounded-full p-3">
@@ -23,7 +23,7 @@
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">Total Customers</p>
+            <p class="text-sm font-medium text-gray-600">Toplam Müşteri</p>
             <p class="text-2xl font-bold text-gray-900">{{ customerStore.customers.length }}</p>
           </div>
           <div class="bg-green-100 rounded-full p-3">
@@ -37,7 +37,7 @@
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">Total Employees</p>
+            <p class="text-sm font-medium text-gray-600">Toplam Çalışan</p>
             <p class="text-2xl font-bold text-gray-900">{{ employeeStore.employees.length }}</p>
           </div>
           <div class="bg-purple-100 rounded-full p-3">
@@ -51,8 +51,8 @@
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">System Status</p>
-            <p class="text-2xl font-bold text-green-600">Active</p>
+            <p class="text-sm font-medium text-gray-600">Sistem Durumu</p>
+            <p class="text-2xl font-bold text-green-600">Aktif</p>
           </div>
           <div class="bg-yellow-100 rounded-full p-3">
             <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,23 +65,23 @@
 
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Hızlı İşlemler</h2>
         <div class="space-y-3">
           <router-link to="/branches" class="block px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition">
-            Manage Branches
+            Şubeleri Yönet
           </router-link>
           <router-link to="/customers" class="block px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition">
-            Manage Customers
+            Müşterileri Yönet
           </router-link>
           <router-link to="/employees" class="block px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 font-medium transition">
-            Manage Employees
+            Çalışanları Yönet
           </router-link>
         </div>
       </div>
 
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-        <p class="text-gray-600">No recent activity to display</p>
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h2>
+        <p class="text-gray-600">Gösterilecek aktivite yok</p>
       </div>
     </div>
   </div>
