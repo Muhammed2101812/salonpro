@@ -72,7 +72,13 @@ export const useServiceStore = defineStore('service', () => {
       categories.value.push(response.data);
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Kategori oluşturulurken hata oluştu';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Kategori oluşturulurken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -88,7 +94,13 @@ export const useServiceStore = defineStore('service', () => {
       if (index !== -1) categories.value[index] = response.data;
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Kategori güncellenirken hata oluştu';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Kategori güncellenirken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -148,7 +160,13 @@ export const useServiceStore = defineStore('service', () => {
       services.value.push(response.data);
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Hizmet oluşturulurken hata oluştu';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Hizmet oluşturulurken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -164,7 +182,13 @@ export const useServiceStore = defineStore('service', () => {
       if (index !== -1) services.value[index] = response.data;
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Hizmet güncellenirken hata oluştu';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Hizmet güncellenirken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;

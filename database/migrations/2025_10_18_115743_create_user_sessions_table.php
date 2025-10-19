@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class() extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('user_sessions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
+            $table->string('session_id')->unique();
+            $table->string('ip_address', 45);
+            $table->text('user_agent')->nullable();
+            $table->text('device_info')->nullable();
+            $table->timestamp('last_activity');
+            $table->timestamp('expires_at')->nullable();
+            $table->boolean('is_current')->default(false);
+            $table->timestamps();
+
+            $table->index(['user_id', 'last_activity']);
+            $table->index(['session_id', 'expires_at']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('user_sessions');
+    }
+};

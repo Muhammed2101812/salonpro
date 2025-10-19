@@ -22,13 +22,11 @@ parameters:
     ignoreErrors:
         # Add specific error patterns here if needed
 
-    # Check missing types
-    checkMissingIterableValueType: true
-    checkGenericClassInNonGenericObjectType: true
-
     # Report unused variables and parameters
     checkUninitializedProperties: true
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkImplicitMixed: true
+    checkBenevolentUnionTypes: true
 
     # Laravel specific
     noUnnecessaryCollectionCall: true

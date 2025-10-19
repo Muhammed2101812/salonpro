@@ -39,6 +39,6 @@
         "visibility_required": {
             "elements": ["method", "property"]
         },
-        "declare_strict_types": true
+        "declare_strict_types": false
     }
 }

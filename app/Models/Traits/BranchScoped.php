@@ -17,7 +17,7 @@ trait BranchScoped
         static::addGlobalScope('branch', function (Builder $builder): void {
             if (auth()->check() && auth()->user()->branch_id) {
                 $builder->where(
-                    $builder->getModel()->getTable() . '.branch_id',
+                    $builder->getModel()->getTable().'.branch_id',
                     auth()->user()->branch_id
                 );
             }

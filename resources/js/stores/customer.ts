@@ -16,7 +16,7 @@ export const useCustomerStore = defineStore('customer', () => {
       customers.value = response.data;
       return response;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to fetch customers';
+      error.value = err.response?.data?.message || 'Müşteriler yüklenirken hata oluştu';
       throw err;
     } finally {
       loading.value = false;
@@ -31,7 +31,7 @@ export const useCustomerStore = defineStore('customer', () => {
       currentCustomer.value = response.data;
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to fetch customer';
+      error.value = err.response?.data?.message || 'Müşteri yüklenirken hata oluştu';
       throw err;
     } finally {
       loading.value = false;
@@ -46,7 +46,13 @@ export const useCustomerStore = defineStore('customer', () => {
       customers.value.push(response.data);
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to create customer';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Müşteri oluşturulurken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -62,7 +68,13 @@ export const useCustomerStore = defineStore('customer', () => {
       if (index !== -1) customers.value[index] = response.data;
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to update customer';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Müşteri güncellenirken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -76,7 +88,7 @@ export const useCustomerStore = defineStore('customer', () => {
       await api.delete(`/customers/${id}`);
       customers.value = customers.value.filter(c => c.id !== id);
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to delete customer';
+      error.value = err.response?.data?.message || 'Müşteri silinirken hata oluştu';
       throw err;
     } finally {
       loading.value = false;

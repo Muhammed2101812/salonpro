@@ -127,6 +127,62 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Sentry Error Tracking
+        'sentry' => [
+            'driver' => 'sentry',
+            'level' => env('SENTRY_LOG_LEVEL', 'error'),
+        ],
+
+        // Custom Business Logic Channels
+        'appointments' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/appointments.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
+        'payments' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/payments.log'),
+            'level' => 'info',
+            'days' => 90, // Keep payment logs longer
+        ],
+
+        'customers' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/customers.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'warning',
+            'days' => 90,
+        ],
+
+        'performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/performance.log'),
+            'level' => 'info',
+            'days' => 7,
+        ],
+
+        'api' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => 'info',
+            'days' => 365, // Keep audit logs for 1 year
+        ],
+
     ],
 
 ];

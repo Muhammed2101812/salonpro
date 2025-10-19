@@ -2,6 +2,8 @@ import './bootstrap';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import router from './router/index';
+import i18n from './plugins/i18n';
+import './plugins/validation';
 import App from './App.vue';
 
 // Import global styles
@@ -22,6 +24,7 @@ console.log('Vue app created');
 // Use plugins
 app.use(pinia);
 app.use(router);
+app.use(i18n);
 
 console.log('About to mount app');
 console.log('Current route:', router.currentRoute.value);

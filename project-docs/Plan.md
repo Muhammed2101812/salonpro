@@ -8,9 +8,11 @@
 ### **Proje Bilgileri**
 - **Proje Adı:** SalonPro - Profesyonel Salon Yönetim Sistemi
 - **Hedef:** Enterprise-grade, ölçeklenebilir, güvenli kuaför/güzellik salonu yönetim platformu
-- **Desteklenen Diller:** Türkçe, İngilizce
-- **Desteklenen Para Birimleri:** TRY, USD
+- **Desteklenen Diller:** Türkçe (Turkish-only)
+- **Desteklenen Para Birimleri:** TRY (Türk Lirası)
 - **Geliştirme Süresi:** ~11 ay (46 hafta)
+
+**ÖNEMLİ: Bu proje sadece Türkçe dil desteği ve sadece TRY (Türk Lirası) para birimi ile geliştirilmiştir. İngilizce ve USD desteği projeye dahil değildir.**
 
 ### **Teknoloji Stack**
 - **Backend:** Laravel 11
@@ -309,7 +311,7 @@ salon-pro/
 - ✅ Adres bilgileri (çoklu adres)
 - ✅ Sosyal medya hesapları
 - ✅ Tercih edilen iletişim kanalı
-- ✅ Dil tercihi (TR/EN)
+- ✅ Dil tercihi (Türkçe)
 - ✅ Referans kaynağı (nereden geldi)
 - ✅ Müşteri tipi (VIP, normal, potansiyel)
 - ✅ Müşteri durumu (aktif, pasif, kayıp)
@@ -454,12 +456,12 @@ salon-pro/
 ### **4.1 Hizmet Kataloğu**
 - ✅ Kategorize hizmetler (saç, makyaj, cilt bakımı, masaj vb.)
 - ✅ Alt kategoriler
-- ✅ Hizmet adı ve açıklaması (çok dilli: TR/EN)
+- ✅ Hizmet adı ve açıklaması (Türkçe)
 - ✅ Detaylı hizmet içeriği
 - ✅ Önce/sonra görselleri
 - ✅ Video tanıtımları
 - ✅ Tahmini süre (min-max)
-- ✅ Fiyat (TRY/USD)
+- ✅ Fiyat (TRY)
 - ✅ Vergi oranı
 - ✅ Maliyet bilgisi
 - ✅ Kar marjı hesaplama
@@ -1807,6 +1809,37 @@ salon-pro/
 
 ## 📚 EK NOTLAR
 
+### **🔴 KRİTİK KARAR: TÜRKÇE-ONLY VE TRY-ONLY**
+
+**Önemli Değişiklik (2025-10-18):**
+
+Bu proje başlangıçta çok dilli (TR/EN) ve çok para birimli (TRY/USD) olarak planlanmıştı. Ancak **son dakika kararı** ile proje kapsamı değiştirilmiştir:
+
+**✅ MEVCUT DURUM:**
+- **Sadece Türkçe** dil desteği
+- **Sadece TRY (Türk Lirası)** para birimi
+- Tüm arayüz Türkçe
+- Tüm metinler Türkçe
+- Fiyat alanları tek (TRY)
+- İngilizce dil sistemi (i18n) **YOK**
+- USD para birimi desteği **YOK**
+
+**❌ KAPSAM DIŞI:**
+- İngilizce dil desteği
+- vue-i18n çoklu dil sistemi
+- USD veya başka para birimleri
+- Çoklu fiyat kolonları (price_try, price_usd)
+- Döviz kuru dönüşümleri
+- Çok dilli e-posta/SMS şablonları
+
+**📝 NOT:**
+Bu dokümanda geçen "TR/EN", "TRY/USD", "multi-language", "multi-currency" referansları **eski plandandır** ve **geçerli değildir**. Gerçek implementasyon **sadece Türkçe ve sadece TRY** olarak yapılmıştır.
+
+**Gelecek İçin:**
+İleride İngilizce ve USD desteği eklenebilir, ancak şu an için **kapsam dışıdır**.
+
+---
+
 ### **Önemli Teknik Kararlar**
 
 **1. MySQL Kullanımı:**
@@ -1871,11 +1904,16 @@ salon-pro/
 
 ## 📝 VERSİYON TARİHÇESİ
 
+- **v2.1** (2025-10-18) - KRİTİK KARAR: Sadece Türkçe ve sadece TRY ile implementasyon
+  - İngilizce dil desteği kapsam dışı
+  - USD para birimi desteği kapsam dışı
+  - Çok dilli sistem (i18n) kaldırıldı
+  - Tek para birimi (TRY) ile geliştirme
 - **v2.0** - Revize plan (MySQL, sadeleştirilmiş özellikler)
 - **v1.0** - İlk plan
 
 ---
 
-**Son Güncelleme:** 2025-01-14
+**Son Güncelleme:** 2025-10-18
 **Hazırlayan:** Development Team
-**Durum:** Onay Bekliyor
+**Durum:** Aktif Geliştirme (Turkish-only, TRY-only)

@@ -62,4 +62,28 @@ class Branch extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    /**
+     * Get the settings for the branch.
+     */
+    public function settings(): HasMany
+    {
+        return $this->hasMany(BranchSetting::class);
+    }
+
+    /**
+     * Get a setting value by key
+     */
+    public function getSetting(string $key, $default = null)
+    {
+        return BranchSetting::get($this->id, $key, $default);
+    }
+
+    /**
+     * Set a setting value
+     */
+    public function setSetting(string $key, $value, ?string $type = 'string', ?string $group = null, bool $isEncrypted = false)
+    {
+        return BranchSetting::set($this->id, $key, $value, $type, $group, $isEncrypted);
+    }
 }

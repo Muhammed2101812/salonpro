@@ -93,7 +93,13 @@ export const useAppointmentStore = defineStore('appointment', () => {
       appointments.value.push(response.data);
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Randevu oluşturulurken hata oluştu';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Randevu oluşturulurken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -109,7 +115,13 @@ export const useAppointmentStore = defineStore('appointment', () => {
       if (index !== -1) appointments.value[index] = response.data;
       return response.data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Randevu güncellenirken hata oluştu';
+      // Handle validation errors
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat();
+        error.value = (validationErrors as string[]).join(', ');
+      } else {
+        error.value = err.response?.data?.message || 'Randevu güncellenirken hata oluştu';
+      }
       throw err;
     } finally {
       loading.value = false;

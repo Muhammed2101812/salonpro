@@ -38,13 +38,34 @@
 - NEVER allow cross-branch data access without explicit permission
 - Always validate `branch_id` in requests
 
-### 5. Document Every Step (Progress Tracking)
+### 5. Document Every Step (Progress Tracking) - **CRITICAL PRIORITY**
+
+**⚠️ THIS IS THE MOST IMPORTANT PRINCIPLE - NEVER SKIP THIS! ⚠️**
+
 - **MUST** create a `PROGRESS.md` file in project root if it doesn't exist
 - **MUST** document every completed step IMMEDIATELY after finishing it
+- **MUST** update PROGRESS.md VERY FREQUENTLY - after EVERY task completion
+- **MUST** mark completed tasks in todo lists/task trackers RIGHT AWAY
 - **MUST** include detailed descriptions of what was done
 - Write entries in chronological order with timestamps
 - Include file names, code changes, decisions made, and reasoning
 - This creates a real-time development log for tracking and review
+
+**Update Frequency Requirements:**
+- ✅ Update PROGRESS.md immediately after completing ANY task
+- ✅ Update PROGRESS.md continuously throughout work sessions
+- ✅ Update PROGRESS.md multiple times per hour when actively working
+- ✅ Mark tasks as completed the MOMENT they finish
+- ❌ NEVER batch multiple completed tasks before documenting
+- ❌ NEVER wait until "later" to document progress
+- ❌ NEVER skip documentation because task seems "small"
+
+**Why This Matters:**
+- Provides real-time visibility into development progress
+- Creates accurate historical record of all work
+- Prevents loss of context and decisions
+- Enables project tracking and review
+- Essential for project management and accountability
 
 **Progress Entry Format:**
 ```markdown
@@ -831,14 +852,25 @@ public function create(AppointmentData $data): Appointment
 ## When Implementing New Features
 
 ### Checklist
-- [ ] **Document in PROGRESS.md** (immediately after each step)
+
+**🔴 CRITICAL - DO FIRST:**
+- [ ] **Document in PROGRESS.md** (IMMEDIATELY after EACH AND EVERY step - NO EXCEPTIONS!)
+- [ ] **Mark completed tasks** (Update task status the MOMENT you finish)
+
+**Core Requirements:**
 - [ ] Follow clean architecture (Controller → Service → Repository)
 - [ ] Support both TR and EN languages
 - [ ] Support both TRY and USD currencies
 - [ ] Apply branch scoping where needed
 - [ ] Add proper authorization checks
+
+**Testing:**
 - [ ] Write unit tests (target: 85%+ coverage)
 - [ ] Write feature tests for API endpoints
+- [ ] Test in both languages
+- [ ] Test with both currencies
+
+**Implementation:**
 - [ ] Update API documentation
 - [ ] Add translation keys to lang files
 - [ ] Update relevant models and migrations
@@ -847,10 +879,12 @@ public function create(AppointmentData $data): Appointment
 - [ ] Dispatch relevant events
 - [ ] Add to appropriate Pinia store (if frontend)
 - [ ] Create Vue components (if frontend)
-- [ ] Test in both languages
-- [ ] Test with both currencies
+
+**Quality Checks:**
 - [ ] Run PHPStan Level 8
 - [ ] Run Laravel Pint
+
+**🔴 REMINDER: Update PROGRESS.md after completing EACH of the above items!**
 
 ---
 
@@ -978,7 +1012,17 @@ test(customers): add RFM analysis tests
 
 ## Final Reminders
 
-1. 📋 **Document Every Step** - Update PROGRESS.md immediately after each task
+### 🔴 **CRITICAL - ABSOLUTE TOP PRIORITY:**
+
+1. **📋 PROGRESS TRACKING IS MANDATORY**
+   - Update PROGRESS.md IMMEDIATELY after EVERY task
+   - Mark tasks as completed THE MOMENT they finish
+   - Update VERY FREQUENTLY - multiple times per hour
+   - NEVER batch updates - document continuously
+   - This is NON-NEGOTIABLE and MUST be done consistently
+
+### Core Development Principles:
+
 2. 🌍 **Multi-Language First** - Never hardcode text
 3. 💰 **Multi-Currency Always** - Always both TRY and USD
 4. 🏢 **Branch Scope Everything** - Data isolation is critical
@@ -990,8 +1034,15 @@ test(customers): add RFM analysis tests
 10. 🐛 **Handle Errors** - Graceful error handling
 11. ✨ **Code Quality** - PHPStan Level 8, Laravel Pint
 
+**⚠️ Remember: If you're not updating PROGRESS.md continuously, you're doing it wrong! ⚠️**
+
 ---
 
-**Last Updated:** 2025-10-16
-**Version:** 1.1
+**Last Updated:** 2025-10-18
+**Version:** 1.2
 **Maintainer:** Development Team
+
+**Change Log:**
+- v1.2 (2025-10-18): Significantly strengthened progress tracking requirements - emphasized continuous and very frequent PROGRESS.md updates
+- v1.1 (2025-10-16): Added comprehensive progress tracking section
+- v1.0 (2025-01-15): Initial version

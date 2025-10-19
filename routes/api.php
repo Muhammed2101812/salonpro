@@ -2,7 +2,20 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\API\{AppointmentController,AuthController,BranchController,CustomerController,EmployeeController,ServiceCategoryController,ServiceController};
+use App\Http\Controllers\API\AppointmentController;
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\BranchController;
+use App\Http\Controllers\API\CustomerController;
+use App\Http\Controllers\API\DashboardController;
+use App\Http\Controllers\API\EmployeeController;
+use App\Http\Controllers\API\ExpenseController;
+use App\Http\Controllers\API\InventoryMovementController;
+use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\SaleController;
+use App\Http\Controllers\API\ServiceCategoryController;
+use App\Http\Controllers\API\ServiceController;
+use App\Http\Controllers\API\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -14,6 +27,9 @@ Route::prefix('v1')->group(function (): void {
         // Auth
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'profile']);
+
+        // Dashboard
+        Route::get('dashboard', [DashboardController::class, 'index']);
 
         // Branches
         Route::apiResource('branches', BranchController::class);
@@ -29,6 +45,28 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('employees', EmployeeController::class);
         Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
         Route::delete('employees/{employee}/force', [EmployeeController::class, 'forceDestroy'])->name('employees.force-destroy');
+
+        // Products
+        Route::apiResource('products', ProductController::class);
+        Route::post('products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
+        Route::delete('products/{product}/force', [ProductController::class, 'forceDestroy'])->name('products.force-destroy');
+
+        // Inventory Movements
+        Route::apiResource('inventory-movements', InventoryMovementController::class);
+
+        // Expenses
+        Route::apiResource('expenses', ExpenseController::class);
+
+        // Payments
+        Route::apiResource('payments', PaymentController::class);
+        Route::post('payments/{payment}/restore', [PaymentController::class, 'restore'])->name('payments.restore');
+        Route::delete('payments/{payment}/force', [PaymentController::class, 'forceDestroy'])->name('payments.force-destroy');
+
+        // Sales
+        Route::apiResource('sales', SaleController::class);
+
+        // Settings
+        Route::apiResource('settings', SettingController::class)->only(['index', 'store', 'update']);
 
         // Service Categories
         Route::apiResource('service-categories', ServiceCategoryController::class);

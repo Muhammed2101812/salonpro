@@ -112,4 +112,39 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Policy
+    |--------------------------------------------------------------------------
+    |
+    | Define password requirements for user accounts. These settings control
+    | the minimum security requirements for passwords in the application.
+    |
+    */
+
+    'password_policy' => [
+        'min_length' => env('PASSWORD_MIN_LENGTH', 8),
+        'require_uppercase' => env('PASSWORD_REQUIRE_UPPERCASE', true),
+        'require_lowercase' => env('PASSWORD_REQUIRE_LOWERCASE', true),
+        'require_numbers' => env('PASSWORD_REQUIRE_NUMBERS', true),
+        'require_special_chars' => env('PASSWORD_REQUIRE_SPECIAL_CHARS', true),
+        'expires_days' => env('PASSWORD_EXPIRES_DAYS', 90), // 0 = never expires
+        'prevent_reuse_count' => env('PASSWORD_PREVENT_REUSE_COUNT', 5), // Prevent reusing last N passwords
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login Security
+    |--------------------------------------------------------------------------
+    |
+    | Configure login attempt tracking and account lockout settings.
+    |
+    */
+
+    'login_security' => [
+        'max_attempts' => env('LOGIN_MAX_ATTEMPTS', 5),
+        'lockout_duration' => env('LOGIN_LOCKOUT_DURATION', 900), // 15 minutes in seconds
+        'track_failed_attempts' => env('LOGIN_TRACK_FAILED_ATTEMPTS', true),
+    ],
+
 ];

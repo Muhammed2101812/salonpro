@@ -17,8 +17,119 @@
 
     <!-- Main Content -->
     <div v-else>
-      <div class="mb-4 flex justify-between items-center">
-        <div class="w-96">
+      <!-- Controls -->
+      <div class="mb-6 flex justify-between items-center">
+        <div class="flex gap-4 items-center">
+          <!-- View Toggle -->
+          <div class="flex bg-gray-100 rounded-lg p-1">
+            <button
+              @click="viewMode = 'calendar'"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition',
+                viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              ]"
+            >
+              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Takvim
+            </button>
+            <button
+              @click="viewMode = 'list'"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition',
+                viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              ]"
+            >
+              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              Liste
+            </button>
+          </div>
+
+          <!-- Month Navigation (for calendar view) -->
+          <div v-if="viewMode === 'calendar'" class="flex items-center gap-2">
+            <button @click="previousMonth" class="p-2 hover:bg-gray-100 rounded-lg transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span class="text-lg font-semibold px-4">{{ currentMonthYear }}</span>
+            <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded-lg transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            <button @click="goToToday" class="ml-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+              Bugün
+            </button>
+          </div>
+        </div>
+
+        <button @click="openCreateModal" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Yeni Randevu
+        </button>
+      </div>
+
+      <!-- Calendar View -->
+      <div v-if="viewMode === 'calendar'" class="bg-white rounded-lg shadow overflow-hidden">
+        <!-- Calendar Header -->
+        <div class="grid grid-cols-7 bg-gray-50 border-b">
+          <div v-for="day in weekDays" :key="day" class="px-4 py-3 text-center text-sm font-semibold text-gray-700">
+            {{ day }}
+          </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="grid grid-cols-7 divide-x divide-y">
+          <div
+            v-for="day in calendarDays"
+            :key="day.date"
+            :class="[
+              'min-h-32 p-2',
+              !day.isCurrentMonth ? 'bg-gray-50' : 'bg-white',
+              day.isToday ? 'bg-blue-50' : ''
+            ]"
+          >
+            <div class="flex justify-between items-start mb-2">
+              <span :class="[
+                'text-sm font-semibold',
+                day.isToday ? 'bg-blue-600 text-white w-6 h-6 flex items-center justify-center rounded-full' : '',
+                !day.isCurrentMonth ? 'text-gray-400' : 'text-gray-700'
+              ]">
+                {{ day.dayNumber }}
+              </span>
+            </div>
+
+            <!-- Appointments for this day -->
+            <div class="space-y-1">
+              <div
+                v-for="appointment in day.appointments.slice(0, 3)"
+                :key="appointment.id"
+                @click="openEditModal(appointment)"
+                :class="[
+                  'text-xs p-1.5 rounded cursor-pointer hover:opacity-80 transition',
+                  getStatusClass(appointment.status)
+                ]"
+              >
+                <div class="font-medium truncate">{{ formatTime(appointment.appointment_date) }}</div>
+                <div class="truncate opacity-90">{{ getCustomerName(appointment.customer_id) }}</div>
+              </div>
+              <div v-if="day.appointments.length > 3" class="text-xs text-gray-500 text-center py-1">
+                +{{ day.appointments.length - 3 }} daha
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- List View -->
+      <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="mb-4 px-6 pt-6">
           <input
             v-model="searchQuery"
             type="text"
@@ -26,12 +137,7 @@
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
         </div>
-        <button @click="openCreateModal" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-          Yeni Randevu
-        </button>
-      </div>
 
-      <div class="bg-white rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -177,6 +283,10 @@ const employeeStore = useEmployeeStore();
 const serviceStore = useServiceStore();
 const branchStore = useBranchStore();
 
+// View State
+const viewMode = ref<'calendar' | 'list'>('calendar');
+const currentDate = ref(new Date());
+
 // Modal State
 const showModal = ref(false);
 const isEdit = ref(false);
@@ -197,6 +307,92 @@ const appointmentForm = ref({
   status: 'pending' as 'pending' | 'confirmed' | 'cancelled' | 'completed',
   notes: ''
 });
+
+// Calendar Computed
+const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+const currentMonthYear = computed(() => {
+  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(currentDate.value);
+});
+
+const calendarDays = computed(() => {
+  const year = currentDate.value.getFullYear();
+  const month = currentDate.value.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  // Adjust for Monday start (0 = Monday, 6 = Sunday)
+  let startDay = firstDay.getDay() - 1;
+  if (startDay === -1) startDay = 6;
+
+  const daysInMonth = lastDay.getDate();
+  const days = [];
+
+  // Previous month days
+  const prevMonthLastDay = new Date(year, month, 0).getDate();
+  for (let i = startDay - 1; i >= 0; i--) {
+    const date = new Date(year, month - 1, prevMonthLastDay - i);
+    days.push({
+      date: date.toISOString(),
+      dayNumber: prevMonthLastDay - i,
+      isCurrentMonth: false,
+      isToday: false,
+      appointments: getAppointmentsForDate(date)
+    });
+  }
+
+  // Current month days
+  const today = new Date();
+  for (let i = 1; i <= daysInMonth; i++) {
+    const date = new Date(year, month, i);
+    days.push({
+      date: date.toISOString(),
+      dayNumber: i,
+      isCurrentMonth: true,
+      isToday: date.toDateString() === today.toDateString(),
+      appointments: getAppointmentsForDate(date)
+    });
+  }
+
+  // Next month days
+  const remainingDays = 42 - days.length; // 6 weeks * 7 days
+  for (let i = 1; i <= remainingDays; i++) {
+    const date = new Date(year, month + 1, i);
+    days.push({
+      date: date.toISOString(),
+      dayNumber: i,
+      isCurrentMonth: false,
+      isToday: false,
+      appointments: getAppointmentsForDate(date)
+    });
+  }
+
+  return days;
+});
+
+const getAppointmentsForDate = (date: Date) => {
+  const dateStr = date.toDateString();
+  return appointments.value.filter(apt => {
+    const aptDate = new Date(apt.appointment_date);
+    return aptDate.toDateString() === dateStr;
+  }).sort((a, b) => {
+    return new Date(a.appointment_date).getTime() - new Date(b.appointment_date).getTime();
+  });
+};
+
+// Calendar Navigation
+const previousMonth = () => {
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1);
+};
+
+const nextMonth = () => {
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1);
+};
+
+const goToToday = () => {
+  currentDate.value = new Date();
+};
 
 // Computed
 const appointments = computed(() => appointmentStore.appointments);
@@ -323,6 +519,14 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
+};
+
 const formatDateTimeLocal = (dateString: string) => {
   const date = new Date(dateString);
   const year = date.getFullYear();
@@ -339,10 +543,10 @@ const formatPrice = (price: string | number) => {
 
 const getStatusClass = (status: string) => {
   const classes = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    completed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800'
+    pending: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+    confirmed: 'bg-blue-100 text-blue-800 border border-blue-200',
+    completed: 'bg-green-100 text-green-800 border border-green-200',
+    cancelled: 'bg-red-100 text-red-800 border border-red-200'
   };
   return classes[status as keyof typeof classes] || 'bg-gray-100 text-gray-800';
 };

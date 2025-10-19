@@ -34,6 +34,36 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/products',
+    name: 'Products',
+    component: () => import('../views/Products/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/inventory',
+    name: 'Inventory',
+    component: () => import('../views/Inventory/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/expenses',
+    name: 'Expenses',
+    component: () => import('../views/Expenses/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/payments',
+    name: 'Payments',
+    component: () => import('../views/Payments/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/sales',
+    name: 'Sales',
+    component: () => import('../views/Sales/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/services',
     name: 'Services',
     component: () => import('../views/Services/Index.vue'),
@@ -43,6 +73,12 @@ const routes: RouteRecordRaw[] = [
     path: '/appointments',
     name: 'Appointments',
     component: () => import('../views/Appointments/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('../views/Settings/Index.vue'),
     meta: { requiresAuth: true }
   }
 ];

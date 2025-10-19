@@ -83,5 +83,70 @@ export const useBranchStore = defineStore('branch', () => {
     }
   };
 
-  return { branches, currentBranch, loading, error, fetchBranches, fetchBranch, createBranch, updateBranch, deleteBranch };
+  const setCurrentBranch = async (branchId: string) => {
+    // Find branch in list
+    let branch = branches.value.find(b => b.id === branchId);
+
+    // If not in list, fetch it
+    if (!branch) {
+      branch = await fetchBranch(branchId);
+    }
+
+    // Set as current
+    currentBranch.value = branch;
+
+    // Save to localStorage
+    localStorage.setItem('currentBranchId', branchId);
+
+    // Optionally send to backend to save preference
+    try {
+      await api.post('/user/set-current-branch', { branch_id: branchId });
+    } catch (err) {
+      console.warn('Failed to save branch preference to server', err);
+    }
+
+    return branch;
+  };
+
+  const loadCurrentBranch = async () => {
+    // Try to load from localStorage
+    const savedBranchId = localStorage.getItem('currentBranchId');
+
+    if (savedBranchId) {
+      try {
+        await setCurrentBranch(savedBranchId);
+      } catch (err) {
+        console.warn('Failed to load saved branch', err);
+        // Clear invalid branch ID
+        localStorage.removeItem('currentBranchId');
+      }
+    }
+
+    // If no saved branch or loading failed, try to get user's default branch from backend
+    if (!currentBranch.value) {
+      try {
+        const response: any = await api.get('/user/current-branch');
+        if (response.data) {
+          currentBranch.value = response.data;
+          localStorage.setItem('currentBranchId', response.data.id);
+        }
+      } catch (err) {
+        console.warn('No default branch found', err);
+      }
+    }
+  };
+
+  return {
+    branches,
+    currentBranch,
+    loading,
+    error,
+    fetchBranches,
+    fetchBranch,
+    createBranch,
+    updateBranch,
+    deleteBranch,
+    setCurrentBranch,
+    loadCurrentBranch,
+  };
 });

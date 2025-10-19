@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Traits;
+
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+trait TwoFactorAuthenticatable
+{
+    /**
+     * Determine if two-factor authentication has been enabled.
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return ! is_null($this->two_factor_secret);
+    }
+
+    /**
+     * Determine if two-factor authentication has been confirmed.
+     */
+    public function hasTwoFactorConfirmed(): bool
+    {
+        return ! is_null($this->two_factor_confirmed_at);
+    }
+
+    /**
+     * Get the user's two-factor authentication recovery codes.
+     */
+    public function recoveryCodes(): array
+    {
+        return json_decode(decrypt($this->two_factor_recovery_codes), true) ?? [];
+    }
+
+    /**
+     * Replace the given recovery code with a new one in the user's stored codes.
+     */
+    public function replaceRecoveryCode(string $code): void
+    {
+        $this->forceFill([
+            'two_factor_recovery_codes' => encrypt(str_replace(
+                $code,
+                $this->generateRecoveryCode(),
+                decrypt($this->two_factor_recovery_codes)
+            )),
+        ])->save();
+    }
+
+    /**
+     * Generate a new two-factor authentication recovery code.
+     */
+    protected function generateRecoveryCode(): string
+    {
+        return Str::random(10).'-'.Str::random(10);
+    }
+
+    /**
+     * Generate new recovery codes for the user.
+     */
+    public function generateRecoveryCodes(): Collection
+    {
+        return Collection::times(8, function () {
+            return $this->generateRecoveryCode();
+        });
+    }
+}
