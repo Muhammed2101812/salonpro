@@ -533,6 +533,165 @@ const routes: RouteRecordRaw[] = [
     name: 'Integrations',
     component: () => import('../views/Integrations/Index.vue'),
     meta: { requiresAuth: true }
+  },
+  // Analytics & Reporting
+  {
+    path: '/analytics-events',
+    name: 'AnalyticsEvents',
+    component: () => import('../views/AnalyticsEvents/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/analytics-sessions',
+    name: 'AnalyticsSessions',
+    component: () => import('../views/AnalyticsSessions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/kpi-definitions',
+    name: 'KpiDefinitions',
+    component: () => import('../views/KpiDefinitions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/kpi-values',
+    name: 'KpiValues',
+    component: () => import('../views/KpiValues/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/performance-metrics',
+    name: 'PerformanceMetrics',
+    component: () => import('../views/PerformanceMetrics/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/report-schedules',
+    name: 'ReportSchedules',
+    component: () => import('../views/ReportSchedules/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/report-executions',
+    name: 'ReportExecutions',
+    component: () => import('../views/ReportExecutions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Notification Providers
+  {
+    path: '/sms-providers',
+    name: 'SmsProviders',
+    component: () => import('../views/SmsProviders/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/email-providers',
+    name: 'EmailProviders',
+    component: () => import('../views/EmailProviders/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/notification-preferences',
+    name: 'NotificationPreferences',
+    component: () => import('../views/NotificationPreferences/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Product Sub-modules
+  {
+    path: '/product-category-hierarchies',
+    name: 'ProductCategoryHierarchies',
+    component: () => import('../views/ProductCategoryHierarchies/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-attribute-values',
+    name: 'ProductAttributeValues',
+    component: () => import('../views/ProductAttributeValues/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Appointments Sub-modules
+  {
+    path: '/appointment-cancellation-reasons',
+    name: 'AppointmentCancellationReasons',
+    component: () => import('../views/AppointmentCancellationReasons/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Customer Sub-modules
+  {
+    path: '/customer-rfm-analyses',
+    name: 'CustomerRfmAnalyses',
+    component: () => import('../views/CustomerRfmAnalyses/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customer-segment-members',
+    name: 'CustomerSegmentMembers',
+    component: () => import('../views/CustomerSegmentMembers/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Inventory Sub-modules
+  {
+    path: '/purchase-order-items',
+    name: 'PurchaseOrderItems',
+    component: () => import('../views/PurchaseOrderItems/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Financial Sub-modules
+  {
+    path: '/chart-of-accounts',
+    name: 'ChartOfAccounts',
+    component: () => import('../views/ChartOfAccounts/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/journal-entries',
+    name: 'JournalEntries',
+    component: () => import('../views/JournalEntries/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/cash-register-transactions',
+    name: 'CashRegisterTransactions',
+    component: () => import('../views/CashRegisterTransactions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Marketing Sub-modules
+  {
+    path: '/loyalty-point-transactions',
+    name: 'LoyaltyPointTransactions',
+    component: () => import('../views/LoyaltyPointTransactions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/lead-activities',
+    name: 'LeadActivities',
+    component: () => import('../views/LeadActivities/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // System Utilities
+  {
+    path: '/custom-fields',
+    name: 'CustomFields',
+    component: () => import('../views/CustomFields/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/translations',
+    name: 'Translations',
+    component: () => import('../views/Translations/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/feature-flags',
+    name: 'FeatureFlags',
+    component: () => import('../views/FeatureFlags/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-preferences',
+    name: 'UserPreferences',
+    component: () => import('../views/UserPreferences/Index.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 

@@ -133,6 +133,49 @@ const resources = [
   { name: 'AuditLog', plural: 'AuditLogs', icon: 'ShieldCheckIcon', color: 'indigo' },
   { name: 'SystemBackup', plural: 'SystemBackups', icon: 'CloudArrowUpIcon', color: 'green' },
   { name: 'Integration', plural: 'Integrations', icon: 'PuzzlePieceIcon', color: 'purple' },
+
+  // Analytics & Reporting
+  { name: 'AnalyticsEvent', plural: 'AnalyticsEvents', icon: 'ChartBarIcon', color: 'purple' },
+  { name: 'AnalyticsSession', plural: 'AnalyticsSessions', icon: 'UserCircleIcon', color: 'blue' },
+  { name: 'KpiDefinition', plural: 'KpiDefinitions', icon: 'ChartPieIcon', color: 'indigo' },
+  { name: 'KpiValue', plural: 'KpiValues', icon: 'ArrowTrendingUpIcon', color: 'green' },
+  { name: 'PerformanceMetric', plural: 'PerformanceMetrics', icon: 'PresentationChartLineIcon', color: 'teal' },
+  { name: 'ReportSchedule', plural: 'ReportSchedules', icon: 'CalendarIcon', color: 'blue' },
+  { name: 'ReportExecution', plural: 'ReportExecutions', icon: 'PlayIcon', color: 'green' },
+
+  // Notification Providers
+  { name: 'SmsProvider', plural: 'SmsProviders', icon: 'DevicePhoneMobileIcon', color: 'blue' },
+  { name: 'EmailProvider', plural: 'EmailProviders', icon: 'EnvelopeIcon', color: 'red' },
+  { name: 'NotificationPreference', plural: 'NotificationPreferences', icon: 'Cog6ToothIcon', color: 'gray' },
+
+  // Product Sub-modules
+  { name: 'ProductCategoryHierarchy', plural: 'ProductCategoryHierarchies', icon: 'RectangleStackIcon', color: 'purple' },
+  { name: 'ProductAttributeValue', plural: 'ProductAttributeValues', icon: 'TagIcon', color: 'blue' },
+
+  // Appointments Sub-modules
+  { name: 'AppointmentCancellationReason', plural: 'AppointmentCancellationReasons', icon: 'QuestionMarkCircleIcon', color: 'orange' },
+
+  // Customer Sub-modules
+  { name: 'CustomerRfmAnalysis', plural: 'CustomerRfmAnalyses', icon: 'ChartBarSquareIcon', color: 'purple' },
+  { name: 'CustomerSegmentMember', plural: 'CustomerSegmentMembers', icon: 'UsersIcon', color: 'blue' },
+
+  // Inventory Sub-modules
+  { name: 'PurchaseOrderItem', plural: 'PurchaseOrderItems', icon: 'ListBulletIcon', color: 'gray' },
+
+  // Financial Sub-modules
+  { name: 'ChartOfAccount', plural: 'ChartOfAccounts', icon: 'TableCellsIcon', color: 'indigo' },
+  { name: 'JournalEntry', plural: 'JournalEntries', icon: 'BookOpenIcon', color: 'blue' },
+  { name: 'CashRegisterTransaction', plural: 'CashRegisterTransactions', icon: 'BanknotesIcon', color: 'green' },
+
+  // Marketing Sub-modules
+  { name: 'LoyaltyPointTransaction', plural: 'LoyaltyPointTransactions', icon: 'ArrowsRightLeftIcon', color: 'yellow' },
+  { name: 'LeadActivity', plural: 'LeadActivities', icon: 'ClipboardDocumentIcon', color: 'cyan' },
+
+  // System Utilities
+  { name: 'CustomField', plural: 'CustomFields', icon: 'AdjustmentsVerticalIcon', color: 'purple' },
+  { name: 'Translation', plural: 'Translations', icon: 'LanguageIcon', color: 'blue' },
+  { name: 'FeatureFlag', plural: 'FeatureFlags', icon: 'FlagIcon', color: 'orange' },
+  { name: 'UserPreference', plural: 'UserPreferences', icon: 'UserIcon', color: 'gray' },
 ];
 
 function generateIndexPage(resource) {
