@@ -33,6 +33,32 @@ const resources = [
   { name: 'MarketingCampaign', plural: 'MarketingCampaigns', icon: 'MegaphoneIcon', color: 'rose' },
   { name: 'Coupon', plural: 'Coupons', icon: 'TicketIcon', color: 'fuchsia' },
   { name: 'LoyaltyProgram', plural: 'LoyaltyPrograms', icon: 'GiftIcon', color: 'violet' },
+
+  // Customer Management
+  { name: 'CustomerCategory', plural: 'CustomerCategories', icon: 'TagIcon', color: 'green' },
+  { name: 'CustomerTag', plural: 'CustomerTags', icon: 'HashtagIcon', color: 'emerald' },
+  { name: 'CustomerNote', plural: 'CustomerNotes', icon: 'DocumentIcon', color: 'teal' },
+  { name: 'CustomerSegment', plural: 'CustomerSegments', icon: 'UserGroupIcon', color: 'cyan' },
+
+  // Employee Management
+  { name: 'EmployeeSchedule', plural: 'EmployeeSchedules', icon: 'CalendarDaysIcon', color: 'purple' },
+  { name: 'EmployeeShift', plural: 'EmployeeShifts', icon: 'ClockIcon', color: 'violet' },
+  { name: 'EmployeeSkill', plural: 'EmployeeSkills', icon: 'AcademicCapIcon', color: 'indigo' },
+  { name: 'EmployeeLeave', plural: 'EmployeeLeaves', icon: 'CalendarIcon', color: 'blue' },
+
+  // Service Management
+  { name: 'ServiceCategory', plural: 'ServiceCategories', icon: 'FolderIcon', color: 'pink' },
+  { name: 'ServiceAddon', plural: 'ServiceAddons', icon: 'PlusCircleIcon', color: 'rose' },
+  { name: 'ServicePackage', plural: 'ServicePackages', icon: 'CubeIcon', color: 'fuchsia' },
+
+  // Product Management
+  { name: 'ProductBundle', plural: 'ProductBundles', icon: 'CubeTransparentIcon', color: 'amber' },
+  { name: 'ProductVariant', plural: 'ProductVariants', icon: 'SwatchIcon', color: 'yellow' },
+
+  // System & Settings
+  { name: 'NotificationTemplate', plural: 'NotificationTemplates', icon: 'BellIcon', color: 'blue' },
+  { name: 'ReportTemplate', plural: 'ReportTemplates', icon: 'ChartBarIcon', color: 'purple' },
+  { name: 'Webhook', plural: 'Webhooks', icon: 'LinkIcon', color: 'gray' },
 ];
 
 function generateIndexPage(resource) {

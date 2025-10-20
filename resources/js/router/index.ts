@@ -131,6 +131,107 @@ const routes: RouteRecordRaw[] = [
     name: 'LoyaltyPrograms',
     component: () => import('../views/LoyaltyPrograms/Index.vue'),
     meta: { requiresAuth: true }
+  },
+  // Customer Management
+  {
+    path: '/customer-categories',
+    name: 'CustomerCategories',
+    component: () => import('../views/CustomerCategories/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customer-tags',
+    name: 'CustomerTags',
+    component: () => import('../views/CustomerTags/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customer-notes',
+    name: 'CustomerNotes',
+    component: () => import('../views/CustomerNotes/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customer-segments',
+    name: 'CustomerSegments',
+    component: () => import('../views/CustomerSegments/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Employee Management
+  {
+    path: '/employee-schedules',
+    name: 'EmployeeSchedules',
+    component: () => import('../views/EmployeeSchedules/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employee-shifts',
+    name: 'EmployeeShifts',
+    component: () => import('../views/EmployeeShifts/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employee-skills',
+    name: 'EmployeeSkills',
+    component: () => import('../views/EmployeeSkills/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employee-leaves',
+    name: 'EmployeeLeaves',
+    component: () => import('../views/EmployeeLeaves/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Service Management
+  {
+    path: '/service-categories',
+    name: 'ServiceCategories',
+    component: () => import('../views/ServiceCategories/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/service-addons',
+    name: 'ServiceAddons',
+    component: () => import('../views/ServiceAddons/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/service-packages',
+    name: 'ServicePackages',
+    component: () => import('../views/ServicePackages/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Product Management
+  {
+    path: '/product-bundles',
+    name: 'ProductBundles',
+    component: () => import('../views/ProductBundles/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-variants',
+    name: 'ProductVariants',
+    component: () => import('../views/ProductVariants/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // System & Settings
+  {
+    path: '/notification-templates',
+    name: 'NotificationTemplates',
+    component: () => import('../views/NotificationTemplates/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/report-templates',
+    name: 'ReportTemplates',
+    component: () => import('../views/ReportTemplates/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/webhooks',
+    name: 'Webhooks',
+    component: () => import('../views/Webhooks/Index.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
