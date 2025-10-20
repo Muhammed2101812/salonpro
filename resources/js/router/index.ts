@@ -232,6 +232,145 @@ const routes: RouteRecordRaw[] = [
     name: 'Webhooks',
     component: () => import('../views/Webhooks/Index.vue'),
     meta: { requiresAuth: true }
+  },
+  // Appointments Extended
+  {
+    path: '/appointment-cancellations',
+    name: 'AppointmentCancellations',
+    component: () => import('../views/AppointmentCancellations/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/appointment-reminders',
+    name: 'AppointmentReminders',
+    component: () => import('../views/AppointmentReminders/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/appointment-waitlists',
+    name: 'AppointmentWaitlists',
+    component: () => import('../views/AppointmentWaitlists/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/appointment-recurrences',
+    name: 'AppointmentRecurrences',
+    component: () => import('../views/AppointmentRecurrences/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Financial Extended
+  {
+    path: '/bank-accounts',
+    name: 'BankAccounts',
+    component: () => import('../views/BankAccounts/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/budget-plans',
+    name: 'BudgetPlans',
+    component: () => import('../views/BudgetPlans/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/cash-registers',
+    name: 'CashRegisters',
+    component: () => import('../views/CashRegisters/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/tax-rates',
+    name: 'TaxRates',
+    component: () => import('../views/TaxRates/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Employee Extended
+  {
+    path: '/employee-attendances',
+    name: 'EmployeeAttendances',
+    component: () => import('../views/EmployeeAttendances/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employee-certifications',
+    name: 'EmployeeCertifications',
+    component: () => import('../views/EmployeeCertifications/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employee-commissions',
+    name: 'EmployeeCommissions',
+    component: () => import('../views/EmployeeCommissions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employee-performances',
+    name: 'EmployeePerformances',
+    component: () => import('../views/EmployeePerformances/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Customer Extended
+  {
+    path: '/customer-feedbacks',
+    name: 'CustomerFeedbacks',
+    component: () => import('../views/CustomerFeedbacks/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/leads',
+    name: 'Leads',
+    component: () => import('../views/Leads/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/referrals',
+    name: 'Referrals',
+    component: () => import('../views/Referrals/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Product Extended
+  {
+    path: '/product-attributes',
+    name: 'ProductAttributes',
+    component: () => import('../views/ProductAttributes/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-discounts',
+    name: 'ProductDiscounts',
+    component: () => import('../views/ProductDiscounts/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-images',
+    name: 'ProductImages',
+    component: () => import('../views/ProductImages/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Service Extended
+  {
+    path: '/service-pricing-rules',
+    name: 'ServicePricingRules',
+    component: () => import('../views/ServicePricingRules/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/service-reviews',
+    name: 'ServiceReviews',
+    component: () => import('../views/ServiceReviews/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Inventory Extended
+  {
+    path: '/inventory-movements',
+    name: 'InventoryMovements',
+    component: () => import('../views/InventoryMovements/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/stock-alerts',
+    name: 'StockAlerts',
+    component: () => import('../views/StockAlerts/Index.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 

@@ -59,6 +59,42 @@ const resources = [
   { name: 'NotificationTemplate', plural: 'NotificationTemplates', icon: 'BellIcon', color: 'blue' },
   { name: 'ReportTemplate', plural: 'ReportTemplates', icon: 'ChartBarIcon', color: 'purple' },
   { name: 'Webhook', plural: 'Webhooks', icon: 'LinkIcon', color: 'gray' },
+
+  // Appointments Extended
+  { name: 'AppointmentCancellation', plural: 'AppointmentCancellations', icon: 'XCircleIcon', color: 'red' },
+  { name: 'AppointmentReminder', plural: 'AppointmentReminders', icon: 'BellAlertIcon', color: 'blue' },
+  { name: 'AppointmentWaitlist', plural: 'AppointmentWaitlists', icon: 'QueueListIcon', color: 'yellow' },
+  { name: 'AppointmentRecurrence', plural: 'AppointmentRecurrences', icon: 'ArrowPathIcon', color: 'indigo' },
+
+  // Financial Extended
+  { name: 'BankAccount', plural: 'BankAccounts', icon: 'BuildingLibraryIcon', color: 'green' },
+  { name: 'BudgetPlan', plural: 'BudgetPlans', icon: 'ChartPieIcon', color: 'purple' },
+  { name: 'CashRegister', plural: 'CashRegisters', icon: 'CalculatorIcon', color: 'teal' },
+  { name: 'TaxRate', plural: 'TaxRates', icon: 'ReceiptPercentIcon', color: 'orange' },
+
+  // Employee Extended
+  { name: 'EmployeeAttendance', plural: 'EmployeeAttendances', icon: 'ClipboardDocumentListIcon', color: 'blue' },
+  { name: 'EmployeeCertification', plural: 'EmployeeCertifications', icon: 'AcademicCapIcon', color: 'indigo' },
+  { name: 'EmployeeCommission', plural: 'EmployeeCommissions', icon: 'CurrencyDollarIcon', color: 'green' },
+  { name: 'EmployeePerformance', plural: 'EmployeePerformances', icon: 'ChartBarSquareIcon', color: 'purple' },
+
+  // Customer Extended
+  { name: 'CustomerFeedback', plural: 'CustomerFeedbacks', icon: 'ChatBubbleLeftRightIcon', color: 'blue' },
+  { name: 'Lead', plural: 'Leads', icon: 'UserPlusIcon', color: 'cyan' },
+  { name: 'Referral', plural: 'Referrals', icon: 'ShareIcon', color: 'pink' },
+
+  // Product Extended
+  { name: 'ProductAttribute', plural: 'ProductAttributes', icon: 'AdjustmentsHorizontalIcon', color: 'purple' },
+  { name: 'ProductDiscount', plural: 'ProductDiscounts', icon: 'ReceiptPercentIcon', color: 'red' },
+  { name: 'ProductImage', plural: 'ProductImages', icon: 'PhotoIcon', color: 'blue' },
+
+  // Service Extended
+  { name: 'ServicePricingRule', plural: 'ServicePricingRules', icon: 'CurrencyDollarIcon', color: 'green' },
+  { name: 'ServiceReview', plural: 'ServiceReviews', icon: 'StarIcon', color: 'yellow' },
+
+  // Inventory Extended
+  { name: 'InventoryMovement', plural: 'InventoryMovements', icon: 'ArrowsUpDownIcon', color: 'slate' },
+  { name: 'StockAlert', plural: 'StockAlerts', icon: 'ExclamationTriangleIcon', color: 'amber' },
 ];
 
 function generateIndexPage(resource) {
