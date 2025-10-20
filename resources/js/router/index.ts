@@ -692,6 +692,56 @@ const routes: RouteRecordRaw[] = [
     name: 'UserPreferences',
     component: () => import('../views/UserPreferences/Index.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/custom-field-values',
+    name: 'CustomFieldValues',
+    component: () => import('../views/CustomFieldValues/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/document-templates',
+    name: 'DocumentTemplates',
+    component: () => import('../views/DocumentTemplates/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/mobile-devices',
+    name: 'MobileDevices',
+    component: () => import('../views/MobileDevices/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // OAuth & Authentication
+  {
+    path: '/oauth-providers',
+    name: 'OauthProviders',
+    component: () => import('../views/OauthProviders/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/oauth-tokens',
+    name: 'OauthTokens',
+    component: () => import('../views/OauthTokens/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Surveys & Feedback
+  {
+    path: '/surveys',
+    name: 'Surveys',
+    component: () => import('../views/Surveys/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/survey-responses',
+    name: 'SurveyResponses',
+    component: () => import('../views/SurveyResponses/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/appointment-group-participants',
+    name: 'AppointmentGroupParticipants',
+    component: () => import('../views/AppointmentGroupParticipants/Index.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 

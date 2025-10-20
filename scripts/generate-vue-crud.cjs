@@ -154,6 +154,7 @@ const resources = [
 
   // Appointments Sub-modules
   { name: 'AppointmentCancellationReason', plural: 'AppointmentCancellationReasons', icon: 'QuestionMarkCircleIcon', color: 'orange' },
+  { name: 'AppointmentGroupParticipant', plural: 'AppointmentGroupParticipants', icon: 'UserIcon', color: 'blue' },
 
   // Customer Sub-modules
   { name: 'CustomerRfmAnalysis', plural: 'CustomerRfmAnalyses', icon: 'ChartBarSquareIcon', color: 'purple' },
@@ -173,9 +174,20 @@ const resources = [
 
   // System Utilities
   { name: 'CustomField', plural: 'CustomFields', icon: 'AdjustmentsVerticalIcon', color: 'purple' },
+  { name: 'CustomFieldValue', plural: 'CustomFieldValues', icon: 'TagIcon', color: 'teal' },
   { name: 'Translation', plural: 'Translations', icon: 'LanguageIcon', color: 'blue' },
   { name: 'FeatureFlag', plural: 'FeatureFlags', icon: 'FlagIcon', color: 'orange' },
   { name: 'UserPreference', plural: 'UserPreferences', icon: 'UserIcon', color: 'gray' },
+  { name: 'DocumentTemplate', plural: 'DocumentTemplates', icon: 'DocumentTextIcon', color: 'indigo' },
+  { name: 'MobileDevice', plural: 'MobileDevices', icon: 'DevicePhoneMobileIcon', color: 'slate' },
+
+  // OAuth & Authentication
+  { name: 'OauthProvider', plural: 'OauthProviders', icon: 'KeyIcon', color: 'purple' },
+  { name: 'OauthToken', plural: 'OauthTokens', icon: 'LockClosedIcon', color: 'blue' },
+
+  // Surveys & Feedback
+  { name: 'Survey', plural: 'Surveys', icon: 'ClipboardDocumentListIcon', color: 'green' },
+  { name: 'SurveyResponse', plural: 'SurveyResponses', icon: 'ChatBubbleBottomCenterTextIcon', color: 'emerald' },
 ];
 
 function generateIndexPage(resource) {
