@@ -44,4 +44,19 @@ class Service extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function appointmentRecurrences(): HasMany
+    {
+        return $this->hasMany(AppointmentRecurrence::class);
+    }
+
+    public function appointmentGroups(): HasMany
+    {
+        return $this->hasMany(AppointmentGroup::class);
+    }
+
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(AppointmentWaitlist::class);
+    }
 }

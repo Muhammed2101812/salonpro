@@ -64,11 +64,91 @@ class Branch extends Model
     }
 
     /**
+     * Get the appointment recurrences for the branch.
+     */
+    public function appointmentRecurrences(): HasMany
+    {
+        return $this->hasMany(AppointmentRecurrence::class);
+    }
+
+    /**
+     * Get the appointment groups for the branch.
+     */
+    public function appointmentGroups(): HasMany
+    {
+        return $this->hasMany(AppointmentGroup::class);
+    }
+
+    /**
+     * Get the waitlist entries for the branch.
+     */
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(AppointmentWaitlist::class);
+    }
+
+    /**
+     * Get the appointment conflicts for the branch.
+     */
+    public function appointmentConflicts(): HasMany
+    {
+        return $this->hasMany(AppointmentConflict::class);
+    }
+
+    /**
      * Get the settings for the branch.
      */
     public function settings(): HasMany
     {
         return $this->hasMany(BranchSetting::class);
+    }
+
+    /**
+     * Get the purchase orders for the branch.
+     */
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+
+    /**
+     * Get the stock alerts for the branch.
+     */
+    public function stockAlerts(): HasMany
+    {
+        return $this->hasMany(StockAlert::class);
+    }
+
+    /**
+     * Get the stock audits for the branch.
+     */
+    public function stockAudits(): HasMany
+    {
+        return $this->hasMany(StockAudit::class);
+    }
+
+    /**
+     * Get the product bundles for the branch.
+     */
+    public function productBundles(): HasMany
+    {
+        return $this->hasMany(ProductBundle::class);
+    }
+
+    /**
+     * Get the stock transfers from this branch.
+     */
+    public function outgoingStockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class, 'from_branch_id');
+    }
+
+    /**
+     * Get the stock transfers to this branch.
+     */
+    public function incomingStockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class, 'to_branch_id');
     }
 
     /**

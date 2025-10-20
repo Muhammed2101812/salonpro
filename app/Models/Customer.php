@@ -69,6 +69,30 @@ class Customer extends Model
     }
 
     /**
+     * Get the appointment recurrences for the customer.
+     */
+    public function appointmentRecurrences(): HasMany
+    {
+        return $this->hasMany(AppointmentRecurrence::class);
+    }
+
+    /**
+     * Get the waitlist entries for the customer.
+     */
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(AppointmentWaitlist::class);
+    }
+
+    /**
+     * Get the group participations for the customer.
+     */
+    public function groupParticipations(): HasMany
+    {
+        return $this->hasMany(AppointmentGroupParticipant::class);
+    }
+
+    /**
      * Get the categories for the customer.
      */
     public function categories(): BelongsToMany

@@ -56,6 +56,26 @@ class Employee extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function appointmentRecurrences(): HasMany
+    {
+        return $this->hasMany(AppointmentRecurrence::class);
+    }
+
+    public function appointmentGroups(): HasMany
+    {
+        return $this->hasMany(AppointmentGroup::class);
+    }
+
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(AppointmentWaitlist::class);
+    }
+
+    public function conflicts(): HasMany
+    {
+        return $this->hasMany(AppointmentConflict::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";

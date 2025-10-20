@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Appointment extends Model
@@ -19,6 +21,7 @@ class Appointment extends Model
         'customer_id',
         'employee_id',
         'service_id',
+        'recurrence_id',
         'appointment_date',
         'duration_minutes',
         'price',
@@ -55,5 +58,30 @@ class Appointment extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function recurrence(): BelongsTo
+    {
+        return $this->belongsTo(AppointmentRecurrence::class, 'recurrence_id');
+    }
+
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(AppointmentReminder::class);
+    }
+
+    public function history(): HasMany
+    {
+        return $this->hasMany(AppointmentHistory::class);
+    }
+
+    public function cancellation(): HasOne
+    {
+        return $this->hasOne(AppointmentCancellation::class);
+    }
+
+    public function conflicts(): HasMany
+    {
+        return $this->hasMany(AppointmentConflict::class);
     }
 }
