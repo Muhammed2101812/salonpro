@@ -95,6 +95,44 @@ const resources = [
   // Inventory Extended
   { name: 'InventoryMovement', plural: 'InventoryMovements', icon: 'ArrowsUpDownIcon', color: 'slate' },
   { name: 'StockAlert', plural: 'StockAlerts', icon: 'ExclamationTriangleIcon', color: 'amber' },
+
+  // Product Extended (More)
+  { name: 'ProductBarcode', plural: 'ProductBarcodes', icon: 'QrCodeIcon', color: 'gray' },
+  { name: 'ProductStockHistory', plural: 'ProductStockHistories', icon: 'ClockIcon', color: 'blue' },
+  { name: 'ProductPriceHistory', plural: 'ProductPriceHistories', icon: 'ChartLineIcon', color: 'green' },
+  { name: 'ProductSupplierPrice', plural: 'ProductSupplierPrices', icon: 'CurrencyDollarIcon', color: 'teal' },
+
+  // Financial Extended (More)
+  { name: 'InvoiceItem', plural: 'InvoiceItems', icon: 'ListBulletIcon', color: 'orange' },
+  { name: 'BankTransaction', plural: 'BankTransactions', icon: 'ArrowsRightLeftIcon', color: 'green' },
+  { name: 'BudgetItem', plural: 'BudgetItems', icon: 'RectangleGroupIcon', color: 'purple' },
+  { name: 'CashRegisterSession', plural: 'CashRegisterSessions', icon: 'ClockIcon', color: 'cyan' },
+  { name: 'Currency', plural: 'Currencies', icon: 'BanknotesIcon', color: 'emerald' },
+  { name: 'ExchangeRate', plural: 'ExchangeRates', icon: 'ArrowPathIcon', color: 'blue' },
+
+  // Marketing Extended (More)
+  { name: 'CampaignStatistic', plural: 'CampaignStatistics', icon: 'ChartBarIcon', color: 'purple' },
+  { name: 'CouponUsage', plural: 'CouponUsages', icon: 'ReceiptRefundIcon', color: 'pink' },
+  { name: 'LoyaltyPoint', plural: 'LoyaltyPoints', icon: 'StarIcon', color: 'yellow' },
+  { name: 'ReferralProgram', plural: 'ReferralPrograms', icon: 'UserGroupIcon', color: 'indigo' },
+
+  // Service Extended (More)
+  { name: 'ServiceTemplate', plural: 'ServiceTemplates', icon: 'DocumentDuplicateIcon', color: 'blue' },
+  { name: 'ServiceRequirement', plural: 'ServiceRequirements', icon: 'CheckCircleIcon', color: 'green' },
+  { name: 'ServicePriceHistory', plural: 'ServicePriceHistories', icon: 'ChartLineIcon', color: 'teal' },
+
+  // Appointments Extended (More)
+  { name: 'AppointmentConflict', plural: 'AppointmentConflicts', icon: 'ExclamationCircleIcon', color: 'red' },
+  { name: 'AppointmentGroup', plural: 'AppointmentGroups', icon: 'UserGroupIcon', color: 'blue' },
+  { name: 'AppointmentHistory', plural: 'AppointmentHistories', icon: 'ClockIcon', color: 'gray' },
+
+  // System & Settings Extended (More)
+  { name: 'NotificationQueue', plural: 'NotificationQueues', icon: 'InboxStackIcon', color: 'blue' },
+  { name: 'NotificationLog', plural: 'NotificationLogs', icon: 'DocumentTextIcon', color: 'gray' },
+  { name: 'ActivityLog', plural: 'ActivityLogs', icon: 'ClipboardDocumentListIcon', color: 'slate' },
+  { name: 'AuditLog', plural: 'AuditLogs', icon: 'ShieldCheckIcon', color: 'indigo' },
+  { name: 'SystemBackup', plural: 'SystemBackups', icon: 'CloudArrowUpIcon', color: 'green' },
+  { name: 'Integration', plural: 'Integrations', icon: 'PuzzlePieceIcon', color: 'purple' },
 ];
 
 function generateIndexPage(resource) {

@@ -371,6 +371,168 @@ const routes: RouteRecordRaw[] = [
     name: 'StockAlerts',
     component: () => import('../views/StockAlerts/Index.vue'),
     meta: { requiresAuth: true }
+  },
+  // Product Extended (More)
+  {
+    path: '/product-barcodes',
+    name: 'ProductBarcodes',
+    component: () => import('../views/ProductBarcodes/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-stock-histories',
+    name: 'ProductStockHistories',
+    component: () => import('../views/ProductStockHistories/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-price-histories',
+    name: 'ProductPriceHistories',
+    component: () => import('../views/ProductPriceHistories/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-supplier-prices',
+    name: 'ProductSupplierPrices',
+    component: () => import('../views/ProductSupplierPrices/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Financial Extended (More)
+  {
+    path: '/invoice-items',
+    name: 'InvoiceItems',
+    component: () => import('../views/InvoiceItems/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bank-transactions',
+    name: 'BankTransactions',
+    component: () => import('../views/BankTransactions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/budget-items',
+    name: 'BudgetItems',
+    component: () => import('../views/BudgetItems/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/cash-register-sessions',
+    name: 'CashRegisterSessions',
+    component: () => import('../views/CashRegisterSessions/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/currencies',
+    name: 'Currencies',
+    component: () => import('../views/Currencies/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/exchange-rates',
+    name: 'ExchangeRates',
+    component: () => import('../views/ExchangeRates/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Marketing Extended (More)
+  {
+    path: '/campaign-statistics',
+    name: 'CampaignStatistics',
+    component: () => import('../views/CampaignStatistics/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/coupon-usages',
+    name: 'CouponUsages',
+    component: () => import('../views/CouponUsages/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/loyalty-points',
+    name: 'LoyaltyPoints',
+    component: () => import('../views/LoyaltyPoints/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/referral-programs',
+    name: 'ReferralPrograms',
+    component: () => import('../views/ReferralPrograms/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Service Extended (More)
+  {
+    path: '/service-templates',
+    name: 'ServiceTemplates',
+    component: () => import('../views/ServiceTemplates/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/service-requirements',
+    name: 'ServiceRequirements',
+    component: () => import('../views/ServiceRequirements/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/service-price-histories',
+    name: 'ServicePriceHistories',
+    component: () => import('../views/ServicePriceHistories/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Appointments Extended (More)
+  {
+    path: '/appointment-conflicts',
+    name: 'AppointmentConflicts',
+    component: () => import('../views/AppointmentConflicts/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/appointment-groups',
+    name: 'AppointmentGroups',
+    component: () => import('../views/AppointmentGroups/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/appointment-histories',
+    name: 'AppointmentHistories',
+    component: () => import('../views/AppointmentHistories/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // System & Settings Extended (More)
+  {
+    path: '/notification-queues',
+    name: 'NotificationQueues',
+    component: () => import('../views/NotificationQueues/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/notification-logs',
+    name: 'NotificationLogs',
+    component: () => import('../views/NotificationLogs/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/activity-logs',
+    name: 'ActivityLogs',
+    component: () => import('../views/ActivityLogs/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/audit-logs',
+    name: 'AuditLogs',
+    component: () => import('../views/AuditLogs/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/system-backups',
+    name: 'SystemBackups',
+    component: () => import('../views/SystemBackups/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/integrations',
+    name: 'Integrations',
+    component: () => import('../views/Integrations/Index.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
