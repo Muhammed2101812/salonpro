@@ -80,6 +80,57 @@ const routes: RouteRecordRaw[] = [
     name: 'Settings',
     component: () => import('../views/Settings/Index.vue'),
     meta: { requiresAuth: true }
+  },
+  // Financial
+  {
+    path: '/invoices',
+    name: 'Invoices',
+    component: () => import('../views/Invoices/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Inventory & Supply Chain
+  {
+    path: '/stock-audits',
+    name: 'StockAudits',
+    component: () => import('../views/StockAudits/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/stock-transfers',
+    name: 'StockTransfers',
+    component: () => import('../views/StockTransfers/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/suppliers',
+    name: 'Suppliers',
+    component: () => import('../views/Suppliers/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/purchase-orders',
+    name: 'PurchaseOrders',
+    component: () => import('../views/PurchaseOrders/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Marketing
+  {
+    path: '/marketing-campaigns',
+    name: 'MarketingCampaigns',
+    component: () => import('../views/MarketingCampaigns/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/coupons',
+    name: 'Coupons',
+    component: () => import('../views/Coupons/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/loyalty-programs',
+    name: 'LoyaltyPrograms',
+    component: () => import('../views/LoyaltyPrograms/Index.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
