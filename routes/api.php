@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\BankAccountController;
 use App\Http\Controllers\Api\CashRegisterController;
+use App\Http\Controllers\Api\EmployeeAttendanceController;
+use App\Http\Controllers\Api\EmployeeCommissionController;
+use App\Http\Controllers\Api\EmployeeLeaveController;
 use App\Http\Controllers\Api\PurchaseOrderController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\API\AppointmentController;
@@ -195,5 +198,32 @@ Route::prefix('v1')->group(function (): void {
         Route::post('cash-registers/{cash_register}/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
         Route::post('cash-registers/{cash_register}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
         Route::get('cash-registers-total-balance', [CashRegisterController::class, 'totalBalance'])->name('cash-registers.total-balance');
+
+        // Employee Attendance
+        Route::get('employee-attendance-today', [EmployeeAttendanceController::class, 'today'])->name('employee-attendance.today');
+        Route::get('employee-attendance-active', [EmployeeAttendanceController::class, 'active'])->name('employee-attendance.active');
+        Route::post('employee-attendance-clock-in', [EmployeeAttendanceController::class, 'clockIn'])->name('employee-attendance.clock-in');
+        Route::post('employee-attendance/{attendance}/clock-out', [EmployeeAttendanceController::class, 'clockOut'])->name('employee-attendance.clock-out');
+        Route::post('employee-attendance/{attendance}/start-break', [EmployeeAttendanceController::class, 'startBreak'])->name('employee-attendance.start-break');
+        Route::post('employee-attendance/{attendance}/end-break', [EmployeeAttendanceController::class, 'endBreak'])->name('employee-attendance.end-break');
+        Route::get('employee-attendance-summary', [EmployeeAttendanceController::class, 'summary'])->name('employee-attendance.summary');
+        Route::apiResource('employee-attendance', EmployeeAttendanceController::class)->except(['store']);
+
+        // Employee Commissions
+        Route::get('employee-commissions-unpaid', [EmployeeCommissionController::class, 'unpaid'])->name('employee-commissions.unpaid');
+        Route::post('employee-commissions/{commission}/mark-as-paid', [EmployeeCommissionController::class, 'markAsPaid'])->name('employee-commissions.mark-as-paid');
+        Route::post('employee-commissions-mark-multiple-as-paid', [EmployeeCommissionController::class, 'markMultipleAsPaid'])->name('employee-commissions.mark-multiple-as-paid');
+        Route::get('employee-commissions-summary', [EmployeeCommissionController::class, 'summary'])->name('employee-commissions.summary');
+        Route::post('employee-commissions-calculate', [EmployeeCommissionController::class, 'calculate'])->name('employee-commissions.calculate');
+        Route::apiResource('employee-commissions', EmployeeCommissionController::class);
+
+        // Employee Leaves
+        Route::get('employee-leaves-pending', [EmployeeLeaveController::class, 'pending'])->name('employee-leaves.pending');
+        Route::post('employee-leaves/{leave}/approve', [EmployeeLeaveController::class, 'approve'])->name('employee-leaves.approve');
+        Route::post('employee-leaves/{leave}/reject', [EmployeeLeaveController::class, 'reject'])->name('employee-leaves.reject');
+        Route::post('employee-leaves/{leave}/cancel', [EmployeeLeaveController::class, 'cancel'])->name('employee-leaves.cancel');
+        Route::get('employee-leaves-summary', [EmployeeLeaveController::class, 'summary'])->name('employee-leaves.summary');
+        Route::get('employee-leaves-check-overlapping', [EmployeeLeaveController::class, 'checkOverlapping'])->name('employee-leaves.check-overlapping');
+        Route::apiResource('employee-leaves', EmployeeLeaveController::class);
     });
 });

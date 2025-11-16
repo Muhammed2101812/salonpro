@@ -12,6 +12,9 @@ use App\Repositories\Contracts\BranchRepositoryInterface;
 use App\Repositories\Contracts\CashRegisterRepositoryInterface;
 use App\Repositories\Contracts\CouponUsageRepositoryInterface;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
+use App\Repositories\Contracts\EmployeeAttendanceRepositoryInterface;
+use App\Repositories\Contracts\EmployeeCommissionRepositoryInterface;
+use App\Repositories\Contracts\EmployeeLeaveRepositoryInterface;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
 use App\Repositories\Contracts\EmployeeShiftRepositoryInterface;
 use App\Repositories\Contracts\ExpenseRepositoryInterface;
@@ -41,6 +44,9 @@ use App\Repositories\Eloquent\BranchRepository;
 use App\Repositories\Eloquent\CashRegisterRepository;
 use App\Repositories\Eloquent\CouponUsageRepository;
 use App\Repositories\Eloquent\CustomerRepository;
+use App\Repositories\Eloquent\EmployeeAttendanceRepository;
+use App\Repositories\Eloquent\EmployeeCommissionRepository;
+use App\Repositories\Eloquent\EmployeeLeaveRepository;
 use App\Repositories\Eloquent\EmployeeRepository;
 use App\Repositories\Eloquent\EmployeeShiftRepository;
 use App\Repositories\Eloquent\ExpenseRepository;
@@ -67,6 +73,9 @@ use App\Services\Contracts\AppointmentHistoryServiceInterface;
 use App\Services\Contracts\BankAccountServiceInterface;
 use App\Services\Contracts\CashRegisterServiceInterface;
 use App\Services\Contracts\CouponServiceInterface;
+use App\Services\Contracts\EmployeeAttendanceServiceInterface;
+use App\Services\Contracts\EmployeeCommissionServiceInterface;
+use App\Services\Contracts\EmployeeLeaveServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\LoyaltyPointServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
@@ -79,6 +88,9 @@ use App\Services\Contracts\TaxServiceInterface;
 use App\Services\BankAccountService;
 use App\Services\CashRegisterService;
 use App\Services\CouponService;
+use App\Services\EmployeeAttendanceService;
+use App\Services\EmployeeCommissionService;
+use App\Services\EmployeeLeaveService;
 use App\Services\InvoiceService;
 use App\Services\LoyaltyPointService;
 use App\Services\NotificationService;
@@ -108,6 +120,9 @@ class AppServiceProvider extends ServiceProvider
         CashRegisterRepositoryInterface::class => CashRegisterRepository::class,
         CouponUsageRepositoryInterface::class => CouponUsageRepository::class,
         CustomerRepositoryInterface::class => CustomerRepository::class,
+        EmployeeAttendanceRepositoryInterface::class => EmployeeAttendanceRepository::class,
+        EmployeeCommissionRepositoryInterface::class => EmployeeCommissionRepository::class,
+        EmployeeLeaveRepositoryInterface::class => EmployeeLeaveRepository::class,
         EmployeeRepositoryInterface::class => EmployeeRepository::class,
         EmployeeShiftRepositoryInterface::class => EmployeeShiftRepository::class,
         ExpenseRepositoryInterface::class => ExpenseRepository::class,
@@ -135,6 +150,9 @@ class AppServiceProvider extends ServiceProvider
         BankAccountServiceInterface::class => BankAccountService::class,
         CashRegisterServiceInterface::class => CashRegisterService::class,
         CouponServiceInterface::class => CouponService::class,
+        EmployeeAttendanceServiceInterface::class => EmployeeAttendanceService::class,
+        EmployeeCommissionServiceInterface::class => EmployeeCommissionService::class,
+        EmployeeLeaveServiceInterface::class => EmployeeLeaveService::class,
         InvoiceServiceInterface::class => InvoiceService::class,
         LoyaltyPointServiceInterface::class => LoyaltyPointService::class,
         NotificationServiceInterface::class => NotificationService::class,
