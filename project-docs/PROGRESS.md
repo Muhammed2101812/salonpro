@@ -4181,3 +4181,352 @@ public function update(User $user, Customer $customer): bool
 5. Create API Resource transformers
 6. Expand testing coverage (Unit + Feature tests)
 7. Create frontend components for new features
+
+---
+
+## [2025-11-16] - Session 6: Enhanced API Resources with Computed Fields
+
+### Overview
+Enhanced 7 existing basic API Resources to match the advanced pattern established in Session 5, adding comprehensive computed fields, status badges, conditional loading, and helper methods.
+
+### Enhanced API Resources (7 files)
+
+#### 1. BranchResource
+**Enhancements:**
+- ✅ `full_address` - Computed concatenation of address, city, country
+- ✅ `status_badge` - Color-coded active/inactive badge
+- ✅ `employees_count` - Aggregate count when available
+- ✅ `customers_count` - Aggregate count when available
+- ✅ Type casting for boolean fields
+- ✅ Consistent date formatting (Y-m-d H:i:s)
+
+**Helper Methods:**
+```php
+private function getFullAddress(): string
+private function getStatusBadge(): array
+```
+
+**File:** `app/Http/Resources/BranchResource.php`
+
+---
+
+#### 2. CustomerResource
+**Enhancements:**
+- ✅ `age` - Calculated from date_of_birth
+- ✅ `vip_badge` - Gold badge with star icon for VIP customers
+- ✅ `loyalty_points_balance` - Aggregate when available
+- ✅ `appointments_count` - Aggregate count
+- ✅ `is_vip` - Boolean field added
+- ✅ Consistent date formatting
+
+**Computed Fields:**
+```php
+'age' => $this->when(
+    $this->date_of_birth,
+    fn() => $this->date_of_birth->age
+),
+'vip_badge' => ['color' => 'gold', 'label' => 'VIP', 'icon' => 'star']
+```
+
+**File:** `app/Http/Resources/CustomerResource.php`
+
+---
+
+#### 3. EmployeeResource
+**Enhancements:**
+- ✅ `tenure_years` - Years since hire_date
+- ✅ `tenure_display` - Human-readable tenure (e.g., "2y 3m")
+- ✅ `salary` - Conditionally visible based on permissions
+- ✅ `appointments_count` - Aggregate count
+- ✅ `total_commissions` - Aggregate when available
+- ✅ Added user relationship
+
+**Permission-Based Visibility:**
+```php
+'salary' => $this->when(
+    $request->user()?->can('view-employee-salary'),
+    $this->salary
+)
+```
+
+**Helper Methods:**
+```php
+private function getTenureDisplay(): string
+```
+
+**File:** `app/Http/Resources/EmployeeResource.php`
+
+---
+
+#### 4. ServiceResource
+**Enhancements:**
+- ✅ `duration_display` - Human-readable duration (e.g., "1h 30min")
+- ✅ `profit_margin` - Calculated percentage margin
+- ✅ `appointments_count` - Aggregate count
+- ✅ `cost` field added for profit calculations
+- ✅ Type casting for all numeric fields
+
+**Profit Margin Calculation:**
+```php
+'profit_margin' => $this->when(
+    $this->price > 0 && $this->cost > 0,
+    fn() => round((($this->price - $this->cost) / $this->price) * 100, 2)
+)
+```
+
+**Helper Methods:**
+```php
+private function getDurationDisplay(): string
+```
+
+**File:** `app/Http/Resources/ServiceResource.php`
+
+---
+
+#### 5. ProductResource
+**Enhancements:**
+- ✅ `profit_margin` - Profit percentage calculation
+- ✅ `stock_value` - Total value of stock (quantity × cost)
+- ✅ `stock_status` - 4-tier status (out_of_stock, low_stock, medium_stock, in_stock)
+- ✅ `stock_badge` - Color-coded stock status badge
+- ✅ `is_low_stock` - Boolean flag
+- ✅ `is_out_of_stock` - Boolean flag
+- ✅ Added variants relationship
+
+**Stock Status Logic:**
+```php
+private function getStockStatus(): string
+{
+    if ($this->stock_quantity <= 0) return 'out_of_stock';
+    if ($this->stock_quantity <= $this->min_stock_quantity) return 'low_stock';
+    if ($this->stock_quantity <= ($this->min_stock_quantity * 2)) return 'medium_stock';
+    return 'in_stock';
+}
+```
+
+**Stock Badge:**
+```php
+private function getStockBadge(): array
+{
+    return match($this->getStockStatus()) {
+        'out_of_stock' => ['color' => 'danger', 'label' => 'Out of Stock'],
+        'low_stock' => ['color' => 'warning', 'label' => 'Low Stock'],
+        'medium_stock' => ['color' => 'info', 'label' => 'Medium Stock'],
+        'in_stock' => ['color' => 'success', 'label' => 'In Stock'],
+    };
+}
+```
+
+**File:** `app/Http/Resources/ProductResource.php`
+
+---
+
+#### 6. AppointmentResource
+**Enhancements:**
+- ✅ `status_badge` - 6 different status badges (scheduled, confirmed, in_progress, completed, cancelled, no_show)
+- ✅ `is_upcoming` - Boolean for future appointments
+- ✅ `is_today` - Boolean for today's appointments
+- ✅ `time_until` - Human-readable time until appointment
+- ✅ `can_cancel` - Action flag (scheduled/confirmed)
+- ✅ `can_complete` - Action flag (in_progress)
+- ✅ `cancellation_reason` field added
+- ✅ `start_time` and `end_time` fields added
+
+**Status Badge Implementation:**
+```php
+private function getStatusBadge(): array
+{
+    return match($this->status) {
+        'scheduled' => ['color' => 'info', 'label' => 'Scheduled'],
+        'confirmed' => ['color' => 'primary', 'label' => 'Confirmed'],
+        'in_progress' => ['color' => 'warning', 'label' => 'In Progress'],
+        'completed' => ['color' => 'success', 'label' => 'Completed'],
+        'cancelled' => ['color' => 'danger', 'label' => 'Cancelled'],
+        'no_show' => ['color' => 'secondary', 'label' => 'No Show'],
+    };
+}
+```
+
+**File:** `app/Http/Resources/AppointmentResource.php`
+
+---
+
+#### 7. ServiceCategoryResource
+**Enhancements:**
+- ✅ `services_count` - Total services count
+- ✅ `active_services_count` - Active services count
+- ✅ Consistent date formatting
+- ✅ Type casting
+
+**File:** `app/Http/Resources/ServiceCategoryResource.php`
+
+---
+
+### Patterns Established
+
+**1. Consistent Date Formatting:**
+```php
+'created_at' => $this->created_at?->format('Y-m-d H:i:s')
+```
+(Replaced `toISOString()` with Laravel standard format)
+
+**2. Type Casting:**
+```php
+'is_active' => (bool) $this->is_active,
+'price' => (float) $this->price,
+'quantity' => (int) $this->quantity
+```
+
+**3. Conditional Field Loading:**
+```php
+'branch' => BranchResource::make($this->whenLoaded('branch'))
+```
+
+**4. Computed Fields with `when()`:**
+```php
+'age' => $this->when($this->date_of_birth, fn() => $this->date_of_birth->age)
+```
+
+**5. Status Badges:**
+```php
+['color' => 'success', 'label' => 'Active']
+```
+
+**6. Private Helper Methods:**
+- `getStatusBadge()` - Badge generation
+- `getDurationDisplay()` - Duration formatting
+- `getFullAddress()` - Address concatenation
+- `getTenureDisplay()` - Tenure formatting
+- `getStockStatus()` - Stock status calculation
+
+### Benefits
+
+✅ **Enhanced API Responses**
+- Rich computed fields for frontend consumption
+- Color-coded status badges for UI components
+- Human-readable displays for better UX
+
+✅ **Type Safety**
+- Explicit type casting across all fields
+- Consistent data types in API responses
+
+✅ **Conditional Loading**
+- Efficient relationship loading
+- Permission-based field visibility
+- Optional aggregate counts
+
+✅ **Reusability**
+- Private helper methods for complex logic
+- DRY principle for badge generation
+- Consistent patterns across all resources
+
+✅ **Frontend-Ready Data**
+- Pre-computed fields reduce frontend logic
+- Status badges ready for immediate use
+- Action flags for conditional UI rendering
+
+### Controller Integration
+
+**Existing Controllers Using Enhanced Resources:**
+- ✅ BranchController - `app/Http/Controllers/API/BranchController.php`
+- ✅ CustomerController - `app/Http/Controllers/API/CustomerController.php`
+- ✅ EmployeeController - `app/Http/Controllers/API/EmployeeController.php`
+- ✅ AppointmentController - `app/Http/Controllers/API/AppointmentController.php`
+- ✅ ServiceController - `app/Http/Controllers/API/ServiceController.php`
+- ✅ ProductController - `app/Http/Controllers/API/ProductController.php`
+
+All controllers automatically benefit from enhanced resources without any code changes!
+
+### Technical Implementation Details
+
+**Resource Enhancement Example (BranchResource):**
+```php
+// Before
+return [
+    'id' => $this->id,
+    'name' => $this->name,
+    'is_active' => $this->is_active,
+    'created_at' => $this->created_at?->toISOString(),
+];
+
+// After
+return [
+    'id' => $this->id,
+    'name' => $this->name,
+    'is_active' => (bool) $this->is_active,
+    'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+    
+    // Computed fields
+    'full_address' => $this->getFullAddress(),
+    'status_badge' => $this->getStatusBadge(),
+    'employees_count' => $this->when(isset($this->employees_count), $this->employees_count),
+];
+```
+
+**Permission-Based Visibility (EmployeeResource):**
+```php
+'salary' => $this->when(
+    $request->user()?->can('view-employee-salary'),
+    $this->salary
+)
+```
+
+**Dynamic Status Badges (AppointmentResource):**
+```php
+private function getStatusBadge(): array
+{
+    return match($this->status) {
+        'scheduled' => ['color' => 'info', 'label' => 'Scheduled'],
+        'confirmed' => ['color' => 'primary', 'label' => 'Confirmed'],
+        // ... 4 more statuses
+    };
+}
+```
+
+### Git Commit
+
+**Commit:** `5fdb9a3` - Enhance 7 core API Resources with comprehensive computed fields
+**Files Changed:** 8 files (7 resources + UserResource created)
+**Insertions:** 282 lines
+**Deletions:** 47 lines
+
+---
+
+## Session 6 Summary
+
+**Total Work Completed:**
+1. ✅ Enhanced 7 existing API Resources with computed fields
+2. ✅ Added 20+ computed fields across resources
+3. ✅ Created 8 private helper methods
+4. ✅ Implemented 4 status badge systems
+5. ✅ Added permission-based field visibility
+6. ✅ Established consistent patterns across all resources
+
+**Enhanced Resources:**
+- BranchResource (4 computed fields, 2 helpers)
+- CustomerResource (4 computed fields)
+- EmployeeResource (4 computed fields, 1 helper)
+- ServiceResource (3 computed fields, 1 helper)
+- ProductResource (6 computed fields, 2 helpers)
+- AppointmentResource (5 computed fields, 1 helper)
+- ServiceCategoryResource (2 computed fields)
+
+**Total Computed Fields Added:** 28 fields
+**Total Helper Methods:** 8 methods
+**Total Status Badge Systems:** 4 systems
+
+**Git Commits (Session 6):**
+1. `5fdb9a3` - Enhanced 7 core API Resources (282 lines added)
+
+**Project Status:**
+- **Total API Resources:** 18 resources (7 enhanced + 11 advanced)
+- **Total Controllers Using Resources:** 13+ controllers
+- **API Response Consistency:** ✅ COMPLETE
+- **Frontend-Ready Data:** ✅ COMPLETE
+
+**Next Priority Tasks:**
+1. Create infrastructure for additional models (PurchaseOrder, Supplier, EmployeeAttendance, etc.)
+2. Expand testing coverage for API Resources
+3. Create API documentation (Swagger/OpenAPI)
+4. Add more aggregate queries for computed fields
+5. Implement caching for expensive computed fields
