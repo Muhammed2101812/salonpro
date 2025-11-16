@@ -8,8 +8,10 @@ use App\Http\Controllers\API\BranchController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\EmployeeController;
+use App\Http\Controllers\API\EmployeeShiftController;
 use App\Http\Controllers\API\ExpenseController;
 use App\Http\Controllers\API\InventoryMovementController;
+use App\Http\Controllers\API\NotificationTemplateController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\SaleController;
@@ -38,6 +40,8 @@ Route::prefix('v1')->group(function (): void {
 
         // Customers
         Route::apiResource('customers', CustomerController::class);
+        Route::get('customers/{customer}/timeline', [CustomerController::class, 'timeline'])->name('customers.timeline');
+        Route::get('customers/{customer}/stats', [CustomerController::class, 'stats'])->name('customers.stats');
         Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
         Route::delete('customers/{customer}/force', [CustomerController::class, 'forceDestroy'])->name('customers.force-destroy');
 
@@ -45,6 +49,11 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('employees', EmployeeController::class);
         Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
         Route::delete('employees/{employee}/force', [EmployeeController::class, 'forceDestroy'])->name('employees.force-destroy');
+
+        // Employee Shifts
+        Route::apiResource('employee-shifts', EmployeeShiftController::class);
+        Route::post('employee-shifts/{employee_shift}/restore', [EmployeeShiftController::class, 'restore'])->name('employee-shifts.restore');
+        Route::delete('employee-shifts/{employee_shift}/force', [EmployeeShiftController::class, 'forceDestroy'])->name('employee-shifts.force-destroy');
 
         // Products
         Route::apiResource('products', ProductController::class);
@@ -82,5 +91,10 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('appointments', AppointmentController::class);
         Route::post('appointments/{appointment}/restore', [AppointmentController::class, 'restore'])->name('appointments.restore');
         Route::delete('appointments/{appointment}/force', [AppointmentController::class, 'forceDestroy'])->name('appointments.force-destroy');
+
+        // Notification Templates
+        Route::apiResource('notification-templates', NotificationTemplateController::class);
+        Route::post('notification-templates/{notification_template}/restore', [NotificationTemplateController::class, 'restore'])->name('notification-templates.restore');
+        Route::delete('notification-templates/{notification_template}/force', [NotificationTemplateController::class, 'forceDestroy'])->name('notification-templates.force-destroy');
     });
 });
