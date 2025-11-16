@@ -52,6 +52,22 @@ use App\Repositories\Eloquent\ServiceRepository;
 use App\Repositories\Eloquent\ServiceReviewRepository;
 use App\Repositories\Eloquent\SettingRepository;
 use App\Repositories\Eloquent\TaxRateRepository;
+use App\Services\AppointmentHistoryService;
+use App\Services\Contracts\AppointmentHistoryServiceInterface;
+use App\Services\Contracts\CouponServiceInterface;
+use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\Contracts\LoyaltyPointServiceInterface;
+use App\Services\Contracts\NotificationServiceInterface;
+use App\Services\Contracts\ProductVariantServiceInterface;
+use App\Services\Contracts\ServiceReviewServiceInterface;
+use App\Services\Contracts\TaxServiceInterface;
+use App\Services\CouponService;
+use App\Services\InvoiceService;
+use App\Services\LoyaltyPointService;
+use App\Services\NotificationService;
+use App\Services\ProductVariantService;
+use App\Services\ServiceReviewService;
+use App\Services\TaxService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -63,6 +79,7 @@ class AppServiceProvider extends ServiceProvider
      * @var array<string, string>
      */
     public array $bindings = [
+        // Repository bindings
         AppointmentRepositoryInterface::class => AppointmentRepository::class,
         AppointmentCancellationRepositoryInterface::class => AppointmentCancellationRepository::class,
         AppointmentHistoryRepositoryInterface::class => AppointmentHistoryRepository::class,
@@ -87,6 +104,16 @@ class AppServiceProvider extends ServiceProvider
         ServiceReviewRepositoryInterface::class => ServiceReviewRepository::class,
         SettingRepositoryInterface::class => SettingRepository::class,
         TaxRateRepositoryInterface::class => TaxRateRepository::class,
+
+        // Service bindings
+        AppointmentHistoryServiceInterface::class => AppointmentHistoryService::class,
+        CouponServiceInterface::class => CouponService::class,
+        InvoiceServiceInterface::class => InvoiceService::class,
+        LoyaltyPointServiceInterface::class => LoyaltyPointService::class,
+        NotificationServiceInterface::class => NotificationService::class,
+        ProductVariantServiceInterface::class => ProductVariantService::class,
+        ServiceReviewServiceInterface::class => ServiceReviewService::class,
+        TaxServiceInterface::class => TaxService::class,
     ];
 
     /**
