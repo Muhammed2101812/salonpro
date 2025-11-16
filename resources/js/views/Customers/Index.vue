@@ -33,7 +33,9 @@
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="customer in customerStore.customers" :key="customer.id">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ customer.first_name }} {{ customer.last_name }}</div>
+              <router-link :to="`/customers/${customer.id}`" class="text-sm font-medium text-blue-600 hover:text-blue-900">
+                {{ customer.first_name }} {{ customer.last_name }}
+              </router-link>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ customer.phone }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ customer.email || '-' }}</td>

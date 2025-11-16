@@ -28,9 +28,21 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/customers/:id',
+    name: 'CustomerShow',
+    component: () => import('../views/Customers/Show.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/employees',
     name: 'Employees',
     component: () => import('../views/Employees/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/employees/schedule',
+    name: 'EmployeeSchedule',
+    component: () => import('../views/Employees/Schedule.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -79,6 +91,12 @@ const routes: RouteRecordRaw[] = [
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/notifications/templates',
+    name: 'NotificationTemplates',
+    component: () => import('../views/Notifications/Templates.vue'),
     meta: { requiresAuth: true }
   }
 ];
