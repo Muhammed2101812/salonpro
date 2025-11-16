@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AppointmentHistoryResource;
 use App\Services\Contracts\AppointmentHistoryServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AppointmentHistoryController extends Controller
 {
@@ -15,7 +17,7 @@ class AppointmentHistoryController extends Controller
         private AppointmentHistoryServiceInterface $appointmentHistoryService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
@@ -34,7 +36,7 @@ class AppointmentHistoryController extends Controller
             );
         }
 
-        return response()->json($history);
+        return AppointmentHistoryResource::collection($history);
     }
 
     public function store(Request $request): JsonResponse
@@ -57,37 +59,37 @@ class AppointmentHistoryController extends Controller
             ]
         );
 
-        return response()->json($history, 201);
+        return AppointmentHistoryResource::make($history)->response()->setStatusCode(201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(string $id): AppointmentHistoryResource
     {
         $history = \App\Models\AppointmentHistory::with(['appointment', 'user'])->findOrFail($id);
         $this->authorize('view', $history);
 
-        return response()->json($history);
+        return AppointmentHistoryResource::make($history);
     }
 
-    public function recentChanges(Request $request): JsonResponse
+    public function recentChanges(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
         $limit = $request->input('limit', 50);
         $changes = $this->appointmentHistoryService->getRecentChanges($limit);
 
-        return response()->json($changes);
+        return AppointmentHistoryResource::collection($changes);
     }
 
-    public function appointmentHistory(string $appointmentId): JsonResponse
+    public function appointmentHistory(string $appointmentId): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
         $history = $this->appointmentHistoryService->getAppointmentHistory($appointmentId);
 
-        return response()->json($history);
+        return AppointmentHistoryResource::collection($history);
     }
 
-    public function userChanges(Request $request, string $userId): JsonResponse
+    public function userChanges(Request $request, string $userId): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
@@ -96,6 +98,6 @@ class AppointmentHistoryController extends Controller
             $request->input('per_page', 15)
         );
 
-        return response()->json($changes);
+        return AppointmentHistoryResource::collection($changes);
     }
 }

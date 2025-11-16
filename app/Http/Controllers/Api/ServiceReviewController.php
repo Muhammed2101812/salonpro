@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ServiceReviewResource;
 use App\Services\Contracts\ServiceReviewServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ServiceReviewController extends Controller
 {
@@ -15,7 +17,7 @@ class ServiceReviewController extends Controller
         private ServiceReviewServiceInterface $serviceReviewService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\ServiceReview::class);
 
@@ -29,7 +31,7 @@ class ServiceReviewController extends Controller
                 ->paginate($request->input('per_page', 15));
         }
 
-        return response()->json($reviews);
+        return ServiceReviewResource::collection($reviews);
     }
 
     public function store(Request $request): JsonResponse
@@ -47,18 +49,18 @@ class ServiceReviewController extends Controller
 
         $review = $this->serviceReviewService->createReview($validated);
 
-        return response()->json($review, 201);
+        return ServiceReviewResource::make($review)->response()->setStatusCode(201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(string $id): ServiceReviewResource
     {
         $review = \App\Models\ServiceReview::with(['service', 'customer', 'appointment'])->findOrFail($id);
         $this->authorize('view', $review);
 
-        return response()->json($review);
+        return ServiceReviewResource::make($review);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id): ServiceReviewResource
     {
         $review = \App\Models\ServiceReview::findOrFail($id);
         $this->authorize('update', $review);
@@ -71,7 +73,7 @@ class ServiceReviewController extends Controller
 
         $updated = $this->serviceReviewService->updateReview($id, $validated);
 
-        return response()->json($updated);
+        return ServiceReviewResource::make($updated);
     }
 
     public function destroy(string $id): JsonResponse
@@ -84,17 +86,17 @@ class ServiceReviewController extends Controller
         return response()->json(['message' => 'Review deleted successfully']);
     }
 
-    public function approve(string $id): JsonResponse
+    public function approve(string $id): ServiceReviewResource
     {
         $review = \App\Models\ServiceReview::findOrFail($id);
         $this->authorize('update', $review);
 
         $approved = $this->serviceReviewService->approveReview($id);
 
-        return response()->json($approved);
+        return ServiceReviewResource::make($approved);
     }
 
-    public function reject(Request $request, string $id): JsonResponse
+    public function reject(Request $request, string $id): ServiceReviewResource
     {
         $review = \App\Models\ServiceReview::findOrFail($id);
         $this->authorize('update', $review);
@@ -105,17 +107,17 @@ class ServiceReviewController extends Controller
 
         $rejected = $this->serviceReviewService->rejectReview($id, $validated['reason']);
 
-        return response()->json($rejected);
+        return ServiceReviewResource::make($rejected);
     }
 
-    public function published(Request $request, string $serviceId): JsonResponse
+    public function published(Request $request, string $serviceId): AnonymousResourceCollection
     {
         $reviews = $this->serviceReviewService->getPublishedReviews(
             $serviceId,
             $request->input('per_page', 15)
         );
 
-        return response()->json($reviews);
+        return ServiceReviewResource::collection($reviews);
     }
 
     public function averageRating(string $serviceId): JsonResponse

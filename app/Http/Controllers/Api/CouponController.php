@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CouponUsageResource;
 use App\Services\Contracts\CouponServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CouponController extends Controller
 {
@@ -55,7 +57,7 @@ class CouponController extends Controller
                 ]
             );
 
-            return response()->json($usage, 201);
+            return CouponUsageResource::make($usage)->response()->setStatusCode(201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -63,22 +65,22 @@ class CouponController extends Controller
         }
     }
 
-    public function usage(string $couponId): JsonResponse
+    public function usage(string $couponId): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\CouponUsage::class);
 
         $usage = $this->couponService->getCouponUsage($couponId);
 
-        return response()->json($usage);
+        return CouponUsageResource::collection($usage);
     }
 
-    public function customerUsage(string $customerId): JsonResponse
+    public function customerUsage(string $customerId): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\CouponUsage::class);
 
         $usage = $this->couponService->getCustomerCouponUsage($customerId);
 
-        return response()->json($usage);
+        return CouponUsageResource::collection($usage);
     }
 
     public function calculateDiscount(Request $request): JsonResponse

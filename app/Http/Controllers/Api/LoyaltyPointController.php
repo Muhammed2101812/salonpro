@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LoyaltyPointResource;
 use App\Services\Contracts\LoyaltyPointServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class LoyaltyPointController extends Controller
 {
@@ -27,7 +29,7 @@ class LoyaltyPointController extends Controller
         ]);
     }
 
-    public function history(Request $request, string $customerId): JsonResponse
+    public function history(Request $request, string $customerId): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\LoyaltyPoint::class);
 
@@ -36,7 +38,7 @@ class LoyaltyPointController extends Controller
             $request->input('per_page', 15)
         );
 
-        return response()->json($history);
+        return LoyaltyPointResource::collection($history);
     }
 
     public function award(Request $request, string $customerId): JsonResponse
@@ -62,7 +64,7 @@ class LoyaltyPointController extends Controller
             ]
         );
 
-        return response()->json($transaction, 201);
+        return LoyaltyPointResource::make($transaction)->response()->setStatusCode(201);
     }
 
     public function redeem(Request $request, string $customerId): JsonResponse
@@ -87,7 +89,7 @@ class LoyaltyPointController extends Controller
                 ]
             );
 
-            return response()->json($transaction, 201);
+            return LoyaltyPointResource::make($transaction)->response()->setStatusCode(201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -95,14 +97,14 @@ class LoyaltyPointController extends Controller
         }
     }
 
-    public function expiringPoints(Request $request, string $customerId): JsonResponse
+    public function expiringPoints(Request $request, string $customerId): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\LoyaltyPoint::class);
 
         $days = $request->input('days', 30);
         $expiringPoints = $this->loyaltyPointService->getExpiringPoints($customerId, $days);
 
-        return response()->json($expiringPoints);
+        return LoyaltyPointResource::collection($expiringPoints);
     }
 
     public function calculatePoints(Request $request): JsonResponse

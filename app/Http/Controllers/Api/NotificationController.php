@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NotificationQueueResource;
 use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class NotificationController extends Controller
 {
@@ -15,7 +17,7 @@ class NotificationController extends Controller
         private NotificationServiceInterface $notificationService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\NotificationQueue::class);
 
@@ -35,7 +37,7 @@ class NotificationController extends Controller
             $notifications = $query->paginate($request->input('per_page', 15));
         }
 
-        return response()->json($notifications);
+        return NotificationQueueResource::collection($notifications);
     }
 
     public function store(Request $request): JsonResponse
@@ -56,15 +58,15 @@ class NotificationController extends Controller
 
         $notification = $this->notificationService->queueNotification($validated);
 
-        return response()->json($notification, 201);
+        return NotificationQueueResource::make($notification)->response()->setStatusCode(201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(string $id): NotificationQueueResource
     {
         $notification = \App\Models\NotificationQueue::findOrFail($id);
         $this->authorize('view', $notification);
 
-        return response()->json($notification);
+        return NotificationQueueResource::make($notification);
     }
 
     public function send(string $id): JsonResponse
