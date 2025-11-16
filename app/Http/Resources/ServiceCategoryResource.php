@@ -20,12 +20,20 @@ class ServiceCategoryResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'is_active' => $this->is_active,
+            'is_active' => (bool) $this->is_active,
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s'),
+
+            // Relationships
             'services' => ServiceResource::collection($this->whenLoaded('services')),
+
+            // Computed fields
             'services_count' => $this->when(isset($this->services_count), $this->services_count),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
-            'deleted_at' => $this->deleted_at?->toISOString(),
+            'active_services_count' => $this->when(
+                isset($this->active_services_count),
+                $this->active_services_count
+            ),
         ];
     }
 }
