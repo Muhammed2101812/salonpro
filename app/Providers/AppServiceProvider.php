@@ -27,6 +27,7 @@ use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
 use App\Repositories\Contracts\ServiceReviewRepositoryInterface;
 use App\Repositories\Contracts\SettingRepositoryInterface;
+use App\Repositories\Contracts\StockTransferRepositoryInterface;
 use App\Repositories\Contracts\TaxRateRepositoryInterface;
 use App\Repositories\Eloquent\AppointmentCancellationRepository;
 use App\Repositories\Eloquent\AppointmentHistoryRepository;
@@ -51,6 +52,7 @@ use App\Repositories\Eloquent\ServiceCategoryRepository;
 use App\Repositories\Eloquent\ServiceRepository;
 use App\Repositories\Eloquent\ServiceReviewRepository;
 use App\Repositories\Eloquent\SettingRepository;
+use App\Repositories\Eloquent\StockTransferRepository;
 use App\Repositories\Eloquent\TaxRateRepository;
 use App\Services\AppointmentHistoryService;
 use App\Services\Contracts\AppointmentHistoryServiceInterface;
@@ -60,6 +62,7 @@ use App\Services\Contracts\LoyaltyPointServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\ProductVariantServiceInterface;
 use App\Services\Contracts\ServiceReviewServiceInterface;
+use App\Services\Contracts\StockTransferServiceInterface;
 use App\Services\Contracts\TaxServiceInterface;
 use App\Services\CouponService;
 use App\Services\InvoiceService;
@@ -67,6 +70,7 @@ use App\Services\LoyaltyPointService;
 use App\Services\NotificationService;
 use App\Services\ProductVariantService;
 use App\Services\ServiceReviewService;
+use App\Services\StockTransferService;
 use App\Services\TaxService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -103,6 +107,7 @@ class AppServiceProvider extends ServiceProvider
         ServiceCategoryRepositoryInterface::class => ServiceCategoryRepository::class,
         ServiceReviewRepositoryInterface::class => ServiceReviewRepository::class,
         SettingRepositoryInterface::class => SettingRepository::class,
+        StockTransferRepositoryInterface::class => StockTransferRepository::class,
         TaxRateRepositoryInterface::class => TaxRateRepository::class,
 
         // Service bindings
@@ -113,6 +118,7 @@ class AppServiceProvider extends ServiceProvider
         NotificationServiceInterface::class => NotificationService::class,
         ProductVariantServiceInterface::class => ProductVariantService::class,
         ServiceReviewServiceInterface::class => ServiceReviewService::class,
+        StockTransferServiceInterface::class => StockTransferService::class,
         TaxServiceInterface::class => TaxService::class,
     ];
 

@@ -25,6 +25,7 @@ use App\Http\Controllers\API\ServiceCategoryController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\ServiceReviewController;
 use App\Http\Controllers\API\SettingController;
+use App\Http\Controllers\API\StockTransferController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -153,5 +154,12 @@ Route::prefix('v1')->group(function (): void {
         Route::get('appointment-history/recent', [AppointmentHistoryController::class, 'recentChanges'])->name('appointment-history.recent');
         Route::get('appointments/{appointment}/history', [AppointmentHistoryController::class, 'appointmentHistory'])->name('appointment-history.appointment');
         Route::get('users/{user}/appointment-changes', [AppointmentHistoryController::class, 'userChanges'])->name('appointment-history.user');
+
+        // Stock Transfers
+        Route::apiResource('stock-transfers', StockTransferController::class);
+        Route::post('stock-transfers/{transfer}/approve', [StockTransferController::class, 'approve'])->name('stock-transfers.approve');
+        Route::post('stock-transfers/{transfer}/reject', [StockTransferController::class, 'reject'])->name('stock-transfers.reject');
+        Route::post('stock-transfers/{transfer}/complete', [StockTransferController::class, 'complete'])->name('stock-transfers.complete');
+        Route::post('stock-transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock-transfers.cancel');
     });
 });
