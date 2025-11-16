@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\BankAccountController;
+use App\Http\Controllers\Api\CashRegisterController;
+use App\Http\Controllers\Api\PurchaseOrderController;
+use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\API\AppointmentController;
 use App\Http\Controllers\API\AppointmentHistoryController;
 use App\Http\Controllers\API\AuthController;
@@ -161,5 +165,35 @@ Route::prefix('v1')->group(function (): void {
         Route::post('stock-transfers/{transfer}/reject', [StockTransferController::class, 'reject'])->name('stock-transfers.reject');
         Route::post('stock-transfers/{transfer}/complete', [StockTransferController::class, 'complete'])->name('stock-transfers.complete');
         Route::post('stock-transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock-transfers.cancel');
+
+        // Suppliers
+        Route::apiResource('suppliers', SupplierController::class);
+        Route::get('suppliers/{supplier}/stats', [SupplierController::class, 'stats'])->name('suppliers.stats');
+        Route::post('suppliers/{supplier}/activate', [SupplierController::class, 'activate'])->name('suppliers.activate');
+        Route::post('suppliers/{supplier}/deactivate', [SupplierController::class, 'deactivate'])->name('suppliers.deactivate');
+
+        // Purchase Orders
+        Route::apiResource('purchase-orders', PurchaseOrderController::class);
+        Route::get('purchase-orders-pending', [PurchaseOrderController::class, 'pending'])->name('purchase-orders.pending');
+        Route::get('purchase-orders-overdue', [PurchaseOrderController::class, 'overdue'])->name('purchase-orders.overdue');
+        Route::post('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+        Route::post('purchase-orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+        Route::get('purchase-orders-totals', [PurchaseOrderController::class, 'totals'])->name('purchase-orders.totals');
+
+        // Bank Accounts
+        Route::apiResource('bank-accounts', BankAccountController::class);
+        Route::post('bank-accounts/{bank_account}/deposit', [BankAccountController::class, 'deposit'])->name('bank-accounts.deposit');
+        Route::post('bank-accounts/{bank_account}/withdraw', [BankAccountController::class, 'withdraw'])->name('bank-accounts.withdraw');
+        Route::post('bank-accounts/{bank_account}/activate', [BankAccountController::class, 'activate'])->name('bank-accounts.activate');
+        Route::post('bank-accounts/{bank_account}/deactivate', [BankAccountController::class, 'deactivate'])->name('bank-accounts.deactivate');
+        Route::get('bank-accounts-total-balance', [BankAccountController::class, 'totalBalance'])->name('bank-accounts.total-balance');
+
+        // Cash Registers
+        Route::apiResource('cash-registers', CashRegisterController::class);
+        Route::post('cash-registers/{cash_register}/add-cash', [CashRegisterController::class, 'addCash'])->name('cash-registers.add-cash');
+        Route::post('cash-registers/{cash_register}/remove-cash', [CashRegisterController::class, 'removeCash'])->name('cash-registers.remove-cash');
+        Route::post('cash-registers/{cash_register}/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
+        Route::post('cash-registers/{cash_register}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
+        Route::get('cash-registers-total-balance', [CashRegisterController::class, 'totalBalance'])->name('cash-registers.total-balance');
     });
 });

@@ -7,7 +7,9 @@ namespace App\Providers;
 use App\Repositories\Contracts\AppointmentCancellationRepositoryInterface;
 use App\Repositories\Contracts\AppointmentHistoryRepositoryInterface;
 use App\Repositories\Contracts\AppointmentRepositoryInterface;
+use App\Repositories\Contracts\BankAccountRepositoryInterface;
 use App\Repositories\Contracts\BranchRepositoryInterface;
+use App\Repositories\Contracts\CashRegisterRepositoryInterface;
 use App\Repositories\Contracts\CouponUsageRepositoryInterface;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
@@ -21,6 +23,7 @@ use App\Repositories\Contracts\NotificationTemplateRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductVariantRepositoryInterface;
+use App\Repositories\Contracts\PurchaseOrderRepositoryInterface;
 use App\Repositories\Contracts\ReportTemplateRepositoryInterface;
 use App\Repositories\Contracts\SaleRepositoryInterface;
 use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
@@ -28,11 +31,14 @@ use App\Repositories\Contracts\ServiceRepositoryInterface;
 use App\Repositories\Contracts\ServiceReviewRepositoryInterface;
 use App\Repositories\Contracts\SettingRepositoryInterface;
 use App\Repositories\Contracts\StockTransferRepositoryInterface;
+use App\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Repositories\Contracts\TaxRateRepositoryInterface;
 use App\Repositories\Eloquent\AppointmentCancellationRepository;
 use App\Repositories\Eloquent\AppointmentHistoryRepository;
 use App\Repositories\Eloquent\AppointmentRepository;
+use App\Repositories\Eloquent\BankAccountRepository;
 use App\Repositories\Eloquent\BranchRepository;
+use App\Repositories\Eloquent\CashRegisterRepository;
 use App\Repositories\Eloquent\CouponUsageRepository;
 use App\Repositories\Eloquent\CustomerRepository;
 use App\Repositories\Eloquent\EmployeeRepository;
@@ -46,6 +52,7 @@ use App\Repositories\Eloquent\NotificationTemplateRepository;
 use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Eloquent\ProductVariantRepository;
+use App\Repositories\Eloquent\PurchaseOrderRepository;
 use App\Repositories\Eloquent\ReportTemplateRepository;
 use App\Repositories\Eloquent\SaleRepository;
 use App\Repositories\Eloquent\ServiceCategoryRepository;
@@ -53,24 +60,33 @@ use App\Repositories\Eloquent\ServiceRepository;
 use App\Repositories\Eloquent\ServiceReviewRepository;
 use App\Repositories\Eloquent\SettingRepository;
 use App\Repositories\Eloquent\StockTransferRepository;
+use App\Repositories\Eloquent\SupplierRepository;
 use App\Repositories\Eloquent\TaxRateRepository;
 use App\Services\AppointmentHistoryService;
 use App\Services\Contracts\AppointmentHistoryServiceInterface;
+use App\Services\Contracts\BankAccountServiceInterface;
+use App\Services\Contracts\CashRegisterServiceInterface;
 use App\Services\Contracts\CouponServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\LoyaltyPointServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\ProductVariantServiceInterface;
+use App\Services\Contracts\PurchaseOrderServiceInterface;
 use App\Services\Contracts\ServiceReviewServiceInterface;
 use App\Services\Contracts\StockTransferServiceInterface;
+use App\Services\Contracts\SupplierServiceInterface;
 use App\Services\Contracts\TaxServiceInterface;
+use App\Services\BankAccountService;
+use App\Services\CashRegisterService;
 use App\Services\CouponService;
 use App\Services\InvoiceService;
 use App\Services\LoyaltyPointService;
 use App\Services\NotificationService;
 use App\Services\ProductVariantService;
+use App\Services\PurchaseOrderService;
 use App\Services\ServiceReviewService;
 use App\Services\StockTransferService;
+use App\Services\SupplierService;
 use App\Services\TaxService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -87,7 +103,9 @@ class AppServiceProvider extends ServiceProvider
         AppointmentRepositoryInterface::class => AppointmentRepository::class,
         AppointmentCancellationRepositoryInterface::class => AppointmentCancellationRepository::class,
         AppointmentHistoryRepositoryInterface::class => AppointmentHistoryRepository::class,
+        BankAccountRepositoryInterface::class => BankAccountRepository::class,
         BranchRepositoryInterface::class => BranchRepository::class,
+        CashRegisterRepositoryInterface::class => CashRegisterRepository::class,
         CouponUsageRepositoryInterface::class => CouponUsageRepository::class,
         CustomerRepositoryInterface::class => CustomerRepository::class,
         EmployeeRepositoryInterface::class => EmployeeRepository::class,
@@ -101,6 +119,7 @@ class AppServiceProvider extends ServiceProvider
         PaymentRepositoryInterface::class => PaymentRepository::class,
         ProductRepositoryInterface::class => ProductRepository::class,
         ProductVariantRepositoryInterface::class => ProductVariantRepository::class,
+        PurchaseOrderRepositoryInterface::class => PurchaseOrderRepository::class,
         ReportTemplateRepositoryInterface::class => ReportTemplateRepository::class,
         SaleRepositoryInterface::class => SaleRepository::class,
         ServiceRepositoryInterface::class => ServiceRepository::class,
@@ -108,17 +127,22 @@ class AppServiceProvider extends ServiceProvider
         ServiceReviewRepositoryInterface::class => ServiceReviewRepository::class,
         SettingRepositoryInterface::class => SettingRepository::class,
         StockTransferRepositoryInterface::class => StockTransferRepository::class,
+        SupplierRepositoryInterface::class => SupplierRepository::class,
         TaxRateRepositoryInterface::class => TaxRateRepository::class,
 
         // Service bindings
         AppointmentHistoryServiceInterface::class => AppointmentHistoryService::class,
+        BankAccountServiceInterface::class => BankAccountService::class,
+        CashRegisterServiceInterface::class => CashRegisterService::class,
         CouponServiceInterface::class => CouponService::class,
         InvoiceServiceInterface::class => InvoiceService::class,
         LoyaltyPointServiceInterface::class => LoyaltyPointService::class,
         NotificationServiceInterface::class => NotificationService::class,
         ProductVariantServiceInterface::class => ProductVariantService::class,
+        PurchaseOrderServiceInterface::class => PurchaseOrderService::class,
         ServiceReviewServiceInterface::class => ServiceReviewService::class,
         StockTransferServiceInterface::class => StockTransferService::class,
+        SupplierServiceInterface::class => SupplierService::class,
         TaxServiceInterface::class => TaxService::class,
     ];
 
