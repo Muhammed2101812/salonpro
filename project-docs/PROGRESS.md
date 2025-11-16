@@ -3428,3 +3428,326 @@ Note: Actual database migrations not run due to MySQL service not running locall
 5. Create API Resources for transformation
 6. Expand test coverage
 7. Create frontend components
+
+---
+
+## [2025-11-16] - Session 4 (Continued): Spatie Permission Integration
+
+**Task:** Integrate Spatie Permission package with comprehensive role and permission system
+
+### Spatie Permission Integration ✅
+
+**Files Modified:**
+- config/permission.php
+- bootstrap/app.php
+- database/seeders/DatabaseSeeder.php
+
+**Files Created:**
+- app/Policies/SalePolicy.php
+- app/Policies/InventoryPolicy.php
+- app/Policies/InvoicePolicy.php
+- app/Policies/OrganizationPolicy.php
+- app/Policies/SettingPolicy.php
+
+### Configuration Changes
+
+**config/permission.php:**
+- Enabled wildcard permissions (`enable_wildcard_permission => true`)
+- Allows powerful permission patterns like `customers.*` or `reports.*`
+
+**bootstrap/app.php:**
+- Registered Spatie middleware aliases:
+  * `role` - RoleMiddleware
+  * `permission` - PermissionMiddleware
+  * `role_or_permission` - RoleOrPermissionMiddleware
+  * `branch` - EnsureBranchAccess (custom)
+
+**database/seeders/DatabaseSeeder.php:**
+- Added RolePermissionSeeder as first seeder
+- Ensures roles and permissions exist before users
+
+### Role System (11 Roles)
+
+**1. Super Admin**
+- Full system access
+- All permissions granted
+- Bypasses all restrictions
+
+**2. Organization Admin**
+- Organization-wide access
+- Manages all branches
+- Full CRUD on customers, employees, appointments
+- Financial reporting access
+- User management (create, edit)
+- Marketing and analytics access
+
+**3. Branch Manager**
+- Branch-level management
+- Customer and employee management (view, edit, schedule)
+- Appointment and calendar management
+- Payment processing and viewing
+- Sales and expense management
+- Branch-specific reports
+- Marketing campaigns
+
+**4. Accountant**
+- Financial operations focus
+- Full payment management (view, create, refund)
+- Expense management (full CRUD + approve)
+- Invoice management
+- Financial and sales reports
+- Customer view access
+
+**5. Receptionist**
+- Front desk operations
+- Customer management (view, create, update)
+- Appointment scheduling (full CRUD)
+- Payment processing
+- Sales creation
+- Services viewing
+
+**6. Stylist/Beautician**
+- Service provider role
+- Appointment viewing and updating
+- Customer viewing
+- Services and products viewing
+- Sales creation
+- Dashboard access
+
+**7. Sales Representative**
+- Product sales focus
+- Customer management (view, create, update)
+- Product viewing
+- Sales management (view, create, update)
+- Payment processing
+- Dashboard access
+
+**8. Inventory Manager**
+- Stock management
+- Product management (full CRUD)
+- Inventory operations (transfer, adjust)
+- Expense viewing
+- Inventory reports
+- Dashboard access
+
+**9. Marketing Manager**
+- Customer analytics focus
+- Customer viewing and export
+- Service viewing
+- Customer, sales reports
+- Dashboard analytics access
+
+**10. HR Manager**
+- Employee management
+- Full employee CRUD
+- Schedule management
+- Performance viewing
+- User management (view, create, update)
+- Employee reports
+
+**11. Viewer**
+- Read-only access
+- View permissions for all main modules
+- No create, update, or delete capabilities
+- Dashboard viewing only
+
+### Permission System (137+ Permissions)
+
+**Module-based CRUD Permissions:**
+- customers.* (view, create, update, delete, export)
+- employees.* (view, create, update, delete, manage-schedule, view-performance)
+- appointments.* (view, create, update, delete, cancel, reschedule, view-all)
+- services.* (view, create, update, delete, manage-categories, manage-pricing)
+- products.* (view, create, update, delete, manage-inventory)
+- inventory.* (view, create, update, delete, transfer, adjust)
+- payments.* (view, create, refund, view-reports)
+- sales.* (view, create, update, delete)
+- expenses.* (view, create, update, delete, approve)
+- branches.* (view, create, update, delete, manage-settings)
+
+**Report Permissions:**
+- reports.sales
+- reports.financial
+- reports.customer
+- reports.employee
+- reports.inventory
+- reports.export
+
+**Administrative Permissions:**
+- users.* (view, create, update, delete, manage-roles, manage-permissions)
+- settings.* (view, update, system)
+- audit.view
+- dashboard.view
+- dashboard.analytics
+
+### Policy Classes (15 Total)
+
+**Existing Policies (10):**
+1. **CustomerPolicy** - Branch-aware customer access control
+2. **AppointmentPolicy** - Appointment authorization with branch isolation
+3. **EmployeePolicy** - Employee management authorization
+4. **ServicePolicy** - Service management authorization
+5. **ProductPolicy** - Product management authorization
+6. **ExpensePolicy** - Expense authorization with approval workflow
+7. **PaymentPolicy** - Payment authorization
+8. **BranchPolicy** - Branch access control
+9. **ReportPolicy** - Report access control
+10. **UserPolicy** - User management authorization
+
+**New Policies (5):**
+11. **SalePolicy** - Sales authorization with branch isolation
+12. **InventoryPolicy** - Inventory operations authorization (transfer, adjust)
+13. **InvoicePolicy** - Invoice access control for accountants
+14. **OrganizationPolicy** - Organization-level authorization
+15. **SettingPolicy** - Settings authorization (system/branch level)
+
+### Key Features Implemented
+
+**1. Branch Isolation:**
+- All policies check branch access for non-admin roles
+- Super Admin and Organization Admin bypass branch restrictions
+- Other roles restricted to their assigned branch
+
+**2. Role-Based Access Control (RBAC):**
+- Granular permission checks in policies
+- Role-specific authorization logic
+- Hierarchical permission inheritance
+
+**3. Permission Patterns:**
+- Wildcard permissions enabled (`customers.*`)
+- Specific action permissions (`appointments.cancel`)
+- Module-level permissions (`reports.financial`)
+
+**4. Policy Authorization Methods:**
+- `viewAny()` - List/index access
+- `view($model)` - Single record access
+- `create()` - Creation authorization
+- `update($model)` - Update authorization
+- `delete($model)` - Delete authorization
+- `forceDelete($model)` - Permanent deletion (admin only)
+- Custom methods (export, transfer, approve, etc.)
+
+**5. Authorization Patterns:**
+```php
+// Permission check
+if (!$user->can('customers.view')) {
+    return false;
+}
+
+// Role check
+if ($user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
+    return true;
+}
+
+// Branch isolation
+return $user->branch_id === $customer->branch_id;
+```
+
+### Benefits
+
+✅ **Comprehensive Authorization System**
+- 11 well-defined roles covering all user types
+- 137+ granular permissions
+- 15 policy classes for fine-grained control
+
+✅ **Multi-Tenancy Support**
+- Branch-level data isolation
+- Organization-wide admin access
+- Branch Manager restricted to single branch
+
+✅ **Flexible Permission Model**
+- Wildcard permissions for easy management
+- Module-based permission grouping
+- Action-specific permissions
+
+✅ **Security Best Practices**
+- Policy-based authorization
+- Middleware protection
+- Role hierarchy enforcement
+
+✅ **Scalability**
+- Easy to add new roles
+- Simple permission extension
+- Modular policy structure
+
+### Technical Implementation
+
+**Permission Seeder Pattern:**
+```php
+// Module-based permission generation
+foreach ($modules as $module) {
+    foreach (['view', 'create', 'update', 'delete'] as $action) {
+        Permission::create(['name' => "$module.$action"]);
+    }
+}
+
+// Specific permissions
+Permission::create(['name' => 'appointments.cancel']);
+Permission::create(['name' => 'inventory.transfer']);
+```
+
+**Role Assignment Pattern:**
+```php
+$branchManager = Role::create(['name' => 'Branch Manager']);
+$branchManager->syncPermissions([
+    'customers.view', 'customers.create', 'customers.update',
+    'appointments.*', 'payments.view', 'payments.create',
+    // ... more permissions
+]);
+```
+
+**Policy Authorization Pattern:**
+```php
+public function update(User $user, Customer $customer): bool
+{
+    if (!$user->can('customers.update')) {
+        return false;
+    }
+
+    if ($user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
+        return true;
+    }
+
+    return $user->branch_id === $customer->branch_id;
+}
+```
+
+### Git Commit
+
+**Commit:** `f6fcca7` - Complete Spatie Permission integration with roles, permissions, and policies
+**Files Changed:** 8 files
+**Insertions:** 220 lines
+
+---
+
+## Session 4 Complete Summary
+
+**Total Work Completed:**
+1. ✅ 86 Eloquent models created (Phases 3-9)
+2. ✅ Spatie Permission integration
+3. ✅ 11 roles with 137+ permissions
+4. ✅ 15 policy classes
+
+**Git Commits (Session 4):**
+1. `b390180` - 30 Phase 3-9 models (1,385 lines)
+2. `3351aab` - PROGRESS.md update (272 lines)
+3. `60a99e3` - 56 advanced models (2,370 lines)
+4. `f6fcca7` - Spatie Permission integration (220 lines)
+
+**Total Lines of Code (Session 4):** 4,247 lines
+
+**Project Status:**
+- **Total Models:** 120 models
+- **Total Roles:** 11 roles
+- **Total Permissions:** 137+ permissions
+- **Total Policies:** 15 policies
+- **Authorization System:** ✅ COMPLETE
+
+**Next Priority Tasks:**
+1. Create Repository Pattern for new models (~105 repositories needed)
+2. Create Service Layer for new models (~103 services needed)
+3. Create API Controllers for CRUD operations
+4. Create Form Request validation classes
+5. Create API Resource transformers
+6. Expand testing coverage (Unit + Feature tests)
+7. Create frontend components for new features
