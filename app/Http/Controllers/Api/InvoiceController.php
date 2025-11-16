@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InvoiceResource;
 use App\Services\Contracts\InvoiceServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class InvoiceController extends Controller
 {
@@ -15,7 +17,7 @@ class InvoiceController extends Controller
         private InvoiceServiceInterface $invoiceService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\Invoice::class);
 
@@ -42,7 +44,7 @@ class InvoiceController extends Controller
             );
         }
 
-        return response()->json($invoices);
+        return InvoiceResource::collection($invoices);
     }
 
     public function store(Request $request): JsonResponse
@@ -70,18 +72,18 @@ class InvoiceController extends Controller
 
         $invoice = $this->invoiceService->createInvoice($validated);
 
-        return response()->json($invoice, 201);
+        return InvoiceResource::make($invoice)->response()->setStatusCode(201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(string $id): InvoiceResource
     {
         $invoice = \App\Models\Invoice::with(['customer', 'branch', 'items'])->findOrFail($id);
         $this->authorize('view', $invoice);
 
-        return response()->json($invoice);
+        return InvoiceResource::make($invoice);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id): InvoiceResource
     {
         $invoice = \App\Models\Invoice::findOrFail($id);
         $this->authorize('update', $invoice);
@@ -102,7 +104,7 @@ class InvoiceController extends Controller
 
         $updated = $this->invoiceService->updateInvoice($id, $validated);
 
-        return response()->json($updated);
+        return InvoiceResource::make($updated);
     }
 
     public function destroy(string $id): JsonResponse
@@ -115,7 +117,7 @@ class InvoiceController extends Controller
         return response()->json(['message' => 'Invoice deleted successfully']);
     }
 
-    public function cancel(Request $request, string $id): JsonResponse
+    public function cancel(Request $request, string $id): InvoiceResource
     {
         $invoice = \App\Models\Invoice::findOrFail($id);
         $this->authorize('cancel', $invoice);
@@ -126,10 +128,10 @@ class InvoiceController extends Controller
 
         $cancelled = $this->invoiceService->cancelInvoice($id, $validated['reason']);
 
-        return response()->json($cancelled);
+        return InvoiceResource::make($cancelled);
     }
 
-    public function markAsPaid(Request $request, string $id): JsonResponse
+    public function markAsPaid(Request $request, string $id): InvoiceResource
     {
         $invoice = \App\Models\Invoice::findOrFail($id);
         $this->authorize('update', $invoice);
@@ -144,7 +146,7 @@ class InvoiceController extends Controller
 
         $paid = $this->invoiceService->markAsPaid($id, $validated);
 
-        return response()->json($paid);
+        return InvoiceResource::make($paid);
     }
 
     public function generatePdf(string $id): JsonResponse

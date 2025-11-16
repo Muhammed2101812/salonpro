@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductVariantResource;
 use App\Services\Contracts\ProductVariantServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductVariantController extends Controller
 {
@@ -15,7 +17,7 @@ class ProductVariantController extends Controller
         private ProductVariantServiceInterface $productVariantService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Models\ProductVariant::class);
 
@@ -28,7 +30,7 @@ class ProductVariantController extends Controller
             $variants = \App\Models\ProductVariant::with('product')->paginate($request->input('per_page', 15));
         }
 
-        return response()->json($variants);
+        return ProductVariantResource::collection($variants);
     }
 
     public function store(Request $request): JsonResponse
@@ -53,18 +55,18 @@ class ProductVariantController extends Controller
             $validated
         );
 
-        return response()->json($variant, 201);
+        return ProductVariantResource::make($variant)->response()->setStatusCode(201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(string $id): ProductVariantResource
     {
         $variant = \App\Models\ProductVariant::with('product')->findOrFail($id);
         $this->authorize('view', $variant);
 
-        return response()->json($variant);
+        return ProductVariantResource::make($variant);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id): ProductVariantResource
     {
         $variant = \App\Models\ProductVariant::findOrFail($id);
         $this->authorize('update', $variant);
@@ -80,7 +82,7 @@ class ProductVariantController extends Controller
 
         $updated = $this->productVariantService->updateVariant($id, $validated);
 
-        return response()->json($updated);
+        return ProductVariantResource::make($updated);
     }
 
     public function destroy(string $id): JsonResponse
@@ -98,7 +100,7 @@ class ProductVariantController extends Controller
         }
     }
 
-    public function findBySku(string $sku): JsonResponse
+    public function findBySku(string $sku): ProductVariantResource|JsonResponse
     {
         $this->authorize('viewAny', \App\Models\ProductVariant::class);
 
@@ -108,10 +110,10 @@ class ProductVariantController extends Controller
             return response()->json(['message' => 'Variant not found'], 404);
         }
 
-        return response()->json($variant);
+        return ProductVariantResource::make($variant);
     }
 
-    public function findByBarcode(string $barcode): JsonResponse
+    public function findByBarcode(string $barcode): ProductVariantResource|JsonResponse
     {
         $this->authorize('viewAny', \App\Models\ProductVariant::class);
 
@@ -121,10 +123,10 @@ class ProductVariantController extends Controller
             return response()->json(['message' => 'Variant not found'], 404);
         }
 
-        return response()->json($variant);
+        return ProductVariantResource::make($variant);
     }
 
-    public function updateStock(Request $request, string $id): JsonResponse
+    public function updateStock(Request $request, string $id): ProductVariantResource|JsonResponse
     {
         $variant = \App\Models\ProductVariant::findOrFail($id);
         $this->authorize('update', $variant);
@@ -141,7 +143,7 @@ class ProductVariantController extends Controller
                 $validated['type']
             );
 
-            return response()->json($updated);
+            return ProductVariantResource::make($updated);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
