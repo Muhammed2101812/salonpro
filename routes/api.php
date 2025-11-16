@@ -7,7 +7,10 @@ use App\Http\Controllers\Api\CashRegisterController;
 use App\Http\Controllers\Api\EmployeeAttendanceController;
 use App\Http\Controllers\Api\EmployeeCommissionController;
 use App\Http\Controllers\Api\EmployeeLeaveController;
+use App\Http\Controllers\Api\ProductAttributeController;
+use App\Http\Controllers\Api\ProductAttributeValueController;
 use App\Http\Controllers\Api\PurchaseOrderController;
+use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\API\AppointmentController;
 use App\Http\Controllers\API\AppointmentHistoryController;
@@ -225,5 +228,24 @@ Route::prefix('v1')->group(function (): void {
         Route::get('employee-leaves-summary', [EmployeeLeaveController::class, 'summary'])->name('employee-leaves.summary');
         Route::get('employee-leaves-check-overlapping', [EmployeeLeaveController::class, 'checkOverlapping'])->name('employee-leaves.check-overlapping');
         Route::apiResource('employee-leaves', EmployeeLeaveController::class);
+
+        // Stock Alerts
+        Route::get('stock-alerts-active', [StockAlertController::class, 'active'])->name('stock-alerts.active');
+        Route::get('stock-alerts-resolved', [StockAlertController::class, 'resolved'])->name('stock-alerts.resolved');
+        Route::get('stock-alerts-critical', [StockAlertController::class, 'critical'])->name('stock-alerts.critical');
+        Route::post('stock-alerts/{stock_alert}/mark-as-notified', [StockAlertController::class, 'markAsNotified'])->name('stock-alerts.mark-as-notified');
+        Route::post('stock-alerts/{stock_alert}/resolve', [StockAlertController::class, 'resolve'])->name('stock-alerts.resolve');
+        Route::apiResource('stock-alerts', StockAlertController::class);
+
+        // Product Attributes
+        Route::get('product-attributes-filterable', [ProductAttributeController::class, 'filterable'])->name('product-attributes.filterable');
+        Route::get('product-attributes-required', [ProductAttributeController::class, 'required'])->name('product-attributes.required');
+        Route::get('product-attributes-sorted', [ProductAttributeController::class, 'sorted'])->name('product-attributes.sorted');
+        Route::apiResource('product-attributes', ProductAttributeController::class);
+
+        // Product Attribute Values
+        Route::post('product-attribute-values-bulk-set', [ProductAttributeValueController::class, 'bulkSet'])->name('product-attribute-values.bulk-set');
+        Route::delete('product-attribute-values-delete-attribute', [ProductAttributeValueController::class, 'deleteProductAttribute'])->name('product-attribute-values.delete-attribute');
+        Route::apiResource('product-attribute-values', ProductAttributeValueController::class);
     });
 });

@@ -24,6 +24,8 @@ use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\NotificationQueueRepositoryInterface;
 use App\Repositories\Contracts\NotificationTemplateRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Repositories\Contracts\ProductAttributeRepositoryInterface;
+use App\Repositories\Contracts\ProductAttributeValueRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductVariantRepositoryInterface;
 use App\Repositories\Contracts\PurchaseOrderRepositoryInterface;
@@ -33,6 +35,7 @@ use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
 use App\Repositories\Contracts\ServiceReviewRepositoryInterface;
 use App\Repositories\Contracts\SettingRepositoryInterface;
+use App\Repositories\Contracts\StockAlertRepositoryInterface;
 use App\Repositories\Contracts\StockTransferRepositoryInterface;
 use App\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Repositories\Contracts\TaxRateRepositoryInterface;
@@ -56,6 +59,8 @@ use App\Repositories\Eloquent\LoyaltyPointRepository;
 use App\Repositories\Eloquent\NotificationQueueRepository;
 use App\Repositories\Eloquent\NotificationTemplateRepository;
 use App\Repositories\Eloquent\PaymentRepository;
+use App\Repositories\Eloquent\ProductAttributeRepository;
+use App\Repositories\Eloquent\ProductAttributeValueRepository;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Eloquent\ProductVariantRepository;
 use App\Repositories\Eloquent\PurchaseOrderRepository;
@@ -65,6 +70,7 @@ use App\Repositories\Eloquent\ServiceCategoryRepository;
 use App\Repositories\Eloquent\ServiceRepository;
 use App\Repositories\Eloquent\ServiceReviewRepository;
 use App\Repositories\Eloquent\SettingRepository;
+use App\Repositories\Eloquent\StockAlertRepository;
 use App\Repositories\Eloquent\StockTransferRepository;
 use App\Repositories\Eloquent\SupplierRepository;
 use App\Repositories\Eloquent\TaxRateRepository;
@@ -79,9 +85,12 @@ use App\Services\Contracts\EmployeeLeaveServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\LoyaltyPointServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
+use App\Services\Contracts\ProductAttributeServiceInterface;
+use App\Services\Contracts\ProductAttributeValueServiceInterface;
 use App\Services\Contracts\ProductVariantServiceInterface;
 use App\Services\Contracts\PurchaseOrderServiceInterface;
 use App\Services\Contracts\ServiceReviewServiceInterface;
+use App\Services\Contracts\StockAlertServiceInterface;
 use App\Services\Contracts\StockTransferServiceInterface;
 use App\Services\Contracts\SupplierServiceInterface;
 use App\Services\Contracts\TaxServiceInterface;
@@ -94,9 +103,12 @@ use App\Services\EmployeeLeaveService;
 use App\Services\InvoiceService;
 use App\Services\LoyaltyPointService;
 use App\Services\NotificationService;
+use App\Services\ProductAttributeService;
+use App\Services\ProductAttributeValueService;
 use App\Services\ProductVariantService;
 use App\Services\PurchaseOrderService;
 use App\Services\ServiceReviewService;
+use App\Services\StockAlertService;
 use App\Services\StockTransferService;
 use App\Services\SupplierService;
 use App\Services\TaxService;
@@ -132,6 +144,8 @@ class AppServiceProvider extends ServiceProvider
         NotificationQueueRepositoryInterface::class => NotificationQueueRepository::class,
         NotificationTemplateRepositoryInterface::class => NotificationTemplateRepository::class,
         PaymentRepositoryInterface::class => PaymentRepository::class,
+        ProductAttributeRepositoryInterface::class => ProductAttributeRepository::class,
+        ProductAttributeValueRepositoryInterface::class => ProductAttributeValueRepository::class,
         ProductRepositoryInterface::class => ProductRepository::class,
         ProductVariantRepositoryInterface::class => ProductVariantRepository::class,
         PurchaseOrderRepositoryInterface::class => PurchaseOrderRepository::class,
@@ -141,6 +155,7 @@ class AppServiceProvider extends ServiceProvider
         ServiceCategoryRepositoryInterface::class => ServiceCategoryRepository::class,
         ServiceReviewRepositoryInterface::class => ServiceReviewRepository::class,
         SettingRepositoryInterface::class => SettingRepository::class,
+        StockAlertRepositoryInterface::class => StockAlertRepository::class,
         StockTransferRepositoryInterface::class => StockTransferRepository::class,
         SupplierRepositoryInterface::class => SupplierRepository::class,
         TaxRateRepositoryInterface::class => TaxRateRepository::class,
@@ -156,9 +171,12 @@ class AppServiceProvider extends ServiceProvider
         InvoiceServiceInterface::class => InvoiceService::class,
         LoyaltyPointServiceInterface::class => LoyaltyPointService::class,
         NotificationServiceInterface::class => NotificationService::class,
+        ProductAttributeServiceInterface::class => ProductAttributeService::class,
+        ProductAttributeValueServiceInterface::class => ProductAttributeValueService::class,
         ProductVariantServiceInterface::class => ProductVariantService::class,
         PurchaseOrderServiceInterface::class => PurchaseOrderService::class,
         ServiceReviewServiceInterface::class => ServiceReviewService::class,
+        StockAlertServiceInterface::class => StockAlertService::class,
         StockTransferServiceInterface::class => StockTransferService::class,
         SupplierServiceInterface::class => SupplierService::class,
         TaxServiceInterface::class => TaxService::class,
