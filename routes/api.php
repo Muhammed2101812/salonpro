@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\EmployeeLeaveController;
 use App\Http\Controllers\Api\ProductAttributeController;
 use App\Http\Controllers\Api\ProductAttributeValueController;
 use App\Http\Controllers\Api\PurchaseOrderController;
+use App\Http\Controllers\Api\ReportExecutionController;
+use App\Http\Controllers\Api\ReportTemplateController;
+use App\Http\Controllers\Api\KpiDefinitionController;
 use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\API\AppointmentController;
@@ -247,5 +250,27 @@ Route::prefix('v1')->group(function (): void {
         Route::post('product-attribute-values-bulk-set', [ProductAttributeValueController::class, 'bulkSet'])->name('product-attribute-values.bulk-set');
         Route::delete('product-attribute-values-delete-attribute', [ProductAttributeValueController::class, 'deleteProductAttribute'])->name('product-attribute-values.delete-attribute');
         Route::apiResource('product-attribute-values', ProductAttributeValueController::class);
+
+        // Report Templates
+        Route::get('report-templates-active', [ReportTemplateController::class, 'active'])->name('report-templates.active');
+        Route::get('report-templates-system', [ReportTemplateController::class, 'system'])->name('report-templates.system');
+        Route::get('report-templates-user', [ReportTemplateController::class, 'user'])->name('report-templates.user');
+        Route::post('report-templates/{report_template}/activate', [ReportTemplateController::class, 'activate'])->name('report-templates.activate');
+        Route::post('report-templates/{report_template}/deactivate', [ReportTemplateController::class, 'deactivate'])->name('report-templates.deactivate');
+        Route::apiResource('report-templates', ReportTemplateController::class);
+
+        // Report Executions
+        Route::get('report-executions-pending', [ReportExecutionController::class, 'pending'])->name('report-executions.pending');
+        Route::get('report-executions-completed', [ReportExecutionController::class, 'completed'])->name('report-executions.completed');
+        Route::get('report-executions-failed', [ReportExecutionController::class, 'failed'])->name('report-executions.failed');
+        Route::post('report-executions/{report_execution}/mark-as-completed', [ReportExecutionController::class, 'markAsCompleted'])->name('report-executions.mark-as-completed');
+        Route::post('report-executions/{report_execution}/mark-as-failed', [ReportExecutionController::class, 'markAsFailed'])->name('report-executions.mark-as-failed');
+        Route::apiResource('report-executions', ReportExecutionController::class);
+
+        // KPI Definitions
+        Route::get('kpi-definitions-active', [KpiDefinitionController::class, 'active'])->name('kpi-definitions.active');
+        Route::post('kpi-definitions/{kpi_definition}/activate', [KpiDefinitionController::class, 'activate'])->name('kpi-definitions.activate');
+        Route::post('kpi-definitions/{kpi_definition}/deactivate', [KpiDefinitionController::class, 'deactivate'])->name('kpi-definitions.deactivate');
+        Route::apiResource('kpi-definitions', KpiDefinitionController::class);
     });
 });

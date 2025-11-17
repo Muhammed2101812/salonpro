@@ -29,7 +29,9 @@ use App\Repositories\Contracts\ProductAttributeValueRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductVariantRepositoryInterface;
 use App\Repositories\Contracts\PurchaseOrderRepositoryInterface;
+use App\Repositories\Contracts\ReportExecutionRepositoryInterface;
 use App\Repositories\Contracts\ReportTemplateRepositoryInterface;
+use App\Repositories\Contracts\KpiDefinitionRepositoryInterface;
 use App\Repositories\Contracts\SaleRepositoryInterface;
 use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
@@ -64,7 +66,9 @@ use App\Repositories\Eloquent\ProductAttributeValueRepository;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Eloquent\ProductVariantRepository;
 use App\Repositories\Eloquent\PurchaseOrderRepository;
+use App\Repositories\Eloquent\ReportExecutionRepository;
 use App\Repositories\Eloquent\ReportTemplateRepository;
+use App\Repositories\Eloquent\KpiDefinitionRepository;
 use App\Repositories\Eloquent\SaleRepository;
 use App\Repositories\Eloquent\ServiceCategoryRepository;
 use App\Repositories\Eloquent\ServiceRepository;
@@ -89,6 +93,9 @@ use App\Services\Contracts\ProductAttributeServiceInterface;
 use App\Services\Contracts\ProductAttributeValueServiceInterface;
 use App\Services\Contracts\ProductVariantServiceInterface;
 use App\Services\Contracts\PurchaseOrderServiceInterface;
+use App\Services\Contracts\ReportExecutionServiceInterface;
+use App\Services\Contracts\ReportTemplateServiceInterface;
+use App\Services\Contracts\KpiDefinitionServiceInterface;
 use App\Services\Contracts\ServiceReviewServiceInterface;
 use App\Services\Contracts\StockAlertServiceInterface;
 use App\Services\Contracts\StockTransferServiceInterface;
@@ -107,6 +114,9 @@ use App\Services\ProductAttributeService;
 use App\Services\ProductAttributeValueService;
 use App\Services\ProductVariantService;
 use App\Services\PurchaseOrderService;
+use App\Services\ReportExecutionService;
+use App\Services\ReportTemplateService;
+use App\Services\KpiDefinitionService;
 use App\Services\ServiceReviewService;
 use App\Services\StockAlertService;
 use App\Services\StockTransferService;
@@ -149,7 +159,9 @@ class AppServiceProvider extends ServiceProvider
         ProductRepositoryInterface::class => ProductRepository::class,
         ProductVariantRepositoryInterface::class => ProductVariantRepository::class,
         PurchaseOrderRepositoryInterface::class => PurchaseOrderRepository::class,
+        ReportExecutionRepositoryInterface::class => ReportExecutionRepository::class,
         ReportTemplateRepositoryInterface::class => ReportTemplateRepository::class,
+        KpiDefinitionRepositoryInterface::class => KpiDefinitionRepository::class,
         SaleRepositoryInterface::class => SaleRepository::class,
         ServiceRepositoryInterface::class => ServiceRepository::class,
         ServiceCategoryRepositoryInterface::class => ServiceCategoryRepository::class,
@@ -175,6 +187,9 @@ class AppServiceProvider extends ServiceProvider
         ProductAttributeValueServiceInterface::class => ProductAttributeValueService::class,
         ProductVariantServiceInterface::class => ProductVariantService::class,
         PurchaseOrderServiceInterface::class => PurchaseOrderService::class,
+        ReportExecutionServiceInterface::class => ReportExecutionService::class,
+        ReportTemplateServiceInterface::class => ReportTemplateService::class,
+        KpiDefinitionServiceInterface::class => KpiDefinitionService::class,
         ServiceReviewServiceInterface::class => ServiceReviewService::class,
         StockAlertServiceInterface::class => StockAlertService::class,
         StockTransferServiceInterface::class => StockTransferService::class,
