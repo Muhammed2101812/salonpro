@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CashRegisterController;
 use App\Http\Controllers\Api\EmployeeAttendanceController;
 use App\Http\Controllers\Api\EmployeeCommissionController;
 use App\Http\Controllers\Api\EmployeeLeaveController;
+use App\Http\Controllers\Api\IntegrationController;
 use App\Http\Controllers\Api\ProductAttributeController;
 use App\Http\Controllers\Api\ProductAttributeValueController;
 use App\Http\Controllers\Api\PurchaseOrderController;
@@ -15,6 +16,8 @@ use App\Http\Controllers\Api\ReportTemplateController;
 use App\Http\Controllers\Api\KpiDefinitionController;
 use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\WebhookLogController;
 use App\Http\Controllers\API\AppointmentController;
 use App\Http\Controllers\API\AppointmentHistoryController;
 use App\Http\Controllers\API\AuthController;
@@ -272,5 +275,29 @@ Route::prefix('v1')->group(function (): void {
         Route::post('kpi-definitions/{kpi_definition}/activate', [KpiDefinitionController::class, 'activate'])->name('kpi-definitions.activate');
         Route::post('kpi-definitions/{kpi_definition}/deactivate', [KpiDefinitionController::class, 'deactivate'])->name('kpi-definitions.deactivate');
         Route::apiResource('kpi-definitions', KpiDefinitionController::class);
+
+        // Webhooks
+        Route::get('webhooks-active', [WebhookController::class, 'active'])->name('webhooks.active');
+        Route::post('webhooks/{webhook}/activate', [WebhookController::class, 'activate'])->name('webhooks.activate');
+        Route::post('webhooks/{webhook}/deactivate', [WebhookController::class, 'deactivate'])->name('webhooks.deactivate');
+        Route::post('webhooks/{webhook}/test', [WebhookController::class, 'test'])->name('webhooks.test');
+        Route::post('webhooks/{webhook}/trigger', [WebhookController::class, 'trigger'])->name('webhooks.trigger');
+        Route::apiResource('webhooks', WebhookController::class);
+
+        // Webhook Logs
+        Route::get('webhook-logs-failed', [WebhookLogController::class, 'failed'])->name('webhook-logs.failed');
+        Route::get('webhook-logs-pending-retries', [WebhookLogController::class, 'pendingRetries'])->name('webhook-logs.pending-retries');
+        Route::post('webhook-logs/{webhook_log}/retry', [WebhookLogController::class, 'retry'])->name('webhook-logs.retry');
+        Route::apiResource('webhook-logs', WebhookLogController::class)->only(['index', 'show']);
+
+        // Integrations
+        Route::get('integrations-active', [IntegrationController::class, 'active'])->name('integrations.active');
+        Route::get('integrations-type/{type}', [IntegrationController::class, 'byType'])->name('integrations.by-type');
+        Route::get('integrations-provider/{provider}', [IntegrationController::class, 'byProvider'])->name('integrations.by-provider');
+        Route::post('integrations/{integration}/activate', [IntegrationController::class, 'activate'])->name('integrations.activate');
+        Route::post('integrations/{integration}/deactivate', [IntegrationController::class, 'deactivate'])->name('integrations.deactivate');
+        Route::post('integrations/{integration}/test-connection', [IntegrationController::class, 'testConnection'])->name('integrations.test-connection');
+        Route::post('integrations/{integration}/sync', [IntegrationController::class, 'sync'])->name('integrations.sync');
+        Route::apiResource('integrations', IntegrationController::class);
     });
 });

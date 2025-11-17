@@ -18,6 +18,7 @@ use App\Repositories\Contracts\EmployeeLeaveRepositoryInterface;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
 use App\Repositories\Contracts\EmployeeShiftRepositoryInterface;
 use App\Repositories\Contracts\ExpenseRepositoryInterface;
+use App\Repositories\Contracts\IntegrationRepositoryInterface;
 use App\Repositories\Contracts\InventoryMovementRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
@@ -41,6 +42,8 @@ use App\Repositories\Contracts\StockAlertRepositoryInterface;
 use App\Repositories\Contracts\StockTransferRepositoryInterface;
 use App\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Repositories\Contracts\TaxRateRepositoryInterface;
+use App\Repositories\Contracts\WebhookLogRepositoryInterface;
+use App\Repositories\Contracts\WebhookRepositoryInterface;
 use App\Repositories\Eloquent\AppointmentCancellationRepository;
 use App\Repositories\Eloquent\AppointmentHistoryRepository;
 use App\Repositories\Eloquent\AppointmentRepository;
@@ -55,6 +58,7 @@ use App\Repositories\Eloquent\EmployeeLeaveRepository;
 use App\Repositories\Eloquent\EmployeeRepository;
 use App\Repositories\Eloquent\EmployeeShiftRepository;
 use App\Repositories\Eloquent\ExpenseRepository;
+use App\Repositories\Eloquent\IntegrationRepository;
 use App\Repositories\Eloquent\InventoryMovementRepository;
 use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\LoyaltyPointRepository;
@@ -78,6 +82,8 @@ use App\Repositories\Eloquent\StockAlertRepository;
 use App\Repositories\Eloquent\StockTransferRepository;
 use App\Repositories\Eloquent\SupplierRepository;
 use App\Repositories\Eloquent\TaxRateRepository;
+use App\Repositories\Eloquent\WebhookLogRepository;
+use App\Repositories\Eloquent\WebhookRepository;
 use App\Services\AppointmentHistoryService;
 use App\Services\Contracts\AppointmentHistoryServiceInterface;
 use App\Services\Contracts\BankAccountServiceInterface;
@@ -86,6 +92,7 @@ use App\Services\Contracts\CouponServiceInterface;
 use App\Services\Contracts\EmployeeAttendanceServiceInterface;
 use App\Services\Contracts\EmployeeCommissionServiceInterface;
 use App\Services\Contracts\EmployeeLeaveServiceInterface;
+use App\Services\Contracts\IntegrationServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\LoyaltyPointServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
@@ -101,12 +108,15 @@ use App\Services\Contracts\StockAlertServiceInterface;
 use App\Services\Contracts\StockTransferServiceInterface;
 use App\Services\Contracts\SupplierServiceInterface;
 use App\Services\Contracts\TaxServiceInterface;
+use App\Services\Contracts\WebhookLogServiceInterface;
+use App\Services\Contracts\WebhookServiceInterface;
 use App\Services\BankAccountService;
 use App\Services\CashRegisterService;
 use App\Services\CouponService;
 use App\Services\EmployeeAttendanceService;
 use App\Services\EmployeeCommissionService;
 use App\Services\EmployeeLeaveService;
+use App\Services\IntegrationService;
 use App\Services\InvoiceService;
 use App\Services\LoyaltyPointService;
 use App\Services\NotificationService;
@@ -122,6 +132,8 @@ use App\Services\StockAlertService;
 use App\Services\StockTransferService;
 use App\Services\SupplierService;
 use App\Services\TaxService;
+use App\Services\WebhookLogService;
+use App\Services\WebhookService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -148,6 +160,7 @@ class AppServiceProvider extends ServiceProvider
         EmployeeRepositoryInterface::class => EmployeeRepository::class,
         EmployeeShiftRepositoryInterface::class => EmployeeShiftRepository::class,
         ExpenseRepositoryInterface::class => ExpenseRepository::class,
+        IntegrationRepositoryInterface::class => IntegrationRepository::class,
         InventoryMovementRepositoryInterface::class => InventoryMovementRepository::class,
         InvoiceRepositoryInterface::class => InvoiceRepository::class,
         LoyaltyPointRepositoryInterface::class => LoyaltyPointRepository::class,
@@ -171,6 +184,8 @@ class AppServiceProvider extends ServiceProvider
         StockTransferRepositoryInterface::class => StockTransferRepository::class,
         SupplierRepositoryInterface::class => SupplierRepository::class,
         TaxRateRepositoryInterface::class => TaxRateRepository::class,
+        WebhookLogRepositoryInterface::class => WebhookLogRepository::class,
+        WebhookRepositoryInterface::class => WebhookRepository::class,
 
         // Service bindings
         AppointmentHistoryServiceInterface::class => AppointmentHistoryService::class,
@@ -180,6 +195,7 @@ class AppServiceProvider extends ServiceProvider
         EmployeeAttendanceServiceInterface::class => EmployeeAttendanceService::class,
         EmployeeCommissionServiceInterface::class => EmployeeCommissionService::class,
         EmployeeLeaveServiceInterface::class => EmployeeLeaveService::class,
+        IntegrationServiceInterface::class => IntegrationService::class,
         InvoiceServiceInterface::class => InvoiceService::class,
         LoyaltyPointServiceInterface::class => LoyaltyPointService::class,
         NotificationServiceInterface::class => NotificationService::class,
@@ -195,6 +211,8 @@ class AppServiceProvider extends ServiceProvider
         StockTransferServiceInterface::class => StockTransferService::class,
         SupplierServiceInterface::class => SupplierService::class,
         TaxServiceInterface::class => TaxService::class,
+        WebhookLogServiceInterface::class => WebhookLogService::class,
+        WebhookServiceInterface::class => WebhookService::class,
     ];
 
     /**
