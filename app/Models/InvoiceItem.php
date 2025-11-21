@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvoiceItem extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuid;
 
     protected $fillable = [
         'invoice_id',
         'item_type',
-        'service_id',
-        'product_id',
+        'item_id',
         'description',
         'quantity',
         'unit_price',
@@ -28,7 +30,7 @@ class InvoiceItem extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
+        'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
@@ -38,64 +40,8 @@ class InvoiceItem extends Model
         'total' => 'decimal:2',
     ];
 
-    // Relationships
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
-    }
-
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class);
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    // Helper Methods
-    public function calculateSubtotal(): float
-    {
-        return (float) ($this->quantity * $this->unit_price);
-    }
-
-    public function calculateDiscountAmount(): float
-    {
-        $subtotal = $this->calculateSubtotal();
-        return (float) ($subtotal * ($this->discount_percentage / 100));
-    }
-
-    public function calculateTaxAmount(): float
-    {
-        $subtotal = $this->calculateSubtotal();
-        $afterDiscount = $subtotal - $this->discount_amount;
-        return (float) ($afterDiscount * ($this->tax_rate / 100));
-    }
-
-    public function calculateTotal(): float
-    {
-        $subtotal = $this->calculateSubtotal();
-        $afterDiscount = $subtotal - $this->discount_amount;
-        return (float) ($afterDiscount + $this->tax_amount);
-    }
-
-    public function recalculate(): void
-    {
-        $this->subtotal = $this->calculateSubtotal();
-        $this->discount_amount = $this->calculateDiscountAmount();
-        $this->tax_amount = $this->calculateTaxAmount();
-        $this->total = $this->calculateTotal();
-        $this->save();
-    }
-
-    // Get the related item (service or product)
-    public function getItemAttribute()
-    {
-        return match ($this->item_type) {
-            'service' => $this->service,
-            'product' => $this->product,
-            default => null,
-        };
     }
 }

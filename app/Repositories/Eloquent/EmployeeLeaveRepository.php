@@ -6,116 +6,89 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\EmployeeLeave;
 use App\Repositories\Contracts\EmployeeLeaveRepositoryInterface;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-class EmployeeLeaveRepository implements EmployeeLeaveRepositoryInterface
+class EmployeeLeaveRepository extends BaseRepository implements EmployeeLeaveRepositoryInterface
 {
-    public function all(): Collection
+    public function __construct(EmployeeLeave $model)
     {
-        return EmployeeLeave::with(['employee', 'approvedBy'])->get();
+        parent::__construct($model);
     }
 
-    public function find(string $id): ?EmployeeLeave
+    public function findByEmployee(string $employeeId, int $perPage = 15): LengthAwarePaginator
     {
-        return EmployeeLeave::with(['employee', 'approvedBy'])->find($id);
-    }
-
-    public function create(array $data): EmployeeLeave
-    {
-        return EmployeeLeave::create($data);
-    }
-
-    public function update(string $id, array $data): bool
-    {
-        return EmployeeLeave::where('id', $id)->update($data);
-    }
-
-    public function delete(string $id): bool
-    {
-        return EmployeeLeave::where('id', $id)->delete();
-    }
-
-    public function getByEmployee(string $employeeId): Collection
-    {
-        return EmployeeLeave::with('approvedBy')
-            ->where('employee_id', $employeeId)
+        return $this->model->where('employee_id', $employeeId)
+            ->with(['employee', 'approvedBy'])
             ->orderBy('start_date', 'desc')
-            ->get();
+            ->paginate($perPage);
     }
 
-    public function getByStatus(string $status): Collection
+    public function findByStatus(string $status, ?string $employeeId = null): Collection
     {
-        return EmployeeLeave::with(['employee', 'approvedBy'])
-            ->where('status', $status)
-            ->orderBy('start_date', 'desc')
-            ->get();
+        $query = $this->model->where('status', $status)
+            ->with(['employee', 'approvedBy']);
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        return $query->orderBy('start_date', 'desc')->get();
     }
 
-    public function getByLeaveType(string $leaveType): Collection
+    public function findPending(?string $employeeId = null): Collection
     {
-        return EmployeeLeave::with(['employee', 'approvedBy'])
-            ->where('leave_type', $leaveType)
-            ->orderBy('start_date', 'desc')
-            ->get();
+        return $this->findByStatus('pending', $employeeId);
     }
 
-    public function getPending(): Collection
+    public function findByDateRange(string $startDate, string $endDate, ?string $employeeId = null): Collection
     {
-        return EmployeeLeave::with('employee')
-            ->where('status', 'pending')
-            ->orderBy('created_at')
-            ->get();
+        $query = $this->model->where(function ($q) use ($startDate, $endDate) {
+            $q->whereBetween('start_date', [$startDate, $endDate])
+              ->orWhereBetween('end_date', [$startDate, $endDate])
+              ->orWhere(function ($q2) use ($startDate, $endDate) {
+                  $q2->where('start_date', '<=', $startDate)
+                     ->where('end_date', '>=', $endDate);
+              });
+        })->with(['employee', 'approvedBy']);
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        return $query->orderBy('start_date', 'desc')->get();
     }
 
-    public function getByDateRange(string $startDate, string $endDate): Collection
+    public function findOverlapping(string $employeeId, string $startDate, string $endDate): Collection
     {
-        return EmployeeLeave::with(['employee', 'approvedBy'])
-            ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhere(function ($q) use ($startDate, $endDate) {
-                        $q->where('start_date', '<=', $startDate)
-                            ->where('end_date', '>=', $endDate);
-                    });
+        return $this->model->where('employee_id', $employeeId)
+            ->where('status', '!=', 'rejected')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('start_date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate])
+                  ->orWhere(function ($q2) use ($startDate, $endDate) {
+                      $q2->where('start_date', '<=', $startDate)
+                         ->where('end_date', '>=', $endDate);
+                  });
             })
-            ->orderBy('start_date')
             ->get();
     }
 
-    public function getTotalLeaveDays(string $employeeId, string $leaveType = null, int $year = null): int
+    public function getSummary(string $employeeId, string $year): array
     {
-        $query = EmployeeLeave::where('employee_id', $employeeId)
-            ->where('status', 'approved');
+        $leaves = $this->model->where('employee_id', $employeeId)
+            ->whereYear('start_date', $year)
+            ->where('status', 'approved')
+            ->get();
 
-        if ($leaveType) {
-            $query->where('leave_type', $leaveType);
-        }
-
-        if ($year) {
-            $query->whereYear('start_date', $year);
-        }
-
-        return (int) $query->sum('total_days');
-    }
-
-    public function approve(string $id, string $approvedBy): bool
-    {
-        return EmployeeLeave::where('id', $id)->update([
-            'status' => 'approved',
-            'approved_by' => $approvedBy,
-            'approved_at' => Carbon::now(),
-            'rejection_reason' => null,
-        ]);
-    }
-
-    public function reject(string $id, string $approvedBy, string $reason): bool
-    {
-        return EmployeeLeave::where('id', $id)->update([
-            'status' => 'rejected',
-            'approved_by' => $approvedBy,
-            'approved_at' => Carbon::now(),
-            'rejection_reason' => $reason,
-        ]);
+        return [
+            'total_leaves' => $leaves->count(),
+            'total_days' => $leaves->sum('total_days'),
+            'by_type' => $leaves->groupBy('leave_type')
+                ->map(fn($group) => [
+                    'count' => $group->count(),
+                    'total_days' => $group->sum('total_days'),
+                ]),
+        ];
     }
 }

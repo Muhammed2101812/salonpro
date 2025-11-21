@@ -96,4 +96,27 @@ class CustomerController extends BaseController
             'Customer permanently deleted'
         );
     }
+
+    public function timeline(string $id, Request $request): JsonResponse
+    {
+        $page = (int) $request->get('page', 1);
+        $perPage = (int) $request->get('per_page', 20);
+
+        $timeline = $this->customerService->getTimeline($id, $page, $perPage);
+
+        return $this->sendSuccess(
+            $timeline,
+            'Customer timeline retrieved successfully'
+        );
+    }
+
+    public function stats(string $id): JsonResponse
+    {
+        $stats = $this->customerService->getStats($id);
+
+        return $this->sendSuccess(
+            $stats,
+            'Customer statistics retrieved successfully'
+        );
+    }
 }

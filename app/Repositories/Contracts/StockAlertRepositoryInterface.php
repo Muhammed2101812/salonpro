@@ -1,59 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contracts;
 
-use App\Models\StockAlert;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
-interface StockAlertRepositoryInterface
+interface StockAlertRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Get all stock alerts for the current branch with pagination
+     * Get stock alerts by branch.
      */
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator;
+    public function findByBranch(string $branchId, int $perPage = 15): mixed;
 
     /**
-     * Get all stock alerts for the current branch
+     * Get stock alerts by product.
      */
-    public function getAll(): \Illuminate\Database\Eloquent\Collection;
+    public function findByProduct(string $productId): Collection;
 
     /**
-     * Find a stock alert by ID
+     * Get active (unresolved) stock alerts.
      */
-    public function findById(int $id): ?StockAlert;
+    public function getActive(?string $branchId = null): Collection;
 
     /**
-     * Create a new stock alert
+     * Get resolved stock alerts.
      */
-    public function create(array $data): StockAlert;
+    public function getResolved(?string $branchId = null): Collection;
 
     /**
-     * Update a stock alert
+     * Get alerts by type.
      */
-    public function update(StockAlert $alert, array $data): bool;
+    public function getByType(string $alertType, ?string $branchId = null): Collection;
 
     /**
-     * Delete a stock alert
+     * Get alerts by priority.
      */
-    public function delete(StockAlert $alert): bool;
+    public function getByPriority(int $priority, ?string $branchId = null): Collection;
 
     /**
-     * Get active alerts only
+     * Mark alert as notified.
      */
-    public function getActive(): \Illuminate\Database\Eloquent\Collection;
+    public function markAsNotified(string $id): mixed;
 
     /**
-     * Get alerts by product
+     * Mark alert as resolved.
      */
-    public function getByProduct(int $productId): \Illuminate\Database\Eloquent\Collection;
+    public function markAsResolved(string $id, ?string $notes = null): mixed;
 
     /**
-     * Mark alert as resolved
+     * Get critical alerts (high priority unresolved).
      */
-    public function markAsResolved(StockAlert $alert): bool;
-
-    /**
-     * Get unresolved alerts
-     */
-    public function getUnresolved(): \Illuminate\Database\Eloquent\Collection;
+    public function getCriticalAlerts(?string $branchId = null): Collection;
 }

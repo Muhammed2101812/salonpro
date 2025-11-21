@@ -1,51 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use App\Models\Traits\BranchScoped;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class NotificationPreference extends Model
 {
-    use HasFactory, LogsActivity, BranchScoped;
+    use HasFactory;
+    use HasUuid;
 
     protected $fillable = [
-        'branch_id',
-        'user_type',
-        'user_id',
-        'notification_type',
+        'notifiable_type',
+        'notifiable_id',
         'channel',
+        'event_type',
         'is_enabled',
-        'frequency',
         'quiet_hours_start',
         'quiet_hours_end',
-        'metadata',
+        'preferences',
     ];
 
     protected $casts = [
-        'metadata' => 'array',
         'is_enabled' => 'boolean',
+        'quiet_hours_start' => 'datetime',
+        'quiet_hours_end' => 'datetime',
+        'preferences' => 'array',
     ];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['notification_type', 'channel', 'is_enabled'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
-    }
-
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class);
-    }
-
-    public function user(): MorphTo
+    public function notifiable(): MorphTo
     {
         return $this->morphTo();
     }

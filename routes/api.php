@@ -2,128 +2,46 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\API\ActivityLogController;
-use App\Http\Controllers\API\AnalyticsEventController;
-use App\Http\Controllers\API\AnalyticsSessionController;
-use App\Http\Controllers\API\AppointmentCancellationController;
-use App\Http\Controllers\API\AppointmentCancellationReasonController;
-use App\Http\Controllers\API\AppointmentConflictController;
+use App\Http\Controllers\Api\BankAccountController;
+use App\Http\Controllers\Api\CashRegisterController;
+use App\Http\Controllers\Api\EmployeeAttendanceController;
+use App\Http\Controllers\Api\EmployeeCommissionController;
+use App\Http\Controllers\Api\EmployeeLeaveController;
+use App\Http\Controllers\Api\IntegrationController;
+use App\Http\Controllers\Api\ProductAttributeController;
+use App\Http\Controllers\Api\ProductAttributeValueController;
+use App\Http\Controllers\Api\PurchaseOrderController;
+use App\Http\Controllers\Api\ReportExecutionController;
+use App\Http\Controllers\Api\ReportTemplateController;
+use App\Http\Controllers\Api\KpiDefinitionController;
+use App\Http\Controllers\Api\StockAlertController;
+use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\WebhookLogController;
 use App\Http\Controllers\API\AppointmentController;
-use App\Http\Controllers\API\AppointmentGroupController;
-use App\Http\Controllers\API\AppointmentGroupParticipantController;
 use App\Http\Controllers\API\AppointmentHistoryController;
-use App\Http\Controllers\API\AppointmentRecurrenceController;
-use App\Http\Controllers\API\AppointmentReminderController;
-use App\Http\Controllers\API\AppointmentWaitlistController;
-use App\Http\Controllers\API\AuditLogController;
 use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\BankAccountController;
-use App\Http\Controllers\API\BankTransactionController;
 use App\Http\Controllers\API\BranchController;
-use App\Http\Controllers\API\BranchSettingController;
-use App\Http\Controllers\API\BudgetItemController;
-use App\Http\Controllers\API\BudgetPlanController;
-use App\Http\Controllers\API\CampaignStatisticController;
-use App\Http\Controllers\API\CashRegisterController;
-use App\Http\Controllers\API\CashRegisterSessionController;
-use App\Http\Controllers\API\CashRegisterTransactionController;
-use App\Http\Controllers\API\ChartOfAccountController;
 use App\Http\Controllers\API\CouponController;
-use App\Http\Controllers\API\CouponUsageController;
-use App\Http\Controllers\API\CurrencyController;
-use App\Http\Controllers\API\CustomFieldController;
-use App\Http\Controllers\API\CustomFieldValueController;
-use App\Http\Controllers\API\CustomerCategoryController;
 use App\Http\Controllers\API\CustomerController;
-use App\Http\Controllers\API\CustomerFeedbackController;
-use App\Http\Controllers\API\CustomerNoteController;
-use App\Http\Controllers\API\CustomerRfmAnalysisController;
-use App\Http\Controllers\API\CustomerSegmentController;
-use App\Http\Controllers\API\CustomerSegmentMemberController;
-use App\Http\Controllers\API\CustomerTagController;
 use App\Http\Controllers\API\DashboardController;
-use App\Http\Controllers\API\DashboardWidgetController;
-use App\Http\Controllers\API\DocumentTemplateController;
-use App\Http\Controllers\API\EmailProviderController;
-use App\Http\Controllers\API\EmployeeAttendanceController;
-use App\Http\Controllers\API\EmployeeCertificationController;
-use App\Http\Controllers\API\EmployeeCommissionController;
 use App\Http\Controllers\API\EmployeeController;
-use App\Http\Controllers\API\EmployeeLeaveController;
-use App\Http\Controllers\API\EmployeePerformanceController;
-use App\Http\Controllers\API\EmployeeScheduleController;
 use App\Http\Controllers\API\EmployeeShiftController;
-use App\Http\Controllers\API\EmployeeSkillController;
-use App\Http\Controllers\API\ExchangeRateController;
 use App\Http\Controllers\API\ExpenseController;
-use App\Http\Controllers\API\FeatureFlagController;
-use App\Http\Controllers\API\IntegrationController;
 use App\Http\Controllers\API\InventoryMovementController;
 use App\Http\Controllers\API\InvoiceController;
-use App\Http\Controllers\API\InvoiceItemController;
-use App\Http\Controllers\API\JournalEntryController;
-use App\Http\Controllers\API\JournalEntryLineController;
-use App\Http\Controllers\API\KpiDefinitionController;
-use App\Http\Controllers\API\KpiValueController;
-use App\Http\Controllers\API\LeadActivityController;
-use App\Http\Controllers\API\LeadController;
 use App\Http\Controllers\API\LoyaltyPointController;
-use App\Http\Controllers\API\LoyaltyPointTransactionController;
-use App\Http\Controllers\API\LoyaltyProgramController;
-use App\Http\Controllers\API\MarketingCampaignController;
-use App\Http\Controllers\API\NotificationCampaignController;
-use App\Http\Controllers\API\NotificationLogController;
-use App\Http\Controllers\API\NotificationPreferenceController;
-use App\Http\Controllers\API\NotificationQueueController;
+use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\NotificationTemplateController;
 use App\Http\Controllers\API\PaymentController;
-use App\Http\Controllers\API\PerformanceMetricController;
-use App\Http\Controllers\API\ProductAttributeController;
-use App\Http\Controllers\API\ProductAttributeValueController;
-use App\Http\Controllers\API\ProductBarcodeController;
-use App\Http\Controllers\API\ProductBundleController;
-use App\Http\Controllers\API\ProductBundleItemController;
-use App\Http\Controllers\API\ProductCategoryHierarchyController;
 use App\Http\Controllers\API\ProductController;
-use App\Http\Controllers\API\ProductDiscountController;
-use App\Http\Controllers\API\ProductImageController;
-use App\Http\Controllers\API\ProductPriceHistoryController;
-use App\Http\Controllers\API\ProductStockHistoryController;
-use App\Http\Controllers\API\ProductSupplierPriceController;
 use App\Http\Controllers\API\ProductVariantController;
-use App\Http\Controllers\API\PurchaseOrderController;
-use App\Http\Controllers\API\PurchaseOrderItemController;
-use App\Http\Controllers\API\PushNotificationTokenController;
-use App\Http\Controllers\API\ReferralController;
-use App\Http\Controllers\API\ReferralProgramController;
-use App\Http\Controllers\API\ReportExecutionController;
-use App\Http\Controllers\API\ReportScheduleController;
-use App\Http\Controllers\API\ReportTemplateController;
 use App\Http\Controllers\API\SaleController;
-use App\Http\Controllers\API\ServiceAddonController;
 use App\Http\Controllers\API\ServiceCategoryController;
 use App\Http\Controllers\API\ServiceController;
-use App\Http\Controllers\API\ServicePackageController;
-use App\Http\Controllers\API\ServicePriceHistoryController;
-use App\Http\Controllers\API\ServicePricingRuleController;
-use App\Http\Controllers\API\ServiceRequirementController;
 use App\Http\Controllers\API\ServiceReviewController;
-use App\Http\Controllers\API\ServiceTemplateController;
 use App\Http\Controllers\API\SettingController;
-use App\Http\Controllers\API\SmsProviderController;
-use App\Http\Controllers\API\StockAlertController;
-use App\Http\Controllers\API\StockAuditController;
-use App\Http\Controllers\API\StockAuditItemController;
 use App\Http\Controllers\API\StockTransferController;
-use App\Http\Controllers\API\SupplierController;
-use App\Http\Controllers\API\SurveyController;
-use App\Http\Controllers\API\SurveyResponseController;
-use App\Http\Controllers\API\SystemBackupController;
-use App\Http\Controllers\API\SystemSettingController;
-use App\Http\Controllers\API\TaxRateController;
-use App\Http\Controllers\API\TranslationController;
-use App\Http\Controllers\API\UserPreferenceController;
-use App\Http\Controllers\API\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -138,151 +56,248 @@ Route::prefix('v1')->group(function (): void {
 
         // Dashboard
         Route::get('dashboard', [DashboardController::class, 'index']);
-        Route::apiResource('dashboard-widgets', DashboardWidgetController::class);
 
-        // ===== BRANCHES & SETTINGS =====
+        // Branches
         Route::apiResource('branches', BranchController::class);
-        Route::apiResource('branch-settings', BranchSettingController::class);
-        Route::apiResource('settings', SettingController::class)->only(['index', 'store', 'update']);
-        Route::apiResource('system-settings', SystemSettingController::class);
+        Route::post('branches/{branch}/restore', [BranchController::class, 'restore'])->name('branches.restore');
+        Route::delete('branches/{branch}/force', [BranchController::class, 'forceDestroy'])->name('branches.force-destroy');
 
-        // ===== CUSTOMERS =====
+        // Customers
         Route::apiResource('customers', CustomerController::class);
-        Route::apiResource('customer-categories', CustomerCategoryController::class);
-        Route::apiResource('customer-tags', CustomerTagController::class);
-        Route::apiResource('customer-notes', CustomerNoteController::class);
-        Route::apiResource('customer-feedback', CustomerFeedbackController::class);
-        Route::apiResource('customer-segments', CustomerSegmentController::class);
-        Route::apiResource('customer-segment-members', CustomerSegmentMemberController::class);
-        Route::apiResource('customer-rfm-analysis', CustomerRfmAnalysisController::class);
+        Route::get('customers/{customer}/timeline', [CustomerController::class, 'timeline'])->name('customers.timeline');
+        Route::get('customers/{customer}/stats', [CustomerController::class, 'stats'])->name('customers.stats');
+        Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
+        Route::delete('customers/{customer}/force', [CustomerController::class, 'forceDestroy'])->name('customers.force-destroy');
 
-        // ===== EMPLOYEES =====
+        // Employees
         Route::apiResource('employees', EmployeeController::class);
-        Route::apiResource('employee-skills', EmployeeSkillController::class);
-        Route::apiResource('employee-certifications', EmployeeCertificationController::class);
-        Route::apiResource('employee-schedules', EmployeeScheduleController::class);
+        Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
+        Route::delete('employees/{employee}/force', [EmployeeController::class, 'forceDestroy'])->name('employees.force-destroy');
+
+        // Employee Shifts
         Route::apiResource('employee-shifts', EmployeeShiftController::class);
-        Route::apiResource('employee-attendance', EmployeeAttendanceController::class);
-        Route::apiResource('employee-performance', EmployeePerformanceController::class);
-        Route::apiResource('employee-commissions', EmployeeCommissionController::class);
-        Route::apiResource('employee-leave', EmployeeLeaveController::class);
+        Route::post('employee-shifts/{employee_shift}/restore', [EmployeeShiftController::class, 'restore'])->name('employee-shifts.restore');
+        Route::delete('employee-shifts/{employee_shift}/force', [EmployeeShiftController::class, 'forceDestroy'])->name('employee-shifts.force-destroy');
 
-        // ===== APPOINTMENTS =====
-        Route::apiResource('appointments', AppointmentController::class);
-        Route::apiResource('appointment-cancellations', AppointmentCancellationController::class);
-        Route::apiResource('appointment-cancellation-reasons', AppointmentCancellationReasonController::class);
-        Route::apiResource('appointment-conflicts', AppointmentConflictController::class);
-        Route::apiResource('appointment-groups', AppointmentGroupController::class);
-        Route::apiResource('appointment-group-participants', AppointmentGroupParticipantController::class);
-        Route::apiResource('appointment-history', AppointmentHistoryController::class);
-        Route::apiResource('appointment-recurrences', AppointmentRecurrenceController::class);
-        Route::apiResource('appointment-reminders', AppointmentReminderController::class);
-        Route::apiResource('appointment-waitlist', AppointmentWaitlistController::class);
-
-        // ===== SERVICES =====
-        Route::apiResource('service-categories', ServiceCategoryController::class);
-        Route::apiResource('services', ServiceController::class);
-        Route::apiResource('service-addons', ServiceAddonController::class);
-        Route::apiResource('service-packages', ServicePackageController::class);
-        Route::apiResource('service-pricing-rules', ServicePricingRuleController::class);
-        Route::apiResource('service-price-history', ServicePriceHistoryController::class);
-        Route::apiResource('service-templates', ServiceTemplateController::class);
-        Route::apiResource('service-requirements', ServiceRequirementController::class);
-        Route::apiResource('service-reviews', ServiceReviewController::class);
-
-        // ===== PRODUCTS =====
+        // Products
         Route::apiResource('products', ProductController::class);
-        Route::apiResource('product-bundles', ProductBundleController::class);
-        Route::apiResource('product-bundle-items', ProductBundleItemController::class);
-        Route::apiResource('product-variants', ProductVariantController::class);
-        Route::apiResource('product-attributes', ProductAttributeController::class);
-        Route::apiResource('product-attribute-values', ProductAttributeValueController::class);
-        Route::apiResource('product-barcodes', ProductBarcodeController::class);
-        Route::apiResource('product-discounts', ProductDiscountController::class);
-        Route::apiResource('product-images', ProductImageController::class);
-        Route::apiResource('product-price-history', ProductPriceHistoryController::class);
-        Route::apiResource('product-stock-history', ProductStockHistoryController::class);
-        Route::apiResource('product-supplier-prices', ProductSupplierPriceController::class);
-        Route::apiResource('product-category-hierarchy', ProductCategoryHierarchyController::class);
+        Route::post('products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
+        Route::delete('products/{product}/force', [ProductController::class, 'forceDestroy'])->name('products.force-destroy');
 
-        // ===== INVENTORY & SUPPLY CHAIN =====
+        // Inventory Movements
         Route::apiResource('inventory-movements', InventoryMovementController::class);
-        Route::apiResource('suppliers', SupplierController::class);
-        Route::apiResource('purchase-orders', PurchaseOrderController::class);
-        Route::apiResource('purchase-order-items', PurchaseOrderItemController::class);
-        Route::apiResource('stock-alerts', StockAlertController::class);
-        Route::apiResource('stock-audits', StockAuditController::class);
-        Route::apiResource('stock-audit-items', StockAuditItemController::class);
-        Route::apiResource('stock-transfers', StockTransferController::class);
 
-        // ===== FINANCIAL MANAGEMENT =====
-        Route::apiResource('invoices', InvoiceController::class);
-        Route::apiResource('invoice-items', InvoiceItemController::class);
-        Route::apiResource('payments', PaymentController::class);
+        // Expenses
         Route::apiResource('expenses', ExpenseController::class);
-        Route::apiResource('bank-accounts', BankAccountController::class);
-        Route::apiResource('bank-transactions', BankTransactionController::class);
-        Route::apiResource('budget-plans', BudgetPlanController::class);
-        Route::apiResource('budget-items', BudgetItemController::class);
-        Route::apiResource('cash-registers', CashRegisterController::class);
-        Route::apiResource('cash-register-sessions', CashRegisterSessionController::class);
-        Route::apiResource('cash-register-transactions', CashRegisterTransactionController::class);
-        Route::apiResource('chart-of-accounts', ChartOfAccountController::class);
-        Route::apiResource('journal-entries', JournalEntryController::class);
-        Route::apiResource('journal-entry-lines', JournalEntryLineController::class);
-        Route::apiResource('tax-rates', TaxRateController::class);
-        Route::apiResource('currencies', CurrencyController::class);
-        Route::apiResource('exchange-rates', ExchangeRateController::class);
 
-        // ===== SALES =====
+        // Payments
+        Route::apiResource('payments', PaymentController::class);
+        Route::post('payments/{payment}/restore', [PaymentController::class, 'restore'])->name('payments.restore');
+        Route::delete('payments/{payment}/force', [PaymentController::class, 'forceDestroy'])->name('payments.force-destroy');
+
+        // Sales
         Route::apiResource('sales', SaleController::class);
 
-        // ===== MARKETING & CRM =====
-        Route::apiResource('marketing-campaigns', MarketingCampaignController::class);
-        Route::apiResource('campaign-statistics', CampaignStatisticController::class);
-        Route::apiResource('coupons', CouponController::class);
-        Route::apiResource('coupon-usage', CouponUsageController::class);
-        Route::apiResource('loyalty-programs', LoyaltyProgramController::class);
-        Route::apiResource('loyalty-points', LoyaltyPointController::class);
-        Route::apiResource('loyalty-point-transactions', LoyaltyPointTransactionController::class);
-        Route::apiResource('referrals', ReferralController::class);
-        Route::apiResource('referral-programs', ReferralProgramController::class);
-        Route::apiResource('leads', LeadController::class);
-        Route::apiResource('lead-activities', LeadActivityController::class);
+        // Settings
+        Route::apiResource('settings', SettingController::class)->only(['index', 'store', 'update']);
 
-        // ===== NOTIFICATIONS & COMMUNICATIONS =====
-        Route::apiResource('notification-campaigns', NotificationCampaignController::class);
+        // Service Categories
+        Route::apiResource('service-categories', ServiceCategoryController::class);
+        Route::post('service-categories/{service_category}/restore', [ServiceCategoryController::class, 'restore'])->name('service-categories.restore');
+        Route::delete('service-categories/{service_category}/force', [ServiceCategoryController::class, 'forceDestroy'])->name('service-categories.force-destroy');
+
+        // Services
+        Route::apiResource('services', ServiceController::class);
+        Route::post('services/{service}/restore', [ServiceController::class, 'restore'])->name('services.restore');
+        Route::delete('services/{service}/force', [ServiceController::class, 'forceDestroy'])->name('services.force-destroy');
+
+        // Appointments
+        Route::apiResource('appointments', AppointmentController::class);
+        Route::post('appointments/{appointment}/restore', [AppointmentController::class, 'restore'])->name('appointments.restore');
+        Route::delete('appointments/{appointment}/force', [AppointmentController::class, 'forceDestroy'])->name('appointments.force-destroy');
+
+        // Notification Templates
         Route::apiResource('notification-templates', NotificationTemplateController::class);
-        Route::apiResource('notification-queue', NotificationQueueController::class);
-        Route::apiResource('notification-logs', NotificationLogController::class);
-        Route::apiResource('notification-preferences', NotificationPreferenceController::class);
-        Route::apiResource('sms-providers', SmsProviderController::class);
-        Route::apiResource('email-providers', EmailProviderController::class);
-        Route::apiResource('push-notification-tokens', PushNotificationTokenController::class);
+        Route::post('notification-templates/{notification_template}/restore', [NotificationTemplateController::class, 'restore'])->name('notification-templates.restore');
+        Route::delete('notification-templates/{notification_template}/force', [NotificationTemplateController::class, 'forceDestroy'])->name('notification-templates.force-destroy');
 
-        // ===== ANALYTICS & REPORTING =====
-        Route::apiResource('analytics-events', AnalyticsEventController::class);
-        Route::apiResource('analytics-sessions', AnalyticsSessionController::class);
-        Route::apiResource('kpi-definitions', KpiDefinitionController::class);
-        Route::apiResource('kpi-values', KpiValueController::class);
-        Route::apiResource('performance-metrics', PerformanceMetricController::class);
+        // Invoices
+        Route::apiResource('invoices', InvoiceController::class);
+        Route::post('invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
+        Route::post('invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+        Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
+        Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
+        Route::get('invoices-stats', [InvoiceController::class, 'stats'])->name('invoices.stats');
+
+        // Loyalty Points
+        Route::get('loyalty-points/customers/{customer}/balance', [LoyaltyPointController::class, 'balance'])->name('loyalty-points.balance');
+        Route::get('loyalty-points/customers/{customer}/history', [LoyaltyPointController::class, 'history'])->name('loyalty-points.history');
+        Route::post('loyalty-points/customers/{customer}/award', [LoyaltyPointController::class, 'award'])->name('loyalty-points.award');
+        Route::post('loyalty-points/customers/{customer}/redeem', [LoyaltyPointController::class, 'redeem'])->name('loyalty-points.redeem');
+        Route::get('loyalty-points/customers/{customer}/expiring', [LoyaltyPointController::class, 'expiringPoints'])->name('loyalty-points.expiring');
+        Route::post('loyalty-points/calculate', [LoyaltyPointController::class, 'calculatePoints'])->name('loyalty-points.calculate');
+
+        // Product Variants
+        Route::apiResource('product-variants', ProductVariantController::class);
+        Route::get('product-variants/sku/{sku}', [ProductVariantController::class, 'findBySku'])->name('product-variants.find-by-sku');
+        Route::get('product-variants/barcode/{barcode}', [ProductVariantController::class, 'findByBarcode'])->name('product-variants.find-by-barcode');
+        Route::post('product-variants/{variant}/update-stock', [ProductVariantController::class, 'updateStock'])->name('product-variants.update-stock');
+        Route::post('product-variants/{variant}/check-stock', [ProductVariantController::class, 'checkStock'])->name('product-variants.check-stock');
+
+        // Coupons
+        Route::post('coupons/validate', [CouponController::class, 'validate'])->name('coupons.validate');
+        Route::post('coupons/apply', [CouponController::class, 'apply'])->name('coupons.apply');
+        Route::get('coupons/{coupon}/usage', [CouponController::class, 'usage'])->name('coupons.usage');
+        Route::get('coupons/customers/{customer}/usage', [CouponController::class, 'customerUsage'])->name('coupons.customer-usage');
+        Route::post('coupons/calculate-discount', [CouponController::class, 'calculateDiscount'])->name('coupons.calculate-discount');
+
+        // Service Reviews
+        Route::apiResource('service-reviews', ServiceReviewController::class);
+        Route::post('service-reviews/{review}/approve', [ServiceReviewController::class, 'approve'])->name('service-reviews.approve');
+        Route::post('service-reviews/{review}/reject', [ServiceReviewController::class, 'reject'])->name('service-reviews.reject');
+        Route::get('services/{service}/reviews/published', [ServiceReviewController::class, 'published'])->name('service-reviews.published');
+        Route::get('services/{service}/reviews/average-rating', [ServiceReviewController::class, 'averageRating'])->name('service-reviews.average-rating');
+
+        // Notifications
+        Route::apiResource('notifications', NotificationController::class)->only(['index', 'store', 'show']);
+        Route::post('notifications/{notification}/send', [NotificationController::class, 'send'])->name('notifications.send');
+        Route::post('notifications/process-pending', [NotificationController::class, 'processPending'])->name('notifications.process-pending');
+        Route::get('notifications/pending/count', [NotificationController::class, 'pendingCount'])->name('notifications.pending-count');
+        Route::post('notifications/{notification}/retry', [NotificationController::class, 'retry'])->name('notifications.retry');
+
+        // Appointment History
+        Route::apiResource('appointment-history', AppointmentHistoryController::class)->only(['index', 'store', 'show']);
+        Route::get('appointment-history/recent', [AppointmentHistoryController::class, 'recentChanges'])->name('appointment-history.recent');
+        Route::get('appointments/{appointment}/history', [AppointmentHistoryController::class, 'appointmentHistory'])->name('appointment-history.appointment');
+        Route::get('users/{user}/appointment-changes', [AppointmentHistoryController::class, 'userChanges'])->name('appointment-history.user');
+
+        // Stock Transfers
+        Route::apiResource('stock-transfers', StockTransferController::class);
+        Route::post('stock-transfers/{transfer}/approve', [StockTransferController::class, 'approve'])->name('stock-transfers.approve');
+        Route::post('stock-transfers/{transfer}/reject', [StockTransferController::class, 'reject'])->name('stock-transfers.reject');
+        Route::post('stock-transfers/{transfer}/complete', [StockTransferController::class, 'complete'])->name('stock-transfers.complete');
+        Route::post('stock-transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock-transfers.cancel');
+
+        // Suppliers
+        Route::apiResource('suppliers', SupplierController::class);
+        Route::get('suppliers/{supplier}/stats', [SupplierController::class, 'stats'])->name('suppliers.stats');
+        Route::post('suppliers/{supplier}/activate', [SupplierController::class, 'activate'])->name('suppliers.activate');
+        Route::post('suppliers/{supplier}/deactivate', [SupplierController::class, 'deactivate'])->name('suppliers.deactivate');
+
+        // Purchase Orders
+        Route::apiResource('purchase-orders', PurchaseOrderController::class);
+        Route::get('purchase-orders-pending', [PurchaseOrderController::class, 'pending'])->name('purchase-orders.pending');
+        Route::get('purchase-orders-overdue', [PurchaseOrderController::class, 'overdue'])->name('purchase-orders.overdue');
+        Route::post('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+        Route::post('purchase-orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+        Route::get('purchase-orders-totals', [PurchaseOrderController::class, 'totals'])->name('purchase-orders.totals');
+
+        // Bank Accounts
+        Route::apiResource('bank-accounts', BankAccountController::class);
+        Route::post('bank-accounts/{bank_account}/deposit', [BankAccountController::class, 'deposit'])->name('bank-accounts.deposit');
+        Route::post('bank-accounts/{bank_account}/withdraw', [BankAccountController::class, 'withdraw'])->name('bank-accounts.withdraw');
+        Route::post('bank-accounts/{bank_account}/activate', [BankAccountController::class, 'activate'])->name('bank-accounts.activate');
+        Route::post('bank-accounts/{bank_account}/deactivate', [BankAccountController::class, 'deactivate'])->name('bank-accounts.deactivate');
+        Route::get('bank-accounts-total-balance', [BankAccountController::class, 'totalBalance'])->name('bank-accounts.total-balance');
+
+        // Cash Registers
+        Route::apiResource('cash-registers', CashRegisterController::class);
+        Route::post('cash-registers/{cash_register}/add-cash', [CashRegisterController::class, 'addCash'])->name('cash-registers.add-cash');
+        Route::post('cash-registers/{cash_register}/remove-cash', [CashRegisterController::class, 'removeCash'])->name('cash-registers.remove-cash');
+        Route::post('cash-registers/{cash_register}/open', [CashRegisterController::class, 'open'])->name('cash-registers.open');
+        Route::post('cash-registers/{cash_register}/close', [CashRegisterController::class, 'close'])->name('cash-registers.close');
+        Route::get('cash-registers-total-balance', [CashRegisterController::class, 'totalBalance'])->name('cash-registers.total-balance');
+
+        // Employee Attendance
+        Route::get('employee-attendance-today', [EmployeeAttendanceController::class, 'today'])->name('employee-attendance.today');
+        Route::get('employee-attendance-active', [EmployeeAttendanceController::class, 'active'])->name('employee-attendance.active');
+        Route::post('employee-attendance-clock-in', [EmployeeAttendanceController::class, 'clockIn'])->name('employee-attendance.clock-in');
+        Route::post('employee-attendance/{attendance}/clock-out', [EmployeeAttendanceController::class, 'clockOut'])->name('employee-attendance.clock-out');
+        Route::post('employee-attendance/{attendance}/start-break', [EmployeeAttendanceController::class, 'startBreak'])->name('employee-attendance.start-break');
+        Route::post('employee-attendance/{attendance}/end-break', [EmployeeAttendanceController::class, 'endBreak'])->name('employee-attendance.end-break');
+        Route::get('employee-attendance-summary', [EmployeeAttendanceController::class, 'summary'])->name('employee-attendance.summary');
+        Route::apiResource('employee-attendance', EmployeeAttendanceController::class)->except(['store']);
+
+        // Employee Commissions
+        Route::get('employee-commissions-unpaid', [EmployeeCommissionController::class, 'unpaid'])->name('employee-commissions.unpaid');
+        Route::post('employee-commissions/{commission}/mark-as-paid', [EmployeeCommissionController::class, 'markAsPaid'])->name('employee-commissions.mark-as-paid');
+        Route::post('employee-commissions-mark-multiple-as-paid', [EmployeeCommissionController::class, 'markMultipleAsPaid'])->name('employee-commissions.mark-multiple-as-paid');
+        Route::get('employee-commissions-summary', [EmployeeCommissionController::class, 'summary'])->name('employee-commissions.summary');
+        Route::post('employee-commissions-calculate', [EmployeeCommissionController::class, 'calculate'])->name('employee-commissions.calculate');
+        Route::apiResource('employee-commissions', EmployeeCommissionController::class);
+
+        // Employee Leaves
+        Route::get('employee-leaves-pending', [EmployeeLeaveController::class, 'pending'])->name('employee-leaves.pending');
+        Route::post('employee-leaves/{leave}/approve', [EmployeeLeaveController::class, 'approve'])->name('employee-leaves.approve');
+        Route::post('employee-leaves/{leave}/reject', [EmployeeLeaveController::class, 'reject'])->name('employee-leaves.reject');
+        Route::post('employee-leaves/{leave}/cancel', [EmployeeLeaveController::class, 'cancel'])->name('employee-leaves.cancel');
+        Route::get('employee-leaves-summary', [EmployeeLeaveController::class, 'summary'])->name('employee-leaves.summary');
+        Route::get('employee-leaves-check-overlapping', [EmployeeLeaveController::class, 'checkOverlapping'])->name('employee-leaves.check-overlapping');
+        Route::apiResource('employee-leaves', EmployeeLeaveController::class);
+
+        // Stock Alerts
+        Route::get('stock-alerts-active', [StockAlertController::class, 'active'])->name('stock-alerts.active');
+        Route::get('stock-alerts-resolved', [StockAlertController::class, 'resolved'])->name('stock-alerts.resolved');
+        Route::get('stock-alerts-critical', [StockAlertController::class, 'critical'])->name('stock-alerts.critical');
+        Route::post('stock-alerts/{stock_alert}/mark-as-notified', [StockAlertController::class, 'markAsNotified'])->name('stock-alerts.mark-as-notified');
+        Route::post('stock-alerts/{stock_alert}/resolve', [StockAlertController::class, 'resolve'])->name('stock-alerts.resolve');
+        Route::apiResource('stock-alerts', StockAlertController::class);
+
+        // Product Attributes
+        Route::get('product-attributes-filterable', [ProductAttributeController::class, 'filterable'])->name('product-attributes.filterable');
+        Route::get('product-attributes-required', [ProductAttributeController::class, 'required'])->name('product-attributes.required');
+        Route::get('product-attributes-sorted', [ProductAttributeController::class, 'sorted'])->name('product-attributes.sorted');
+        Route::apiResource('product-attributes', ProductAttributeController::class);
+
+        // Product Attribute Values
+        Route::post('product-attribute-values-bulk-set', [ProductAttributeValueController::class, 'bulkSet'])->name('product-attribute-values.bulk-set');
+        Route::delete('product-attribute-values-delete-attribute', [ProductAttributeValueController::class, 'deleteProductAttribute'])->name('product-attribute-values.delete-attribute');
+        Route::apiResource('product-attribute-values', ProductAttributeValueController::class);
+
+        // Report Templates
+        Route::get('report-templates-active', [ReportTemplateController::class, 'active'])->name('report-templates.active');
+        Route::get('report-templates-system', [ReportTemplateController::class, 'system'])->name('report-templates.system');
+        Route::get('report-templates-user', [ReportTemplateController::class, 'user'])->name('report-templates.user');
+        Route::post('report-templates/{report_template}/activate', [ReportTemplateController::class, 'activate'])->name('report-templates.activate');
+        Route::post('report-templates/{report_template}/deactivate', [ReportTemplateController::class, 'deactivate'])->name('report-templates.deactivate');
         Route::apiResource('report-templates', ReportTemplateController::class);
-        Route::apiResource('report-schedules', ReportScheduleController::class);
+
+        // Report Executions
+        Route::get('report-executions-pending', [ReportExecutionController::class, 'pending'])->name('report-executions.pending');
+        Route::get('report-executions-completed', [ReportExecutionController::class, 'completed'])->name('report-executions.completed');
+        Route::get('report-executions-failed', [ReportExecutionController::class, 'failed'])->name('report-executions.failed');
+        Route::post('report-executions/{report_execution}/mark-as-completed', [ReportExecutionController::class, 'markAsCompleted'])->name('report-executions.mark-as-completed');
+        Route::post('report-executions/{report_execution}/mark-as-failed', [ReportExecutionController::class, 'markAsFailed'])->name('report-executions.mark-as-failed');
         Route::apiResource('report-executions', ReportExecutionController::class);
 
-        // ===== SYSTEM & UTILITIES =====
-        Route::apiResource('activity-logs', ActivityLogController::class)->only(['index', 'show']);
-        Route::apiResource('audit-logs', AuditLogController::class)->only(['index', 'show']);
-        Route::apiResource('system-backups', SystemBackupController::class);
+        // KPI Definitions
+        Route::get('kpi-definitions-active', [KpiDefinitionController::class, 'active'])->name('kpi-definitions.active');
+        Route::post('kpi-definitions/{kpi_definition}/activate', [KpiDefinitionController::class, 'activate'])->name('kpi-definitions.activate');
+        Route::post('kpi-definitions/{kpi_definition}/deactivate', [KpiDefinitionController::class, 'deactivate'])->name('kpi-definitions.deactivate');
+        Route::apiResource('kpi-definitions', KpiDefinitionController::class);
+
+        // Webhooks
+        Route::get('webhooks-active', [WebhookController::class, 'active'])->name('webhooks.active');
+        Route::post('webhooks/{webhook}/activate', [WebhookController::class, 'activate'])->name('webhooks.activate');
+        Route::post('webhooks/{webhook}/deactivate', [WebhookController::class, 'deactivate'])->name('webhooks.deactivate');
+        Route::post('webhooks/{webhook}/test', [WebhookController::class, 'test'])->name('webhooks.test');
+        Route::post('webhooks/{webhook}/trigger', [WebhookController::class, 'trigger'])->name('webhooks.trigger');
         Route::apiResource('webhooks', WebhookController::class);
+
+        // Webhook Logs
+        Route::get('webhook-logs-failed', [WebhookLogController::class, 'failed'])->name('webhook-logs.failed');
+        Route::get('webhook-logs-pending-retries', [WebhookLogController::class, 'pendingRetries'])->name('webhook-logs.pending-retries');
+        Route::post('webhook-logs/{webhook_log}/retry', [WebhookLogController::class, 'retry'])->name('webhook-logs.retry');
+        Route::apiResource('webhook-logs', WebhookLogController::class)->only(['index', 'show']);
+
+        // Integrations
+        Route::get('integrations-active', [IntegrationController::class, 'active'])->name('integrations.active');
+        Route::get('integrations-type/{type}', [IntegrationController::class, 'byType'])->name('integrations.by-type');
+        Route::get('integrations-provider/{provider}', [IntegrationController::class, 'byProvider'])->name('integrations.by-provider');
+        Route::post('integrations/{integration}/activate', [IntegrationController::class, 'activate'])->name('integrations.activate');
+        Route::post('integrations/{integration}/deactivate', [IntegrationController::class, 'deactivate'])->name('integrations.deactivate');
+        Route::post('integrations/{integration}/test-connection', [IntegrationController::class, 'testConnection'])->name('integrations.test-connection');
+        Route::post('integrations/{integration}/sync', [IntegrationController::class, 'sync'])->name('integrations.sync');
         Route::apiResource('integrations', IntegrationController::class);
-        Route::apiResource('custom-fields', CustomFieldController::class);
-        Route::apiResource('custom-field-values', CustomFieldValueController::class);
-        Route::apiResource('translations', TranslationController::class);
-        Route::apiResource('feature-flags', FeatureFlagController::class);
-        Route::apiResource('user-preferences', UserPreferenceController::class);
-        Route::apiResource('document-templates', DocumentTemplateController::class);
-        Route::apiResource('surveys', SurveyController::class);
-        Route::apiResource('survey-responses', SurveyResponseController::class);
     });
 });

@@ -12,4 +12,14 @@ class NotificationTemplateService extends BaseService
     {
         parent::__construct($repository);
     }
+
+    public function findBySlug(string $slug): ?object
+    {
+        return $this->repository->findBySlug($slug);
+    }
+
+    public function findByEventAndChannel(string $eventType, string $channel): ?object
+    {
+        return $this->repository->findByEventAndChannel($eventType, $channel);
+    }
 }

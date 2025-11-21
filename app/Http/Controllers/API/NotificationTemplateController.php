@@ -23,47 +23,47 @@ class NotificationTemplateController extends BaseController
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
-            $notificationTemplates = $this->notificationTemplateService->getPaginated($perPage);
+            $templates = $this->notificationTemplateService->getPaginated($perPage);
 
             return $this->sendPaginated(
-                NotificationTemplateResource::collection($notificationTemplates),
-                'NotificationTemplates başarıyla getirildi'
+                NotificationTemplateResource::collection($templates),
+                'Notification templates retrieved successfully'
             );
         }
 
-        $notificationTemplates = $this->notificationTemplateService->getAll();
+        $templates = $this->notificationTemplateService->getAll();
 
-        return NotificationTemplateResource::collection($notificationTemplates);
+        return NotificationTemplateResource::collection($templates);
     }
 
     public function store(StoreNotificationTemplateRequest $request): JsonResponse
     {
-        $notificationTemplate = $this->notificationTemplateService->create($request->validated());
+        $template = $this->notificationTemplateService->create($request->validated());
 
         return $this->sendSuccess(
-            new NotificationTemplateResource($notificationTemplate),
-            'NotificationTemplate başarıyla oluşturuldu',
+            new NotificationTemplateResource($template),
+            'Notification template created successfully',
             201
         );
     }
 
     public function show(string $id): JsonResponse
     {
-        $notificationTemplate = $this->notificationTemplateService->findByIdOrFail($id);
+        $template = $this->notificationTemplateService->findByIdOrFail($id);
 
         return $this->sendSuccess(
-            new NotificationTemplateResource($notificationTemplate),
-            'NotificationTemplate başarıyla getirildi'
+            new NotificationTemplateResource($template),
+            'Notification template retrieved successfully'
         );
     }
 
     public function update(UpdateNotificationTemplateRequest $request, string $id): JsonResponse
     {
-        $notificationTemplate = $this->notificationTemplateService->update($id, $request->validated());
+        $template = $this->notificationTemplateService->update($id, $request->validated());
 
         return $this->sendSuccess(
-            new NotificationTemplateResource($notificationTemplate),
-            'NotificationTemplate başarıyla güncellendi'
+            new NotificationTemplateResource($template),
+            'Notification template updated successfully'
         );
     }
 
@@ -73,7 +73,27 @@ class NotificationTemplateController extends BaseController
 
         return $this->sendSuccess(
             null,
-            'NotificationTemplate başarıyla silindi'
+            'Notification template deleted successfully'
+        );
+    }
+
+    public function restore(string $id): JsonResponse
+    {
+        $this->notificationTemplateService->restore($id);
+
+        return $this->sendSuccess(
+            null,
+            'Notification template restored successfully'
+        );
+    }
+
+    public function forceDestroy(string $id): JsonResponse
+    {
+        $this->notificationTemplateService->forceDelete($id);
+
+        return $this->sendSuccess(
+            null,
+            'Notification template permanently deleted'
         );
     }
 }

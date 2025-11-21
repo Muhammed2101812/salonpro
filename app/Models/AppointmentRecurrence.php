@@ -4,61 +4,42 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AppointmentRecurrence extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
-        'customer_id',
-        'service_id',
-        'employee_id',
-        'branch_id',
-        'preferred_time',
+        'appointment_id',
         'recurrence_type',
-        'recurrence_pattern',
+        'frequency',
+        'interval',
+        'days_of_week',
+        'day_of_month',
         'start_date',
         'end_date',
-        'occurrences',
+        'max_occurrences',
         'is_active',
-        'notes',
     ];
 
     protected $casts = [
-        'recurrence_pattern' => 'array',
+        'days_of_week' => 'array',
+        'day_of_month' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
-        'occurrences' => 'integer',
+        'max_occurrences' => 'integer',
         'is_active' => 'boolean',
     ];
 
-    public function customer(): BelongsTo
+    public function appointment(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class);
-    }
-
-    public function employee(): BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
-    }
-
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class);
-    }
-
-    public function appointments(): HasMany
-    {
-        return $this->hasMany(Appointment::class, 'recurrence_id');
+        return $this->belongsTo(Appointment::class);
     }
 }

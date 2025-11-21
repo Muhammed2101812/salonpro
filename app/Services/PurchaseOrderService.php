@@ -1,200 +1,107 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\PurchaseOrder;
 use App\Repositories\Contracts\PurchaseOrderRepositoryInterface;
-use App\Repositories\Contracts\PurchaseOrderItemRepositoryInterface;
-use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\Contracts\PurchaseOrderServiceInterface;
 use Illuminate\Support\Facades\DB;
 
-class PurchaseOrderService
+class PurchaseOrderService extends BaseService implements PurchaseOrderServiceInterface
 {
     public function __construct(
-        private PurchaseOrderRepositoryInterface $purchaseOrderRepository,
-        private PurchaseOrderItemRepositoryInterface $itemRepository,
-        private ProductRepositoryInterface $productRepository
-    ) {}
-
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->purchaseOrderRepository->getAllPaginated($perPage);
+        protected PurchaseOrderRepositoryInterface $purchaseOrderRepository
+    ) {
+        parent::__construct($purchaseOrderRepository);
     }
 
-    public function getAll(): \Illuminate\Database\Eloquent\Collection
+    public function getByBranch(string $branchId, int $perPage = 15): mixed
     {
-        return $this->purchaseOrderRepository->getAll();
+        return $this->purchaseOrderRepository->findByBranch($branchId, $perPage);
     }
 
-    public function findById(int $id): ?PurchaseOrder
+    public function getBySupplier(string $supplierId, int $perPage = 15): mixed
     {
-        return $this->purchaseOrderRepository->findById($id);
+        return $this->purchaseOrderRepository->findBySupplier($supplierId, $perPage);
     }
 
-    public function create(array $data): PurchaseOrder
+    public function getPending(?string $branchId = null): mixed
+    {
+        return $this->purchaseOrderRepository->getPending($branchId);
+    }
+
+    public function getOverdue(?string $branchId = null): mixed
+    {
+        return $this->purchaseOrderRepository->getOverdue($branchId);
+    }
+
+    public function createWithItems(array $data): mixed
     {
         return DB::transaction(function () use ($data) {
+            // Generate order number if not provided
+            if (!isset($data['order_number'])) {
+                $data['order_number'] = $this->purchaseOrderRepository->generateOrderNumber();
+            }
+
+            // Set default status
+            if (!isset($data['status'])) {
+                $data['status'] = 'pending';
+            }
+
+            // Extract items
             $items = $data['items'] ?? [];
             unset($data['items']);
 
-            // Generate order number
-            $data['order_number'] = $this->generateOrderNumber();
-            $data['status'] = $data['status'] ?? 'pending';
-
+            // Create purchase order
             $purchaseOrder = $this->purchaseOrderRepository->create($data);
 
             // Create items
             if (!empty($items)) {
-                $this->itemRepository->createMultiple($purchaseOrder->id, $items);
+                foreach ($items as $item) {
+                    $item['purchase_order_id'] = $purchaseOrder->id;
+                    $purchaseOrder->items()->create($item);
+                }
             }
 
-            return $purchaseOrder->fresh(['items.product', 'supplier']);
+            return $purchaseOrder->load(['items', 'supplier', 'branch', 'creator']);
         });
     }
 
-    public function update(int $id, array $data): PurchaseOrder
+    public function updateStatus(string $id, string $status): mixed
+    {
+        return $this->purchaseOrderRepository->update($id, ['status' => $status]);
+    }
+
+    public function receive(string $id, array $data): mixed
     {
         return DB::transaction(function () use ($id, $data) {
-            $purchaseOrder = $this->purchaseOrderRepository->findById($id);
-            
-            if (!$purchaseOrder) {
-                throw new \Exception('Satın alma siparişi bulunamadı');
-            }
+            $updateData = [
+                'status' => 'received',
+                'actual_delivery_date' => $data['delivery_date'] ?? now(),
+            ];
 
-            // Cannot update if already completed or cancelled
-            if (in_array($purchaseOrder->status, ['completed', 'cancelled'])) {
-                throw new \Exception('Tamamlanmış veya iptal edilmiş siparişler güncellenemez');
-            }
-
-            $items = $data['items'] ?? null;
-            unset($data['items']);
-
-            $this->purchaseOrderRepository->update($purchaseOrder, $data);
-
-            // Update items if provided
-            if ($items !== null) {
-                // Delete existing items
-                foreach ($purchaseOrder->items as $item) {
-                    $this->itemRepository->delete($item);
-                }
-                
-                // Create new items
-                $this->itemRepository->createMultiple($purchaseOrder->id, $items);
-            }
-
-            return $purchaseOrder->fresh(['items.product', 'supplier']);
+            return $this->purchaseOrderRepository->update($id, $updateData);
         });
     }
 
-    public function delete(int $id): bool
+    public function cancel(string $id, ?string $reason = null): mixed
     {
-        $purchaseOrder = $this->purchaseOrderRepository->findById($id);
-        
-        if (!$purchaseOrder) {
-            throw new \Exception('Satın alma siparişi bulunamadı');
-        }
+        return DB::transaction(function () use ($id, $reason) {
+            $updateData = [
+                'status' => 'cancelled',
+            ];
 
-        // Can only delete pending orders
-        if ($purchaseOrder->status !== 'pending') {
-            throw new \Exception('Sadece bekleyen siparişler silinebilir');
-        }
-
-        return DB::transaction(function () use ($purchaseOrder) {
-            // Delete items
-            foreach ($purchaseOrder->items as $item) {
-                $this->itemRepository->delete($item);
+            if ($reason) {
+                $updateData['notes'] = ($updateData['notes'] ?? '') . "\nCancellation reason: {$reason}";
             }
 
-            return $this->purchaseOrderRepository->delete($purchaseOrder);
+            return $this->purchaseOrderRepository->update($id, $updateData);
         });
     }
 
-    public function updateStatus(int $id, string $status): PurchaseOrder
+    public function getTotalsByPeriod(string $startDate, string $endDate, ?string $branchId = null): array
     {
-        $purchaseOrder = $this->purchaseOrderRepository->findById($id);
-        
-        if (!$purchaseOrder) {
-            throw new \Exception('Satın alma siparişi bulunamadı');
-        }
-
-        $this->purchaseOrderRepository->updateStatus($purchaseOrder, $status);
-
-        return $purchaseOrder->fresh();
-    }
-
-    public function receive(int $id, array $receivedItems): PurchaseOrder
-    {
-        return DB::transaction(function () use ($id, $receivedItems) {
-            $purchaseOrder = $this->purchaseOrderRepository->findById($id);
-            
-            if (!$purchaseOrder) {
-                throw new \Exception('Satın alma siparişi bulunamadı');
-            }
-
-            if ($purchaseOrder->status === 'completed') {
-                throw new \Exception('Bu sipariş zaten tamamlanmış');
-            }
-
-            // Update received quantities and stock
-            foreach ($receivedItems as $itemId => $quantity) {
-                $item = $this->itemRepository->findById($itemId);
-                
-                if ($item && $item->purchase_order_id === $purchaseOrder->id) {
-                    $this->itemRepository->updateReceivedQuantity($item, $quantity);
-                    
-                    // Update product stock
-                    $product = $this->productRepository->findById($item->product_id);
-                    if ($product) {
-                        $this->productRepository->update($product, [
-                            'quantity' => $product->quantity + $quantity
-                        ]);
-                    }
-                }
-            }
-
-            // Check if all items are fully received
-            $allReceived = true;
-            foreach ($purchaseOrder->fresh()->items as $item) {
-                if ($item->received_quantity < $item->quantity) {
-                    $allReceived = false;
-                    break;
-                }
-            }
-
-            // Update order status
-            $newStatus = $allReceived ? 'completed' : 'partial';
-            $this->purchaseOrderRepository->updateStatus($purchaseOrder, $newStatus);
-
-            return $purchaseOrder->fresh(['items.product', 'supplier']);
-        });
-    }
-
-    public function getByStatus(string $status): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->purchaseOrderRepository->getByStatus($status);
-    }
-
-    public function getBySupplier(int $supplierId): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->purchaseOrderRepository->getBySupplier($supplierId);
-    }
-
-    public function getPending(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->purchaseOrderRepository->getPending();
-    }
-
-    private function generateOrderNumber(): string
-    {
-        $prefix = 'PO';
-        $date = now()->format('Ymd');
-        $lastOrder = PurchaseOrder::whereDate('created_at', today())
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $sequence = $lastOrder ? (intval(substr($lastOrder->order_number, -4)) + 1) : 1;
-
-        return $prefix . $date . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return $this->purchaseOrderRepository->getTotalsByPeriod($startDate, $endDate, $branchId);
     }
 }

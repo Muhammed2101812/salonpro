@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServicePackage extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory;
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'branch_id',
@@ -27,20 +29,14 @@ class ServicePackage extends Model
         'is_active',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'total_price' => 'decimal:2',
-            'discount_percentage' => 'decimal:2',
-            'final_price' => 'decimal:2',
-            'validity_days' => 'integer',
-            'max_uses' => 'integer',
-            'is_active' => 'boolean',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'deleted_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'total_price' => 'decimal:2',
+        'discount_percentage' => 'decimal:2',
+        'final_price' => 'decimal:2',
+        'validity_days' => 'integer',
+        'max_uses' => 'integer',
+        'is_active' => 'boolean',
+    ];
 
     public function branch(): BelongsTo
     {
@@ -50,24 +46,7 @@ class ServicePackage extends Model
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class, 'package_service', 'package_id', 'service_id')
-            ->withPivot('quantity', 'price_override')
+            ->withPivot(['quantity', 'price_override'])
             ->withTimestamps();
-    }
-
-    /**
-     * Calculate final price based on total price and discount percentage
-     */
-    public function calculateFinalPrice(): float
-    {
-        $discount = $this->total_price * ($this->discount_percentage / 100);
-        return round($this->total_price - $discount, 2);
-    }
-
-    /**
-     * Check if package is still valid
-     */
-    public function isValid(): bool
-    {
-        return $this->is_active;
     }
 }

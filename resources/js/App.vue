@@ -13,6 +13,7 @@
             <h1 class="text-xl font-bold text-blue-600">SalonPro</h1>
           </div>
           <div class="flex items-center gap-4">
+            <BranchSwitcher />
             <span v-if="user" class="text-sm text-gray-700 font-medium">{{ user.name }}</span>
             <button @click="handleLogout" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,9 +70,12 @@
 import { computed, onMounted, ref, h } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useBranchStore } from '@/stores/branch';
+import BranchSwitcher from '@/components/ui/BranchSwitcher.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const branchStore = useBranchStore();
 const sidebarOpen = ref(true);
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -148,10 +152,16 @@ const closeSidebarOnMobile = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (isAuthenticated.value && !user.value) {
     authStore.fetchProfile();
   }
+
+  // Load current branch
+  if (isAuthenticated.value) {
+    await branchStore.loadCurrentBranch();
+  }
+
   // Desktop'ta sidebar açık başlasın
   if (window.innerWidth >= 768) {
     sidebarOpen.value = true;

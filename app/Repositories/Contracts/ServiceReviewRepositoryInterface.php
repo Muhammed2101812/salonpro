@@ -6,5 +6,7 @@ namespace App\Repositories\Contracts;
 
 interface ServiceReviewRepositoryInterface extends BaseRepositoryInterface
 {
-    // ServiceReview-specific methods can be added here
+    public function findByService(string $serviceId, int $perPage = 15);
+    public function getAverageRating(string $serviceId);
+    public function getPublishedReviews(string $serviceId, int $perPage = 10);
 }

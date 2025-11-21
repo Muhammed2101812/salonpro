@@ -90,10 +90,14 @@
             v-for="day in calendarDays"
             :key="day.date"
             :class="[
-              'min-h-32 p-2',
+              'min-h-32 p-2 relative transition-colors',
               !day.isCurrentMonth ? 'bg-gray-50' : 'bg-white',
-              day.isToday ? 'bg-blue-50' : ''
+              day.isToday ? 'bg-blue-50' : '',
+              dragOverDay === day.date ? 'bg-blue-100 ring-2 ring-blue-500 ring-inset' : ''
             ]"
+            @drop="handleDrop($event, day.date)"
+            @dragover="handleDragOver($event, day.date)"
+            @dragleave="handleDragLeave"
           >
             <div class="flex justify-between items-start mb-2">
               <span :class="[
@@ -110,10 +114,14 @@
               <div
                 v-for="appointment in day.appointments.slice(0, 3)"
                 :key="appointment.id"
-                @click="openEditModal(appointment)"
+                draggable="true"
+                @dragstart="handleDragStart($event, appointment)"
+                @dragend="handleDragEnd"
+                @click.stop="openEditModal(appointment)"
                 :class="[
-                  'text-xs p-1.5 rounded cursor-pointer hover:opacity-80 transition',
-                  getStatusClass(appointment.status)
+                  'text-xs p-1.5 rounded cursor-move hover:opacity-80 transition',
+                  getStatusClass(appointment.status),
+                  draggingId === appointment.id ? 'opacity-50' : ''
                 ]"
               >
                 <div class="font-medium truncate">{{ formatTime(appointment.appointment_date) }}</div>
@@ -123,6 +131,9 @@
                 +{{ day.appointments.length - 3 }} daha
               </div>
             </div>
+
+            <!-- Drop Indicator -->
+            <div v-if="dragOverDay === day.date" class="absolute inset-0 border-2 border-blue-500 border-dashed rounded pointer-events-none"></div>
           </div>
         </div>
       </div>
@@ -294,6 +305,11 @@ const editingId = ref<string | null>(null);
 
 // Search
 const searchQuery = ref('');
+
+// Drag & Drop State
+const draggingId = ref<string | null>(null);
+const draggingAppointment = ref<any>(null);
+const dragOverDay = ref<string | null>(null);
 
 // Form
 const appointmentForm = ref({
@@ -559,6 +575,64 @@ const getStatusLabel = (status: string) => {
     cancelled: 'İptal Edildi'
   };
   return labels[status as keyof typeof labels] || status;
+};
+
+// Drag & Drop Handlers
+const handleDragStart = (event: DragEvent, appointment: any) => {
+  draggingId.value = appointment.id;
+  draggingAppointment.value = appointment;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('appointmentId', appointment.id);
+  }
+};
+
+const handleDragEnd = () => {
+  draggingId.value = null;
+  draggingAppointment.value = null;
+  dragOverDay.value = null;
+};
+
+const handleDragOver = (event: DragEvent, dayDate: string) => {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move';
+  }
+  dragOverDay.value = dayDate;
+};
+
+const handleDragLeave = () => {
+  dragOverDay.value = null;
+};
+
+const handleDrop = async (event: DragEvent, dayDate: string) => {
+  event.preventDefault();
+  dragOverDay.value = null;
+
+  if (!draggingAppointment.value) return;
+
+  const oldDate = new Date(draggingAppointment.value.appointment_date);
+  const newDate = new Date(dayDate);
+
+  // Keep the time, change only the date
+  newDate.setHours(oldDate.getHours());
+  newDate.setMinutes(oldDate.getMinutes());
+
+  // Update appointment
+  try {
+    const updatedAppointment = {
+      ...draggingAppointment.value,
+      appointment_date: newDate.toISOString()
+    };
+
+    await appointmentStore.updateAppointment(draggingAppointment.value.id, updatedAppointment);
+
+    draggingId.value = null;
+    draggingAppointment.value = null;
+  } catch (error) {
+    console.error('Randevu taşınamadı:', error);
+    alert('Randevu taşınırken bir hata oluştu');
+  }
 };
 
 // Initialize Data

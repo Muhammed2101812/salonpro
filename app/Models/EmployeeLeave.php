@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmployeeLeave extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'employee_id',
@@ -19,11 +22,11 @@ class EmployeeLeave extends Model
         'start_date',
         'end_date',
         'total_days',
-        'status',
         'reason',
+        'status',
         'approved_by',
         'approved_at',
-        'rejection_reason',
+        'notes',
     ];
 
     protected $casts = [
@@ -38,18 +41,8 @@ class EmployeeLeave extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function approver(): BelongsTo
+    public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
-    }
-
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function isApproved(): bool
-    {
-        return $this->status === 'approved';
     }
 }

@@ -4,37 +4,35 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeePerformance extends Model
 {
-    use HasFactory, HasUuids;
-
-    protected $table = 'employee_performance';
+    use HasFactory;
+    use HasUuid;
 
     protected $fillable = [
         'employee_id',
-        'evaluation_date',
-        'customer_satisfaction_score',
-        'punctuality_score',
-        'sales_performance_score',
-        'teamwork_score',
-        'total_sales',
-        'total_appointments',
-        'notes',
+        'review_date',
+        'reviewer_id',
+        'rating',
+        'strengths',
+        'areas_for_improvement',
+        'goals',
+        'comments',
+        'next_review_date',
     ];
 
     protected $casts = [
-        'evaluation_date' => 'date',
-        'customer_satisfaction_score' => 'integer',
-        'punctuality_score' => 'integer',
-        'sales_performance_score' => 'integer',
-        'teamwork_score' => 'integer',
-        'total_sales' => 'decimal:2',
-        'total_appointments' => 'integer',
+        'review_date' => 'date',
+        'rating' => 'decimal:2',
+        'next_review_date' => 'date',
+        'strengths' => 'array',
+        'areas_for_improvement' => 'array',
+        'goals' => 'array',
     ];
 
     public function employee(): BelongsTo
@@ -42,15 +40,8 @@ class EmployeePerformance extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function getAverageScore(): float
+    public function reviewer(): BelongsTo
     {
-        $scores = array_filter([
-            $this->customer_satisfaction_score,
-            $this->punctuality_score,
-            $this->sales_performance_score,
-            $this->teamwork_score,
-        ]);
-
-        return count($scores) > 0 ? array_sum($scores) / count($scores) : 0;
+        return $this->belongsTo(User::class, 'reviewer_id');
     }
 }

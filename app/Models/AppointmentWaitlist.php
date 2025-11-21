@@ -4,39 +4,49 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AppointmentWaitlist extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuid;
+    use SoftDeletes;
 
     protected $table = 'appointment_waitlist';
 
     protected $fillable = [
+        'branch_id',
         'customer_id',
         'service_id',
         'employee_id',
-        'branch_id',
         'preferred_date',
         'preferred_time_start',
         'preferred_time_end',
-        'preferred_days',
+        'is_flexible',
         'priority',
         'status',
-        'notified_at',
-        'expires_at',
         'notes',
+        'notified_at',
+        'converted_at',
+        'appointment_id',
     ];
 
     protected $casts = [
         'preferred_date' => 'date',
-        'preferred_days' => 'array',
+        'is_flexible' => 'boolean',
+        'priority' => 'integer',
         'notified_at' => 'datetime',
-        'expires_at' => 'datetime',
+        'converted_at' => 'datetime',
     ];
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function customer(): BelongsTo
     {
@@ -53,34 +63,8 @@ class AppointmentWaitlist extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function branch(): BelongsTo
+    public function appointment(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
-    }
-
-    public function isWaiting(): bool
-    {
-        return $this->status === 'waiting';
-    }
-
-    public function isNotified(): bool
-    {
-        return $this->status === 'notified';
-    }
-
-    public function isBooked(): bool
-    {
-        return $this->status === 'booked';
-    }
-
-    public function isExpired(): bool
-    {
-        return $this->status === 'expired' || 
-               ($this->expires_at && $this->expires_at->isPast());
-    }
-
-    public function isHighPriority(): bool
-    {
-        return $this->priority === 'high';
+        return $this->belongsTo(Appointment::class);
     }
 }

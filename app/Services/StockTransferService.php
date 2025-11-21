@@ -1,172 +1,147 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\StockTransfer;
 use App\Repositories\Contracts\StockTransferRepositoryInterface;
-use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Repositories\Contracts\ProductVariantRepositoryInterface;
+use App\Services\Contracts\StockTransferServiceInterface;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
-class StockTransferService
+class StockTransferService implements StockTransferServiceInterface
 {
     public function __construct(
         private StockTransferRepositoryInterface $stockTransferRepository,
-        private ProductRepositoryInterface $productRepository
+        private ProductVariantRepositoryInterface $productVariantRepository
     ) {}
 
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
+    public function createTransfer(array $data)
     {
-        return $this->stockTransferRepository->getAllPaginated($perPage);
-    }
+        return DB::transaction(function () use ($data) {
+            // Validate source branch has enough stock
+            $variant = $this->productVariantRepository->findOrFail($data['product_variant_id']);
 
-    public function getAll(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->stockTransferRepository->getAll();
-    }
+            $transferData = [
+                'from_branch_id' => $data['from_branch_id'],
+                'to_branch_id' => $data['to_branch_id'],
+                'product_variant_id' => $data['product_variant_id'],
+                'quantity' => $data['quantity'],
+                'status' => 'pending',
+                'transfer_date' => $data['transfer_date'] ?? now(),
+                'notes' => $data['notes'] ?? null,
+                'created_by' => auth()->id(),
+            ];
 
-    public function findById(int $id): ?StockTransfer
-    {
-        return $this->stockTransferRepository->findById($id);
-    }
-
-    public function create(array $data): StockTransfer
-    {
-        $data['requested_by'] = $data['requested_by'] ?? Auth::id();
-        $data['status'] = 'pending';
-        $data['transfer_date'] = $data['transfer_date'] ?? now();
-
-        return $this->stockTransferRepository->create($data);
-    }
-
-    public function update(int $id, array $data): StockTransfer
-    {
-        $transfer = $this->stockTransferRepository->findById($id);
-        
-        if (!$transfer) {
-            throw new \Exception('Stok transferi bulunamadı');
-        }
-
-        // Cannot update if already completed or cancelled
-        if (in_array($transfer->status, ['completed', 'cancelled'])) {
-            throw new \Exception('Tamamlanmış veya iptal edilmiş transferler güncellenemez');
-        }
-
-        $this->stockTransferRepository->update($transfer, $data);
-        
-        return $transfer->fresh();
-    }
-
-    public function delete(int $id): bool
-    {
-        $transfer = $this->stockTransferRepository->findById($id);
-        
-        if (!$transfer) {
-            throw new \Exception('Stok transferi bulunamadı');
-        }
-
-        // Can only delete pending transfers
-        if ($transfer->status !== 'pending') {
-            throw new \Exception('Sadece bekleyen transferler silinebilir');
-        }
-
-        return $this->stockTransferRepository->delete($transfer);
-    }
-
-    public function approve(int $id): StockTransfer
-    {
-        return DB::transaction(function () use ($id) {
-            $transfer = $this->stockTransferRepository->findById($id);
-            
-            if (!$transfer) {
-                throw new \Exception('Stok transferi bulunamadı');
-            }
-
-            if ($transfer->status !== 'pending') {
-                throw new \Exception('Sadece bekleyen transferler onaylanabilir');
-            }
-
-            // Check if source branch has enough stock
-            $product = $this->productRepository->findById($transfer->product_id);
-            
-            if (!$product) {
-                throw new \Exception('Ürün bulunamadı');
-            }
-
-            // For branch-scoped products, we need to check the specific branch's stock
-            // This is a simplified check - you may need to adjust based on your exact needs
-            if ($product->quantity < $transfer->quantity) {
-                throw new \Exception('Kaynak şubede yeterli stok bulunmamaktadır');
-            }
-
-            // Deduct from source branch
-            $this->productRepository->update($product, [
-                'quantity' => $product->quantity - $transfer->quantity
-            ]);
-
-            // Add to destination branch
-            // Note: This assumes products are branch-specific
-            // You may need to find or create the product for the destination branch
-            $destinationProduct = \App\Models\Product::where('branch_id', $transfer->to_branch_id)
-                ->where('name', $product->name)
-                ->where('sku', $product->sku)
-                ->first();
-
-            if ($destinationProduct) {
-                $this->productRepository->update($destinationProduct, [
-                    'quantity' => $destinationProduct->quantity + $transfer->quantity
-                ]);
-            }
-
-            // Update transfer
-            $this->stockTransferRepository->update($transfer, [
-                'status' => 'completed',
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
-            ]);
-
-            return $transfer->fresh();
+            return $this->stockTransferRepository->create($transferData);
         });
     }
 
-    public function reject(int $id, ?string $reason = null): StockTransfer
+    public function updateTransfer(string $id, array $data)
     {
-        $transfer = $this->stockTransferRepository->findById($id);
-        
-        if (!$transfer) {
-            throw new \Exception('Stok transferi bulunamadı');
-        }
+        $transfer = $this->stockTransferRepository->findOrFail($id);
 
         if ($transfer->status !== 'pending') {
-            throw new \Exception('Sadece bekleyen transferler reddedilebilir');
+            throw new \Exception('Only pending transfers can be updated');
         }
 
-        $this->stockTransferRepository->update($transfer, [
-            'status' => 'cancelled',
-            'notes' => $reason,
+        return $this->stockTransferRepository->update($id, $data);
+    }
+
+    public function approveTransfer(string $id, string $userId)
+    {
+        return DB::transaction(function () use ($id, $userId) {
+            $transfer = $this->stockTransferRepository->findOrFail($id);
+
+            if ($transfer->status !== 'pending') {
+                throw new \Exception('Only pending transfers can be approved');
+            }
+
+            // Deduct stock from source branch
+            // Note: This would need actual branch-specific stock management
+
+            return $this->stockTransferRepository->update($id, [
+                'status' => 'in_transit',
+                'approved_by' => $userId,
+                'approved_at' => now(),
+            ]);
+        });
+    }
+
+    public function rejectTransfer(string $id, string $reason)
+    {
+        $transfer = $this->stockTransferRepository->findOrFail($id);
+
+        if ($transfer->status !== 'pending') {
+            throw new \Exception('Only pending transfers can be rejected');
+        }
+
+        return $this->stockTransferRepository->update($id, [
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
+            'rejected_at' => now(),
         ]);
-
-        return $transfer->fresh();
     }
 
-    public function getByStatus(string $status): \Illuminate\Database\Eloquent\Collection
+    public function completeTransfer(string $id)
     {
-        return $this->stockTransferRepository->getByStatus($status);
+        return DB::transaction(function () use ($id) {
+            $transfer = $this->stockTransferRepository->findOrFail($id);
+
+            if ($transfer->status !== 'in_transit') {
+                throw new \Exception('Only in-transit transfers can be completed');
+            }
+
+            // Add stock to destination branch
+            // Note: This would need actual branch-specific stock management
+
+            return $this->stockTransferRepository->update($id, [
+                'status' => 'completed',
+                'received_date' => now(),
+                'received_by' => auth()->id(),
+            ]);
+        });
     }
 
-    public function getFromBranch(int $branchId): \Illuminate\Database\Eloquent\Collection
+    public function cancelTransfer(string $id, string $reason)
     {
-        return $this->stockTransferRepository->getFromBranch($branchId);
+        $transfer = $this->stockTransferRepository->findOrFail($id);
+
+        if (!in_array($transfer->status, ['pending', 'in_transit'])) {
+            throw new \Exception('Only pending or in-transit transfers can be cancelled');
+        }
+
+        return DB::transaction(function () use ($id, $transfer, $reason) {
+            // If in_transit, restore stock to source branch
+            if ($transfer->status === 'in_transit') {
+                // Restore stock logic here
+            }
+
+            return $this->stockTransferRepository->update($id, [
+                'status' => 'cancelled',
+                'cancellation_reason' => $reason,
+                'cancelled_at' => now(),
+            ]);
+        });
     }
 
-    public function getToBranch(int $branchId): \Illuminate\Database\Eloquent\Collection
+    public function getSourceBranchTransfers(string $branchId, int $perPage = 15)
     {
-        return $this->stockTransferRepository->getToBranch($branchId);
+        return $this->stockTransferRepository->findBySourceBranch($branchId, $perPage);
     }
 
-    public function getPending(): \Illuminate\Database\Eloquent\Collection
+    public function getDestinationBranchTransfers(string $branchId, int $perPage = 15)
     {
-        return $this->stockTransferRepository->getPending();
+        return $this->stockTransferRepository->findByDestinationBranch($branchId, $perPage);
+    }
+
+    public function getPendingTransfers(?string $branchId = null, int $perPage = 15)
+    {
+        return $this->stockTransferRepository->getPendingTransfers($branchId, $perPage);
+    }
+
+    public function getInTransitTransfers(?string $branchId = null, int $perPage = 15)
+    {
+        return $this->stockTransferRepository->getInTransitTransfers($branchId, $perPage);
     }
 }

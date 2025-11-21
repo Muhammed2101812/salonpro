@@ -1,93 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\Supplier;
 use App\Repositories\Contracts\SupplierRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\Contracts\SupplierServiceInterface;
+use Illuminate\Support\Facades\DB;
 
-class SupplierService
+class SupplierService extends BaseService implements SupplierServiceInterface
 {
     public function __construct(
-        private SupplierRepositoryInterface $supplierRepository
-    ) {}
-
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->supplierRepository->getAllPaginated($perPage);
+        protected SupplierRepositoryInterface $supplierRepository
+    ) {
+        parent::__construct($supplierRepository);
     }
 
-    public function getAll(): \Illuminate\Database\Eloquent\Collection
+    public function getActive(): mixed
     {
-        return $this->supplierRepository->getAll();
+        return $this->supplierRepository->findActive();
     }
 
-    public function findById(int $id): ?Supplier
+    public function search(string $query, int $perPage = 15): mixed
     {
-        return $this->supplierRepository->findById($id);
+        return $this->supplierRepository->search($query, $perPage);
     }
 
-    public function create(array $data): Supplier
+    public function getSupplierStats(string $supplierId): array
     {
-        return $this->supplierRepository->create($data);
+        return $this->supplierRepository->getStats($supplierId);
     }
 
-    public function update(int $id, array $data): Supplier
+    public function activate(string $id): mixed
     {
-        $supplier = $this->supplierRepository->findById($id);
-        
-        if (!$supplier) {
-            throw new \Exception('Tedarikçi bulunamadı');
-        }
-
-        $this->supplierRepository->update($supplier, $data);
-        
-        return $supplier->fresh();
+        return $this->supplierRepository->update($id, ['is_active' => true]);
     }
 
-    public function delete(int $id): bool
+    public function deactivate(string $id): mixed
     {
-        $supplier = $this->supplierRepository->findById($id);
-        
-        if (!$supplier) {
-            throw new \Exception('Tedarikçi bulunamadı');
-        }
-
-        // Check if supplier has any purchase orders
-        if ($supplier->purchaseOrders()->count() > 0) {
-            throw new \Exception('Bu tedarikçinin satın alma siparişleri bulunmaktadır. Silinemez.');
-        }
-
-        return $this->supplierRepository->delete($supplier);
-    }
-
-    public function search(string $query): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->supplierRepository->search($query);
-    }
-
-    public function getActive(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->supplierRepository->getActive();
-    }
-
-    public function getWithLowStock(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->supplierRepository->getWithLowStock();
-    }
-
-    public function toggleStatus(int $id): Supplier
-    {
-        $supplier = $this->supplierRepository->findById($id);
-        
-        if (!$supplier) {
-            throw new \Exception('Tedarikçi bulunamadı');
-        }
-
-        $this->supplierRepository->update($supplier, [
-            'is_active' => !$supplier->is_active
-        ]);
-
-        return $supplier->fresh();
+        return $this->supplierRepository->update($id, ['is_active' => false]);
     }
 }

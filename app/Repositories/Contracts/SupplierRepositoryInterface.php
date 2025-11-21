@@ -1,54 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contracts;
 
-use App\Models\Supplier;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-interface SupplierRepositoryInterface
+interface SupplierRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Get all suppliers for the current branch with pagination
+     * Find active suppliers.
      */
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator;
+    public function findActive(): Collection;
 
     /**
-     * Get all suppliers for the current branch
+     * Find suppliers by city.
      */
-    public function getAll(): \Illuminate\Database\Eloquent\Collection;
+    public function findByCity(string $city, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Find a supplier by ID
+     * Find suppliers by country.
      */
-    public function findById(int $id): ?Supplier;
+    public function findByCountry(string $country, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Create a new supplier
+     * Search suppliers by name or contact person.
      */
-    public function create(array $data): Supplier;
+    public function search(string $query, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Update a supplier
+     * Get supplier statistics.
      */
-    public function update(Supplier $supplier, array $data): bool;
-
-    /**
-     * Delete a supplier
-     */
-    public function delete(Supplier $supplier): bool;
-
-    /**
-     * Search suppliers by name, email, or phone
-     */
-    public function search(string $query): \Illuminate\Database\Eloquent\Collection;
-
-    /**
-     * Get active suppliers only
-     */
-    public function getActive(): \Illuminate\Database\Eloquent\Collection;
-
-    /**
-     * Get suppliers with low stock products
-     */
-    public function getWithLowStock(): \Illuminate\Database\Eloquent\Collection;
+    public function getStats(string $supplierId): array;
 }

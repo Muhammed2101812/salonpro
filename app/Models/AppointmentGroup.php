@@ -4,36 +4,39 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AppointmentGroup extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'branch_id',
-        'group_name',
+        'name',
+        'description',
+        'group_type',
         'max_participants',
-        'current_participants',
-        'service_id',
-        'employee_id',
-        'scheduled_at',
-        'duration',
+        'appointment_date',
+        'start_time',
+        'end_time',
         'price_per_person',
+        'total_price',
         'status',
         'notes',
     ];
 
     protected $casts = [
-        'scheduled_at' => 'datetime',
         'max_participants' => 'integer',
-        'current_participants' => 'integer',
-        'duration' => 'integer',
+        'appointment_date' => 'date',
         'price_per_person' => 'decimal:2',
+        'total_price' => 'decimal:2',
     ];
 
     public function branch(): BelongsTo
@@ -41,33 +44,8 @@ class AppointmentGroup extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class);
-    }
-
-    public function employee(): BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
-    }
-
     public function participants(): HasMany
     {
         return $this->hasMany(AppointmentGroupParticipant::class, 'group_id');
-    }
-
-    public function isFull(): bool
-    {
-        return $this->current_participants >= $this->max_participants;
-    }
-
-    public function hasAvailableSlots(): bool
-    {
-        return $this->current_participants < $this->max_participants;
-    }
-
-    public function availableSlots(): int
-    {
-        return max(0, $this->max_participants - $this->current_participants);
     }
 }

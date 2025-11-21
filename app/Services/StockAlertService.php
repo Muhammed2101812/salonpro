@@ -1,114 +1,95 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\StockAlert;
 use App\Repositories\Contracts\StockAlertRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\Contracts\StockAlertServiceInterface;
+use Illuminate\Support\Facades\DB;
 
-class StockAlertService
+class StockAlertService extends BaseService implements StockAlertServiceInterface
 {
     public function __construct(
-        private StockAlertRepositoryInterface $stockAlertRepository
-    ) {}
-
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->stockAlertRepository->getAllPaginated($perPage);
+        protected StockAlertRepositoryInterface $stockAlertRepository
+    ) {
+        parent::__construct($stockAlertRepository);
     }
 
-    public function getAll(): \Illuminate\Database\Eloquent\Collection
+    public function getByBranch(string $branchId, int $perPage = 15): mixed
     {
-        return $this->stockAlertRepository->getAll();
+        return $this->stockAlertRepository->findByBranch($branchId, $perPage);
     }
 
-    public function findById(int $id): ?StockAlert
+    public function getByProduct(string $productId): mixed
     {
-        return $this->stockAlertRepository->findById($id);
+        return $this->stockAlertRepository->findByProduct($productId);
     }
 
-    public function create(array $data): StockAlert
+    public function getActive(?string $branchId = null): mixed
     {
-        return $this->stockAlertRepository->create($data);
+        return $this->stockAlertRepository->getActive($branchId);
     }
 
-    public function update(int $id, array $data): StockAlert
+    public function getResolved(?string $branchId = null): mixed
     {
-        $alert = $this->stockAlertRepository->findById($id);
-        
-        if (!$alert) {
-            throw new \Exception('Stok uyarısı bulunamadı');
-        }
-
-        $this->stockAlertRepository->update($alert, $data);
-        
-        return $alert->fresh();
+        return $this->stockAlertRepository->getResolved($branchId);
     }
 
-    public function delete(int $id): bool
+    public function getCritical(?string $branchId = null): mixed
     {
-        $alert = $this->stockAlertRepository->findById($id);
-        
-        if (!$alert) {
-            throw new \Exception('Stok uyarısı bulunamadı');
-        }
-
-        return $this->stockAlertRepository->delete($alert);
+        return $this->stockAlertRepository->getCriticalAlerts($branchId);
     }
 
-    public function getActive(): \Illuminate\Database\Eloquent\Collection
+    public function markAsNotified(string $id): mixed
     {
-        return $this->stockAlertRepository->getActive();
+        return DB::transaction(function () use ($id) {
+            $alert = $this->stockAlertRepository->findOrFail($id);
+
+            if ($alert->notified_at) {
+                throw new \RuntimeException('Alert already marked as notified');
+            }
+
+            return $this->stockAlertRepository->markAsNotified($id);
+        });
     }
 
-    public function getByProduct(int $productId): \Illuminate\Database\Eloquent\Collection
+    public function resolve(string $id, ?string $notes = null): mixed
     {
-        return $this->stockAlertRepository->getByProduct($productId);
+        return DB::transaction(function () use ($id, $notes) {
+            $alert = $this->stockAlertRepository->findOrFail($id);
+
+            if ($alert->status === 'resolved') {
+                throw new \RuntimeException('Alert already resolved');
+            }
+
+            return $this->stockAlertRepository->markAsResolved($id, $notes);
+        });
     }
 
-    public function markAsResolved(int $id): StockAlert
+    public function createFromStockCheck(array $data): mixed
     {
-        $alert = $this->stockAlertRepository->findById($id);
-        
-        if (!$alert) {
-            throw new \Exception('Stok uyarısı bulunamadı');
-        }
+        return DB::transaction(function () use ($data) {
+            // Check if active alert already exists for this product
+            $existing = $this->stockAlertRepository->model
+                ->where('branch_id', $data['branch_id'])
+                ->where('product_id', $data['product_id'])
+                ->where('status', 'active')
+                ->whereNull('resolved_at')
+                ->first();
 
-        $this->stockAlertRepository->markAsResolved($alert);
+            if ($existing) {
+                // Update existing alert
+                return $this->stockAlertRepository->update($existing->id, [
+                    'current_quantity' => $data['current_quantity'],
+                    'priority' => $data['priority'] ?? $existing->priority,
+                    'notes' => $data['notes'] ?? $existing->notes,
+                ]);
+            }
 
-        return $alert->fresh();
-    }
-
-    public function getUnresolved(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->stockAlertRepository->getUnresolved();
-    }
-
-    public function checkAndCreateAlerts(): array
-    {
-        $createdAlerts = [];
-        
-        // Get products with low stock that don't have unresolved alerts
-        $products = \App\Models\Product::whereRaw('quantity <= min_quantity')
-            ->whereDoesntHave('stockAlerts', function ($query) {
-                $query->where('is_resolved', false);
-            })
-            ->get();
-
-        foreach ($products as $product) {
-            $alert = $this->create([
-                'product_id' => $product->id,
-                'branch_id' => $product->branch_id,
-                'alert_type' => 'low_stock',
-                'threshold' => $product->min_quantity,
-                'current_quantity' => $product->quantity,
-                'message' => "{$product->name} ürünü minimum stok seviyesinin altında ({$product->quantity}/{$product->min_quantity})",
-                'is_resolved' => false,
-            ]);
-
-            $createdAlerts[] = $alert;
-        }
-
-        return $createdAlerts;
+            // Create new alert
+            $data['status'] = 'active';
+            return $this->stockAlertRepository->create($data);
+        });
     }
 }

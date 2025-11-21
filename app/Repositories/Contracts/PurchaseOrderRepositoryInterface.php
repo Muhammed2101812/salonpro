@@ -1,59 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contracts;
 
-use App\Models\PurchaseOrder;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-interface PurchaseOrderRepositoryInterface
+interface PurchaseOrderRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Get all purchase orders for the current branch with pagination
+     * Find purchase orders by branch.
      */
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator;
+    public function findByBranch(string $branchId, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Get all purchase orders for the current branch
+     * Find purchase orders by supplier.
      */
-    public function getAll(): \Illuminate\Database\Eloquent\Collection;
+    public function findBySupplier(string $supplierId, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Find a purchase order by ID
+     * Find purchase orders by status.
      */
-    public function findById(int $id): ?PurchaseOrder;
+    public function findByStatus(string $status, ?string $branchId = null, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Create a new purchase order
+     * Get pending purchase orders.
      */
-    public function create(array $data): PurchaseOrder;
+    public function getPending(?string $branchId = null): Collection;
 
     /**
-     * Update a purchase order
+     * Get overdue purchase orders.
      */
-    public function update(PurchaseOrder $purchaseOrder, array $data): bool;
+    public function getOverdue(?string $branchId = null): Collection;
 
     /**
-     * Delete a purchase order
+     * Generate next order number.
      */
-    public function delete(PurchaseOrder $purchaseOrder): bool;
+    public function generateOrderNumber(): string;
 
     /**
-     * Get purchase orders by status
+     * Get purchase order totals by period.
      */
-    public function getByStatus(string $status): \Illuminate\Database\Eloquent\Collection;
-
-    /**
-     * Get purchase orders by supplier
-     */
-    public function getBySupplier(int $supplierId): \Illuminate\Database\Eloquent\Collection;
-
-    /**
-     * Update purchase order status
-     */
-    public function updateStatus(PurchaseOrder $purchaseOrder, string $status): bool;
-
-    /**
-     * Get pending purchase orders
-     */
-    public function getPending(): \Illuminate\Database\Eloquent\Collection;
+    public function getTotalsByPeriod(string $startDate, string $endDate, ?string $branchId = null): array;
 }

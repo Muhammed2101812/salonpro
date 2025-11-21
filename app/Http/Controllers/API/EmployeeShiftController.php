@@ -20,50 +20,64 @@ class EmployeeShiftController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
-        $perPage = (int) $request->get('per_page', 15);
+        // Check if date range filter is provided
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $shifts = $this->employeeShiftService->getShiftsInRange(
+                $request->get('start_date'),
+                $request->get('end_date'),
+                $request->get('branch_id')
+            );
 
-        if ($request->has('per_page')) {
-            $employeeShifts = $this->employeeShiftService->getPaginated($perPage);
-
-            return $this->sendPaginated(
-                EmployeeShiftResource::collection($employeeShifts),
-                'EmployeeShifts başarıyla getirildi'
+            return $this->sendSuccess(
+                EmployeeShiftResource::collection($shifts),
+                'Employee shifts retrieved successfully'
             );
         }
 
-        $employeeShifts = $this->employeeShiftService->getAll();
+        $perPage = (int) $request->get('per_page', 15);
 
-        return EmployeeShiftResource::collection($employeeShifts);
+        if ($request->has('per_page')) {
+            $shifts = $this->employeeShiftService->getPaginated($perPage);
+
+            return $this->sendPaginated(
+                EmployeeShiftResource::collection($shifts),
+                'Employee shifts retrieved successfully'
+            );
+        }
+
+        $shifts = $this->employeeShiftService->getAll();
+
+        return EmployeeShiftResource::collection($shifts);
     }
 
     public function store(StoreEmployeeShiftRequest $request): JsonResponse
     {
-        $employeeShift = $this->employeeShiftService->create($request->validated());
+        $shift = $this->employeeShiftService->create($request->validated());
 
         return $this->sendSuccess(
-            new EmployeeShiftResource($employeeShift),
-            'EmployeeShift başarıyla oluşturuldu',
+            new EmployeeShiftResource($shift),
+            'Employee shift created successfully',
             201
         );
     }
 
     public function show(string $id): JsonResponse
     {
-        $employeeShift = $this->employeeShiftService->findByIdOrFail($id);
+        $shift = $this->employeeShiftService->findByIdOrFail($id);
 
         return $this->sendSuccess(
-            new EmployeeShiftResource($employeeShift),
-            'EmployeeShift başarıyla getirildi'
+            new EmployeeShiftResource($shift),
+            'Employee shift retrieved successfully'
         );
     }
 
     public function update(UpdateEmployeeShiftRequest $request, string $id): JsonResponse
     {
-        $employeeShift = $this->employeeShiftService->update($id, $request->validated());
+        $shift = $this->employeeShiftService->update($id, $request->validated());
 
         return $this->sendSuccess(
-            new EmployeeShiftResource($employeeShift),
-            'EmployeeShift başarıyla güncellendi'
+            new EmployeeShiftResource($shift),
+            'Employee shift updated successfully'
         );
     }
 
@@ -73,7 +87,27 @@ class EmployeeShiftController extends BaseController
 
         return $this->sendSuccess(
             null,
-            'EmployeeShift başarıyla silindi'
+            'Employee shift deleted successfully'
+        );
+    }
+
+    public function restore(string $id): JsonResponse
+    {
+        $this->employeeShiftService->restore($id);
+
+        return $this->sendSuccess(
+            null,
+            'Employee shift restored successfully'
+        );
+    }
+
+    public function forceDestroy(string $id): JsonResponse
+    {
+        $this->employeeShiftService->forceDelete($id);
+
+        return $this->sendSuccess(
+            null,
+            'Employee shift permanently deleted'
         );
     }
 }

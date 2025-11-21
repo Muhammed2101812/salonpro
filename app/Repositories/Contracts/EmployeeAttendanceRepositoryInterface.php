@@ -4,23 +4,38 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\EmployeeAttendance;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-interface EmployeeAttendanceRepositoryInterface
+interface EmployeeAttendanceRepositoryInterface extends BaseRepositoryInterface
 {
-    public function all(): Collection;
-    public function find(string $id): ?EmployeeAttendance;
-    public function create(array $data): EmployeeAttendance;
-    public function update(string $id, array $data): bool;
-    public function delete(string $id): bool;
-    public function getByEmployee(string $employeeId): Collection;
-    public function getByBranch(string $branchId): Collection;
-    public function getByDate(string $date): Collection;
-    public function getByDateRange(string $startDate, string $endDate): Collection;
-    public function getByStatus(string $status): Collection;
-    public function getEmployeeAttendanceForDate(string $employeeId, string $date): ?EmployeeAttendance;
-    public function checkIn(string $employeeId, string $branchId, string $date, string $time): EmployeeAttendance;
-    public function checkOut(string $id, string $time): bool;
-    public function getAttendanceStats(string $employeeId, string $startDate = null, string $endDate = null): array;
+    /**
+     * Find attendance by employee.
+     */
+    public function findByEmployee(string $employeeId, int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * Find attendance by branch.
+     */
+    public function findByBranch(string $branchId, int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * Find attendance by date range.
+     */
+    public function findByDateRange(string $startDate, string $endDate, ?string $employeeId = null): Collection;
+
+    /**
+     * Find today's attendance.
+     */
+    public function findToday(?string $branchId = null): Collection;
+
+    /**
+     * Find active (clocked in) employees.
+     */
+    public function findActive(?string $branchId = null): Collection;
+
+    /**
+     * Get attendance summary for employee.
+     */
+    public function getSummary(string $employeeId, string $startDate, string $endDate): array;
 }

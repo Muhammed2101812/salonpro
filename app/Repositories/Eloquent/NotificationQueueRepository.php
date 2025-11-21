@@ -1,84 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Eloquent;
 
 use App\Models\NotificationQueue;
 use App\Repositories\Contracts\NotificationQueueRepositoryInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 
-class NotificationQueueRepository implements NotificationQueueRepositoryInterface
+class NotificationQueueRepository extends BaseRepository implements NotificationQueueRepositoryInterface
 {
-    public function __construct(protected NotificationQueue $model)
+    public function __construct(NotificationQueue $model)
     {
+        parent::__construct($model);
     }
 
-    public function all(): Collection
-    {
-        return $this->model->with(['branch', 'template', 'campaign', 'recipient'])->get();
-    }
-
-    public function paginate(int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->model->with(['branch', 'template', 'campaign', 'recipient'])->paginate($perPage);
-    }
-
-    public function find(int $id): ?NotificationQueue
-    {
-        return $this->model->with(['branch', 'template', 'campaign', 'recipient'])->find($id);
-    }
-
-    public function create(array $data): NotificationQueue
-    {
-        return $this->model->create($data);
-    }
-
-    public function update(int $id, array $data): NotificationQueue
-    {
-        $queue = $this->find($id);
-        $queue->update($data);
-        return $queue->fresh();
-    }
-
-    public function delete(int $id): bool
-    {
-        return $this->model->findOrFail($id)->delete();
-    }
-
-    public function getPending(): Collection
+    public function getPendingNotifications(int $limit = 100)
     {
         return $this->model->where('status', 'pending')
-            ->whereNull('scheduled_at')
-            ->orWhere('scheduled_at', '<=', now())
+            ->where(function ($query) {
+                $query->whereNull('scheduled_at')
+                    ->orWhere('scheduled_at', '<=', now());
+            })
+            ->orderBy('created_at')
+            ->limit($limit)
             ->get();
     }
 
-    public function getScheduled(): Collection
+    public function getFailedNotifications(int $maxAttempts = 3)
     {
-        return $this->model->where('status', 'pending')
-            ->where('scheduled_at', '>', now())
+        return $this->model->where('status', 'failed')
+            ->where('attempts', '<', $maxAttempts)
+            ->orderBy('created_at')
             ->get();
     }
 
-    public function getByStatus(string $status): Collection
+    public function markAsSent(string $id)
     {
-        return $this->model->where('status', $status)->get();
+        return $this->update($id, [
+            'status' => 'sent',
+            'sent_at' => now(),
+        ]);
     }
 
-    public function getByChannel(string $channel): Collection
+    public function markAsFailed(string $id, string $errorMessage)
     {
-        return $this->model->where('channel', $channel)->get();
-    }
-
-    public function getByRecipient(string $type, int $id): Collection
-    {
-        return $this->model->where('recipient_type', $type)
-            ->where('recipient_id', $id)
-            ->get();
-    }
-
-    public function getByCampaign(int $campaignId): Collection
-    {
-        return $this->model->where('campaign_id', $campaignId)->get();
+        $notification = $this->find($id);
+        
+        return $this->update($id, [
+            'status' => 'failed',
+            'attempts' => $notification->attempts + 1,
+            'error_message' => $errorMessage,
+        ]);
     }
 }

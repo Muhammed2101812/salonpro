@@ -9,59 +9,52 @@ use App\Models\User;
 
 class SalePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view-sale');
+        return $user->can('sales.view');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Sale $sale): bool
     {
-        return $user->hasPermissionTo('view-sale');
+        if (! $user->can('sales.view')) {
+            return false;
+        }
+
+        if ($user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
+            return true;
+        }
+
+        return $user->branch_id === $sale->branch_id;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create-sale');
+        return $user->can('sales.create');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Sale $sale): bool
     {
-        return $user->hasPermissionTo('update-sale');
+        if (! $user->can('sales.update')) {
+            return false;
+        }
+
+        if ($user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
+            return true;
+        }
+
+        return $user->branch_id === $sale->branch_id;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Sale $sale): bool
     {
-        return $user->hasPermissionTo('delete-sale');
-    }
+        if (! $user->can('sales.delete')) {
+            return false;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Sale $sale): bool
-    {
-        return $user->hasPermissionTo('restore-sale');
-    }
+        if ($user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Sale $sale): bool
-    {
-        return $user->hasPermissionTo('force-delete-sale');
+        return $user->branch_id === $sale->branch_id;
     }
 }

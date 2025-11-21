@@ -16,14 +16,13 @@ class StoreNotificationTemplateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Add validation rules here
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            // Add Turkish attribute names here
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:notification_templates,slug'],
+            'channel' => ['required', 'in:email,sms,push,whatsapp'],
+            'event_type' => ['required', 'string', 'max:255'],
+            'subject' => ['nullable', 'string', 'max:255'],
+            'body' => ['required', 'string'],
+            'is_active' => ['nullable', 'boolean'],
         ];
     }
 }

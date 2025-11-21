@@ -1,88 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Eloquent;
 
 use App\Models\AppointmentCancellation;
 use App\Repositories\Contracts\AppointmentCancellationRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
-class AppointmentCancellationRepository implements AppointmentCancellationRepositoryInterface
+class AppointmentCancellationRepository extends BaseRepository implements AppointmentCancellationRepositoryInterface
 {
-    public function find(int $id): ?AppointmentCancellation
+    public function __construct(AppointmentCancellation $model)
     {
-        return AppointmentCancellation::find($id);
+        parent::__construct($model);
     }
-    
-    public function all(): Collection
+
+    public function findByAppointment(string $appointmentId)
     {
-        return AppointmentCancellation::with(['appointment', 'reason', 'cancelledBy'])->get();
-    }
-    
-    public function create(array $data): AppointmentCancellation
-    {
-        return AppointmentCancellation::create($data);
-    }
-    
-    public function update(int $id, array $data): bool
-    {
-        $cancellation = $this->find($id);
-        
-        if (!$cancellation) {
-            return false;
-        }
-        
-        return $cancellation->update($data);
-    }
-    
-    public function delete(int $id): bool
-    {
-        $cancellation = $this->find($id);
-        
-        if (!$cancellation) {
-            return false;
-        }
-        
-        return $cancellation->delete();
-    }
-    
-    public function getCancellationByAppointment(int $appointmentId): ?AppointmentCancellation
-    {
-        return AppointmentCancellation::where('appointment_id', $appointmentId)
-            ->with(['reason', 'cancelledBy'])
+        return $this->model->where('appointment_id', $appointmentId)
+            ->with(['appointment', 'reason', 'cancelledByUser'])
             ->first();
     }
-    
-    public function getCancellationsByReason(int $reasonId): Collection
+
+    public function getStatsByPeriod(string $startDate, string $endDate, ?string $branchId = null)
     {
-        return AppointmentCancellation::where('cancellation_reason_id', $reasonId)
-            ->with(['appointment', 'cancelledBy'])
-            ->orderBy('cancelled_at', 'desc')
-            ->get();
+        $query = $this->model->whereBetween('cancelled_at', [$startDate, $endDate]);
+
+        if ($branchId) {
+            $query->whereHas('appointment', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        }
+
+        return [
+            'total_cancellations' => $query->count(),
+            'total_refund' => $query->sum('refund_amount'),
+            'by_type' => $query->groupBy('cancelled_by_type')->selectRaw('cancelled_by_type, count(*) as count')->get(),
+        ];
     }
-    
-    public function getCancellationsByCustomer(int $customerId): Collection
+
+    public function getTopCancellationReasons(int $limit = 10)
     {
-        return AppointmentCancellation::whereHas('appointment', function ($query) use ($customerId) {
-            $query->where('customer_id', $customerId);
-        })
-            ->with(['appointment', 'reason', 'cancelledBy'])
-            ->orderBy('cancelled_at', 'desc')
-            ->get();
-    }
-    
-    public function getCancellationsByDateRange(string $startDate, string $endDate): Collection
-    {
-        return AppointmentCancellation::whereBetween('cancelled_at', [$startDate, $endDate])
-            ->with(['appointment', 'reason', 'cancelledBy'])
-            ->orderBy('cancelled_at', 'desc')
-            ->get();
-    }
-    
-    public function getRefundedCancellations(): Collection
-    {
-        return AppointmentCancellation::where('refund_issued', true)
-            ->with(['appointment', 'reason', 'cancelledBy'])
-            ->orderBy('cancelled_at', 'desc')
+        return $this->model->select('cancellation_reason_id')
+            ->with('reason')
+            ->groupBy('cancellation_reason_id')
+            ->selectRaw('cancellation_reason_id, count(*) as count')
+            ->orderByDesc('count')
+            ->limit($limit)
             ->get();
     }
 }

@@ -6,94 +6,79 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\EmployeeCommission;
 use App\Repositories\Contracts\EmployeeCommissionRepositoryInterface;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-class EmployeeCommissionRepository implements EmployeeCommissionRepositoryInterface
+class EmployeeCommissionRepository extends BaseRepository implements EmployeeCommissionRepositoryInterface
 {
-    public function all(): Collection
+    public function __construct(EmployeeCommission $model)
     {
-        return EmployeeCommission::with(['employee', 'appointment', 'sale'])->get();
+        parent::__construct($model);
     }
 
-    public function find(string $id): ?EmployeeCommission
+    public function findByEmployee(string $employeeId, int $perPage = 15): LengthAwarePaginator
     {
-        return EmployeeCommission::with(['employee', 'appointment', 'sale'])->find($id);
+        return $this->model->where('employee_id', $employeeId)
+            ->with(['employee', 'appointment', 'sale'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
-    public function create(array $data): EmployeeCommission
+    public function findByStatus(string $status, ?string $employeeId = null): Collection
     {
-        return EmployeeCommission::create($data);
-    }
-
-    public function update(string $id, array $data): bool
-    {
-        return EmployeeCommission::where('id', $id)->update($data);
-    }
-
-    public function delete(string $id): bool
-    {
-        return EmployeeCommission::where('id', $id)->delete();
-    }
-
-    public function getByEmployee(string $employeeId): Collection
-    {
-        return EmployeeCommission::with(['appointment', 'sale'])
-            ->where('employee_id', $employeeId)
-            ->orderBy('commission_date', 'desc')
-            ->get();
-    }
-
-    public function getUnpaid(string $employeeId = null): Collection
-    {
-        $query = EmployeeCommission::with(['employee', 'appointment', 'sale'])
-            ->where('is_paid', false);
+        $query = $this->model->where('payment_status', $status)
+            ->with(['employee', 'appointment', 'sale']);
 
         if ($employeeId) {
             $query->where('employee_id', $employeeId);
         }
 
-        return $query->orderBy('commission_date')
-            ->get();
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
-    public function getPaid(string $employeeId = null): Collection
+    public function findUnpaid(?string $employeeId = null): Collection
     {
-        $query = EmployeeCommission::with(['employee', 'appointment', 'sale'])
-            ->where('is_paid', true);
+        return $this->findByStatus('unpaid', $employeeId);
+    }
+
+    public function findByDateRange(string $startDate, string $endDate, ?string $employeeId = null): Collection
+    {
+        $query = $this->model->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['employee', 'appointment', 'sale']);
 
         if ($employeeId) {
             $query->where('employee_id', $employeeId);
         }
 
-        return $query->orderBy('paid_date', 'desc')
-            ->get();
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
-    public function getByDateRange(string $startDate, string $endDate): Collection
+    public function getSummary(string $employeeId, string $startDate, string $endDate): array
     {
-        return EmployeeCommission::with(['employee', 'appointment', 'sale'])
-            ->whereBetween('commission_date', [$startDate, $endDate])
-            ->orderBy('commission_date', 'desc')
-            ->get();
+        $commissions = $this->findByDateRange($startDate, $endDate, $employeeId);
+
+        return [
+            'total_commissions' => $commissions->count(),
+            'total_amount' => $commissions->sum('commission_amount'),
+            'paid_amount' => $commissions->where('payment_status', 'paid')->sum('commission_amount'),
+            'unpaid_amount' => $commissions->where('payment_status', 'unpaid')->sum('commission_amount'),
+            'average_commission' => $commissions->avg('commission_amount'),
+            'by_type' => $commissions->groupBy('commission_type')
+                ->map(fn($group) => [
+                    'count' => $group->count(),
+                    'total' => $group->sum('commission_amount'),
+                ]),
+        ];
     }
 
-    public function getTotalCommissionForEmployee(string $employeeId, string $startDate = null, string $endDate = null): float
+    public function getTotalUnpaid(?string $employeeId = null): float
     {
-        $query = EmployeeCommission::where('employee_id', $employeeId);
+        $query = $this->model->where('payment_status', 'unpaid');
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('commission_date', [$startDate, $endDate]);
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
         }
 
         return (float) $query->sum('commission_amount');
-    }
-
-    public function markAsPaid(array $commissionIds, string $paidDate): bool
-    {
-        return EmployeeCommission::whereIn('id', $commissionIds)
-            ->update([
-                'is_paid' => true,
-                'paid_date' => $paidDate,
-            ]);
     }
 }

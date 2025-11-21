@@ -4,22 +4,38 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\EmployeeLeave;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-interface EmployeeLeaveRepositoryInterface
+interface EmployeeLeaveRepositoryInterface extends BaseRepositoryInterface
 {
-    public function all(): Collection;
-    public function find(string $id): ?EmployeeLeave;
-    public function create(array $data): EmployeeLeave;
-    public function update(string $id, array $data): bool;
-    public function delete(string $id): bool;
-    public function getByEmployee(string $employeeId): Collection;
-    public function getByStatus(string $status): Collection;
-    public function getByLeaveType(string $leaveType): Collection;
-    public function getPending(): Collection;
-    public function getByDateRange(string $startDate, string $endDate): Collection;
-    public function getTotalLeaveDays(string $employeeId, string $leaveType = null, int $year = null): int;
-    public function approve(string $id, string $approvedBy): bool;
-    public function reject(string $id, string $approvedBy, string $reason): bool;
+    /**
+     * Find leaves by employee.
+     */
+    public function findByEmployee(string $employeeId, int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * Find leaves by status.
+     */
+    public function findByStatus(string $status, ?string $employeeId = null): Collection;
+
+    /**
+     * Find pending leaves.
+     */
+    public function findPending(?string $employeeId = null): Collection;
+
+    /**
+     * Find leaves by date range.
+     */
+    public function findByDateRange(string $startDate, string $endDate, ?string $employeeId = null): Collection;
+
+    /**
+     * Find overlapping leaves.
+     */
+    public function findOverlapping(string $employeeId, string $startDate, string $endDate): Collection;
+
+    /**
+     * Get leave summary.
+     */
+    public function getSummary(string $employeeId, string $year): array;
 }

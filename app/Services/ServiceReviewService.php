@@ -5,139 +5,113 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\Contracts\ServiceReviewRepositoryInterface;
+use App\Repositories\Contracts\ServiceRepositoryInterface;
+use App\Services\Contracts\ServiceReviewServiceInterface;
+use Illuminate\Support\Facades\DB;
 
-class ServiceReviewService extends BaseService
+class ServiceReviewService implements ServiceReviewServiceInterface
 {
-    public function __construct(ServiceReviewRepositoryInterface $repository)
+    public function __construct(
+        private ServiceReviewRepositoryInterface $serviceReviewRepository,
+        private ServiceRepositoryInterface $serviceRepository
+    ) {}
+
+    public function createReview(array $data)
     {
-        parent::__construct($repository);
+        $service = $this->serviceRepository->findOrFail($data['service_id']);
+
+        return DB::transaction(function () use ($data) {
+            $reviewData = [
+                'service_id' => $data['service_id'],
+                'customer_id' => $data['customer_id'],
+                'appointment_id' => $data['appointment_id'] ?? null,
+                'rating' => $data['rating'],
+                'review_text' => $data['review_text'] ?? null,
+                'is_published' => $data['is_published'] ?? false,
+                'reviewed_at' => now(),
+            ];
+
+            $review = $this->serviceReviewRepository->create($reviewData);
+
+            // Update service average rating
+            $this->updateServiceRating($data['service_id']);
+
+            return $review;
+        });
     }
 
-    /**
-     * Get reviews for a service
-     */
-    public function getServiceReviews(string $serviceId, bool $publishedOnly = true): mixed
+    public function updateReview(string $id, array $data)
     {
-        $query = $this->repository->query()
-            ->where('service_id', $serviceId)
-            ->with(['service', 'customer', 'appointment']);
-        
-        if ($publishedOnly) {
-            $query->where('is_published', true);
-        }
-        
-        return $query->orderBy('created_at', 'desc')->get();
+        $review = $this->serviceReviewRepository->findOrFail($id);
+
+        return DB::transaction(function () use ($id, $review, $data) {
+            $updated = $this->serviceReviewRepository->update($id, $data);
+
+            // Update service average rating if rating changed
+            if (isset($data['rating'])) {
+                $this->updateServiceRating($review->service_id);
+            }
+
+            return $updated;
+        });
     }
 
-    /**
-     * Get average rating for a service
-     */
-    public function getAverageRating(string $serviceId): float
+    public function deleteReview(string $id)
     {
-        return (float) $this->repository->query()
-            ->where('service_id', $serviceId)
-            ->where('is_published', true)
-            ->avg('rating') ?? 0;
+        $review = $this->serviceReviewRepository->findOrFail($id);
+        $serviceId = $review->service_id;
+
+        return DB::transaction(function () use ($id, $serviceId) {
+            $this->serviceReviewRepository->delete($id);
+
+            // Update service average rating
+            $this->updateServiceRating($serviceId);
+
+            return true;
+        });
     }
 
-    /**
-     * Get rating distribution for a service
-     */
-    public function getRatingDistribution(string $serviceId): array
+    public function approveReview(string $id)
     {
-        $reviews = $this->repository->query()
-            ->where('service_id', $serviceId)
-            ->where('is_published', true)
-            ->get();
-
-        $distribution = [
-            5 => 0,
-            4 => 0,
-            3 => 0,
-            2 => 0,
-            1 => 0,
-        ];
-
-        foreach ($reviews as $review) {
-            $distribution[$review->rating]++;
-        }
-
-        return $distribution;
+        return $this->serviceReviewRepository->update($id, [
+            'is_published' => true,
+            'approved_at' => now(),
+        ]);
     }
 
-    /**
-     * Get reviews by customer
-     */
-    public function getCustomerReviews(string $customerId): mixed
+    public function rejectReview(string $id, string $reason)
     {
-        return $this->repository->query()
-            ->where('customer_id', $customerId)
-            ->with(['service', 'appointment'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return $this->serviceReviewRepository->update($id, [
+            'is_published' => false,
+            'rejection_reason' => $reason,
+            'rejected_at' => now(),
+        ]);
     }
 
-    /**
-     * Get reviews by rating
-     */
-    public function getReviewsByRating(int $rating, bool $publishedOnly = true): mixed
+    public function getServiceReviews(string $serviceId, int $perPage = 15)
     {
-        $query = $this->repository->query()
-            ->where('rating', $rating)
-            ->with(['service', 'customer', 'appointment']);
-        
-        if ($publishedOnly) {
-            $query->where('is_published', true);
-        }
-        
-        return $query->orderBy('created_at', 'desc')->get();
+        return $this->serviceReviewRepository->findByService($serviceId)
+            ->paginate($perPage);
     }
 
-    /**
-     * Get positive reviews (4-5 stars)
-     */
-    public function getPositiveReviews(bool $publishedOnly = true): mixed
+    public function getServiceAverageRating(string $serviceId): float
     {
-        $query = $this->repository->query()
-            ->where('rating', '>=', 4)
-            ->with(['service', 'customer', 'appointment']);
-        
-        if ($publishedOnly) {
-            $query->where('is_published', true);
-        }
-        
-        return $query->orderBy('created_at', 'desc')->get();
+        return $this->serviceReviewRepository->getAverageRating($serviceId);
     }
 
-    /**
-     * Get negative reviews (1-2 stars)
-     */
-    public function getNegativeReviews(bool $publishedOnly = true): mixed
+    public function getPublishedReviews(string $serviceId, int $perPage = 15)
     {
-        $query = $this->repository->query()
-            ->where('rating', '<=', 2)
-            ->with(['service', 'customer', 'appointment']);
-        
-        if ($publishedOnly) {
-            $query->where('is_published', true);
-        }
-        
-        return $query->orderBy('created_at', 'desc')->get();
+        return $this->serviceReviewRepository->getPublishedReviews($serviceId, $perPage);
     }
 
-    /**
-     * Publish a review
-     */
-    public function publishReview(string $id): mixed
+    private function updateServiceRating(string $serviceId): void
     {
-        return $this->update($id, ['is_published' => true]);
-    }
+        $averageRating = $this->getServiceAverageRating($serviceId);
+        $totalReviews = $this->serviceReviewRepository->findByService($serviceId)->count();
 
-    /**
-     * Unpublish a review
-     */
-    public function unpublishReview(string $id): mixed
-    {
-        return $this->update($id, ['is_published' => false]);
+        $this->serviceRepository->update($serviceId, [
+            'average_rating' => $averageRating,
+            'total_reviews' => $totalReviews,
+        ]);
     }
 }

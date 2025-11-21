@@ -6,137 +6,78 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\EmployeeAttendance;
 use App\Repositories\Contracts\EmployeeAttendanceRepositoryInterface;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-class EmployeeAttendanceRepository implements EmployeeAttendanceRepositoryInterface
+class EmployeeAttendanceRepository extends BaseRepository implements EmployeeAttendanceRepositoryInterface
 {
-    public function all(): Collection
+    public function __construct(EmployeeAttendance $model)
     {
-        return EmployeeAttendance::with(['employee', 'branch'])->get();
+        parent::__construct($model);
     }
 
-    public function find(string $id): ?EmployeeAttendance
+    public function findByEmployee(string $employeeId, int $perPage = 15): LengthAwarePaginator
     {
-        return EmployeeAttendance::with(['employee', 'branch'])->find($id);
+        return $this->model->where('employee_id', $employeeId)
+            ->with(['employee', 'branch'])
+            ->orderBy('clock_in', 'desc')
+            ->paginate($perPage);
     }
 
-    public function create(array $data): EmployeeAttendance
+    public function findByBranch(string $branchId, int $perPage = 15): LengthAwarePaginator
     {
-        return EmployeeAttendance::create($data);
+        return $this->model->where('branch_id', $branchId)
+            ->with(['employee', 'branch'])
+            ->orderBy('clock_in', 'desc')
+            ->paginate($perPage);
     }
 
-    public function update(string $id, array $data): bool
+    public function findByDateRange(string $startDate, string $endDate, ?string $employeeId = null): Collection
     {
-        return EmployeeAttendance::where('id', $id)->update($data);
-    }
+        $query = $this->model->whereBetween('clock_in', [$startDate, $endDate])
+            ->with(['employee', 'branch']);
 
-    public function delete(string $id): bool
-    {
-        return EmployeeAttendance::where('id', $id)->delete();
-    }
-
-    public function getByEmployee(string $employeeId): Collection
-    {
-        return EmployeeAttendance::with('branch')
-            ->where('employee_id', $employeeId)
-            ->orderBy('attendance_date', 'desc')
-            ->get();
-    }
-
-    public function getByBranch(string $branchId): Collection
-    {
-        return EmployeeAttendance::with('employee')
-            ->where('branch_id', $branchId)
-            ->orderBy('attendance_date', 'desc')
-            ->get();
-    }
-
-    public function getByDate(string $date): Collection
-    {
-        return EmployeeAttendance::with(['employee', 'branch'])
-            ->where('attendance_date', $date)
-            ->orderBy('check_in')
-            ->get();
-    }
-
-    public function getByDateRange(string $startDate, string $endDate): Collection
-    {
-        return EmployeeAttendance::with(['employee', 'branch'])
-            ->whereBetween('attendance_date', [$startDate, $endDate])
-            ->orderBy('attendance_date', 'desc')
-            ->get();
-    }
-
-    public function getByStatus(string $status): Collection
-    {
-        return EmployeeAttendance::with(['employee', 'branch'])
-            ->where('status', $status)
-            ->orderBy('attendance_date', 'desc')
-            ->get();
-    }
-
-    public function getEmployeeAttendanceForDate(string $employeeId, string $date): ?EmployeeAttendance
-    {
-        return EmployeeAttendance::where('employee_id', $employeeId)
-            ->where('attendance_date', $date)
-            ->first();
-    }
-
-    public function checkIn(string $employeeId, string $branchId, string $date, string $time): EmployeeAttendance
-    {
-        return EmployeeAttendance::create([
-            'employee_id' => $employeeId,
-            'branch_id' => $branchId,
-            'attendance_date' => $date,
-            'check_in' => $time,
-            'status' => 'present',
-        ]);
-    }
-
-    public function checkOut(string $id, string $time): bool
-    {
-        $attendance = EmployeeAttendance::find($id);
-
-        if (!$attendance) {
-            return false;
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
         }
 
-        $checkIn = Carbon::parse($attendance->check_in);
-        $checkOut = Carbon::parse($time);
-        $totalHours = $checkIn->diffInHours($checkOut);
-
-        return $attendance->update([
-            'check_out' => $time,
-            'total_hours' => $totalHours,
-        ]);
+        return $query->orderBy('clock_in', 'desc')->get();
     }
 
-    public function getAttendanceStats(string $employeeId, string $startDate = null, string $endDate = null): array
+    public function findToday(?string $branchId = null): Collection
     {
-        $query = EmployeeAttendance::where('employee_id', $employeeId);
+        $query = $this->model->whereDate('clock_in', now()->toDateString())
+            ->with(['employee', 'branch']);
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('attendance_date', [$startDate, $endDate]);
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
 
-        $total = $query->count();
-        $present = $query->clone()->where('status', 'present')->count();
-        $absent = $query->clone()->where('status', 'absent')->count();
-        $late = $query->clone()->where('status', 'late')->count();
-        $halfDay = $query->clone()->where('status', 'half_day')->count();
-        $onLeave = $query->clone()->where('status', 'on_leave')->count();
-        $totalHours = $query->clone()->sum('total_hours');
+        return $query->orderBy('clock_in', 'desc')->get();
+    }
+
+    public function findActive(?string $branchId = null): Collection
+    {
+        $query = $this->model->whereNull('clock_out')
+            ->with(['employee', 'branch']);
+
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        return $query->orderBy('clock_in', 'desc')->get();
+    }
+
+    public function getSummary(string $employeeId, string $startDate, string $endDate): array
+    {
+        $attendances = $this->findByDateRange($startDate, $endDate, $employeeId);
 
         return [
-            'total' => $total,
-            'present' => $present,
-            'absent' => $absent,
-            'late' => $late,
-            'half_day' => $halfDay,
-            'on_leave' => $onLeave,
-            'total_hours' => $totalHours,
-            'attendance_rate' => $total > 0 ? round(($present / $total) * 100, 2) : 0,
+            'total_days' => $attendances->count(),
+            'total_hours' => $attendances->sum('total_hours'),
+            'average_hours' => $attendances->avg('total_hours'),
+            'late_arrivals' => $attendances->where('status', 'late')->count(),
+            'early_departures' => $attendances->where('status', 'early_departure')->count(),
         ];
     }
 }

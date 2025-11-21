@@ -4,31 +4,37 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeAttendance extends Model
 {
-    use HasFactory, HasUuids;
-
-    protected $table = 'employee_attendance';
+    use HasFactory;
+    use HasUuid;
 
     protected $fillable = [
         'employee_id',
         'branch_id',
-        'attendance_date',
-        'check_in',
-        'check_out',
+        'clock_in',
+        'clock_out',
+        'break_start',
+        'break_end',
         'total_hours',
         'status',
         'notes',
+        'ip_address',
+        'location',
     ];
 
     protected $casts = [
-        'attendance_date' => 'date',
-        'total_hours' => 'integer',
+        'clock_in' => 'datetime',
+        'clock_out' => 'datetime',
+        'break_start' => 'datetime',
+        'break_end' => 'datetime',
+        'total_hours' => 'decimal:2',
+        'location' => 'array',
     ];
 
     public function employee(): BelongsTo
@@ -39,15 +45,5 @@ class EmployeeAttendance extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
-    }
-
-    public function isLate(): bool
-    {
-        return $this->status === 'late';
-    }
-
-    public function isPresent(): bool
-    {
-        return $this->status === 'present';
     }
 }

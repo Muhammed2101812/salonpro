@@ -1,79 +1,85 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Eloquent;
 
 use App\Models\StockTransfer;
 use App\Repositories\Contracts\StockTransferRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
 
-class StockTransferRepository implements StockTransferRepositoryInterface
+class StockTransferRepository extends BaseRepository implements StockTransferRepositoryInterface
 {
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
+    public function __construct(StockTransfer $model)
     {
-        return StockTransfer::with(['product', 'fromBranch', 'toBranch', 'requestedBy', 'approvedBy'])
-            ->orderBy('transfer_date', 'desc')
+        parent::__construct($model);
+    }
+
+    public function findBySourceBranch(string $branchId, int $perPage = 15)
+    {
+        return $this->model->where('from_branch_id', $branchId)
+            ->with(['fromBranch', 'toBranch', 'productVariant.product', 'createdBy', 'approvedBy'])
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
-    public function getAll(): \Illuminate\Database\Eloquent\Collection
+    public function findByDestinationBranch(string $branchId, int $perPage = 15)
     {
-        return StockTransfer::with(['product', 'fromBranch', 'toBranch', 'requestedBy', 'approvedBy'])
-            ->orderBy('transfer_date', 'desc')
-            ->get();
+        return $this->model->where('to_branch_id', $branchId)
+            ->with(['fromBranch', 'toBranch', 'productVariant.product', 'createdBy', 'approvedBy'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
-    public function findById(int $id): ?StockTransfer
+    public function findByStatus(string $status, int $perPage = 15)
     {
-        return StockTransfer::with(['product', 'fromBranch', 'toBranch', 'requestedBy', 'approvedBy'])
-            ->find($id);
+        return $this->model->where('status', $status)
+            ->with(['fromBranch', 'toBranch', 'productVariant.product', 'createdBy', 'approvedBy'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
-    public function create(array $data): StockTransfer
+    public function getPendingTransfers(?string $branchId = null, int $perPage = 15)
     {
-        return StockTransfer::create($data);
+        $query = $this->model->where('status', 'pending')
+            ->with(['fromBranch', 'toBranch', 'productVariant.product', 'createdBy']);
+
+        if ($branchId) {
+            $query->where(function ($q) use ($branchId) {
+                $q->where('from_branch_id', $branchId)
+                  ->orWhere('to_branch_id', $branchId);
+            });
+        }
+
+        return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
-    public function update(StockTransfer $transfer, array $data): bool
+    public function getInTransitTransfers(?string $branchId = null, int $perPage = 15)
     {
-        return $transfer->update($data);
+        $query = $this->model->where('status', 'in_transit')
+            ->with(['fromBranch', 'toBranch', 'productVariant.product', 'createdBy', 'approvedBy']);
+
+        if ($branchId) {
+            $query->where(function ($q) use ($branchId) {
+                $q->where('from_branch_id', $branchId)
+                  ->orWhere('to_branch_id', $branchId);
+            });
+        }
+
+        return $query->orderBy('transfer_date', 'desc')->paginate($perPage);
     }
 
-    public function delete(StockTransfer $transfer): bool
+    public function getTransfersByDateRange(string $startDate, string $endDate, ?string $branchId = null)
     {
-        return $transfer->delete();
-    }
+        $query = $this->model->whereBetween('transfer_date', [$startDate, $endDate])
+            ->with(['fromBranch', 'toBranch', 'productVariant.product']);
 
-    public function getByStatus(string $status): \Illuminate\Database\Eloquent\Collection
-    {
-        return StockTransfer::with(['product', 'fromBranch', 'toBranch', 'requestedBy', 'approvedBy'])
-            ->where('status', $status)
-            ->orderBy('transfer_date', 'desc')
-            ->get();
-    }
+        if ($branchId) {
+            $query->where(function ($q) use ($branchId) {
+                $q->where('from_branch_id', $branchId)
+                  ->orWhere('to_branch_id', $branchId);
+            });
+        }
 
-    public function getFromBranch(int $branchId): \Illuminate\Database\Eloquent\Collection
-    {
-        return StockTransfer::with(['product', 'toBranch', 'requestedBy', 'approvedBy'])
-            ->where('from_branch_id', $branchId)
-            ->orderBy('transfer_date', 'desc')
-            ->get();
-    }
-
-    public function getToBranch(int $branchId): \Illuminate\Database\Eloquent\Collection
-    {
-        return StockTransfer::with(['product', 'fromBranch', 'requestedBy', 'approvedBy'])
-            ->where('to_branch_id', $branchId)
-            ->orderBy('transfer_date', 'desc')
-            ->get();
-    }
-
-    public function updateStatus(StockTransfer $transfer, string $status): bool
-    {
-        return $transfer->update(['status' => $status]);
-    }
-
-    public function getPending(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->getByStatus('pending');
+        return $query->orderBy('transfer_date', 'desc')->get();
     }
 }

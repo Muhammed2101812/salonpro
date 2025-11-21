@@ -1,71 +1,68 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Eloquent;
 
 use App\Models\Supplier;
 use App\Repositories\Contracts\SupplierRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-class SupplierRepository implements SupplierRepositoryInterface
+class SupplierRepository extends BaseRepository implements SupplierRepositoryInterface
 {
-    public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
+    public function __construct(Supplier $model)
     {
-        return Supplier::with(['products'])
+        parent::__construct($model);
+    }
+
+    public function findActive(): Collection
+    {
+        return $this->model->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function findByCity(string $city, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model->where('city', $city)
             ->orderBy('name')
             ->paginate($perPage);
     }
 
-    public function getAll(): \Illuminate\Database\Eloquent\Collection
+    public function findByCountry(string $country, int $perPage = 15): LengthAwarePaginator
     {
-        return Supplier::with(['products'])
+        return $this->model->where('country', $country)
             ->orderBy('name')
-            ->get();
+            ->paginate($perPage);
     }
 
-    public function findById(int $id): ?Supplier
+    public function search(string $query, int $perPage = 15): LengthAwarePaginator
     {
-        return Supplier::with(['products', 'purchaseOrders'])
-            ->find($id);
+        return $this->model->where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+              ->orWhere('contact_person', 'like', "%{$query}%")
+              ->orWhere('email', 'like', "%{$query}%");
+        })
+        ->orderBy('name')
+        ->paginate($perPage);
     }
 
-    public function create(array $data): Supplier
+    public function getStats(string $supplierId): array
     {
-        return Supplier::create($data);
-    }
+        $supplier = $this->findOrFail($supplierId);
 
-    public function update(Supplier $supplier, array $data): bool
-    {
-        return $supplier->update($data);
-    }
-
-    public function delete(Supplier $supplier): bool
-    {
-        return $supplier->delete();
-    }
-
-    public function search(string $query): \Illuminate\Database\Eloquent\Collection
-    {
-        return Supplier::where('name', 'like', "%{$query}%")
-            ->orWhere('email', 'like', "%{$query}%")
-            ->orWhere('phone', 'like', "%{$query}%")
-            ->orWhere('company', 'like', "%{$query}%")
-            ->orderBy('name')
-            ->get();
-    }
-
-    public function getActive(): \Illuminate\Database\Eloquent\Collection
-    {
-        return Supplier::where('is_active', true)
-            ->orderBy('name')
-            ->get();
-    }
-
-    public function getWithLowStock(): \Illuminate\Database\Eloquent\Collection
-    {
-        return Supplier::whereHas('products', function ($query) {
-            $query->whereRaw('quantity <= min_quantity');
-        })->with(['products' => function ($query) {
-            $query->whereRaw('quantity <= min_quantity');
-        }])->get();
+        return [
+            'total_purchase_orders' => $supplier->purchaseOrders()->count(),
+            'total_amount_spent' => $supplier->purchaseOrders()
+                ->where('status', 'completed')
+                ->sum('final_amount'),
+            'pending_orders' => $supplier->purchaseOrders()
+                ->where('status', 'pending')
+                ->count(),
+            'last_order_date' => $supplier->purchaseOrders()
+                ->latest('order_date')
+                ->value('order_date'),
+        ];
     }
 }

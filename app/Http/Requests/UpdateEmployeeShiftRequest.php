@@ -16,14 +16,14 @@ class UpdateEmployeeShiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Add validation rules here (use 'sometimes' for optional updates)
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            // Add Turkish attribute names here
+            'branch_id' => ['sometimes', 'uuid', 'exists:branches,id'],
+            'employee_id' => ['sometimes', 'uuid', 'exists:employees,id'],
+            'shift_date' => ['sometimes', 'date'],
+            'start_time' => ['sometimes', 'date_format:H:i'],
+            'end_time' => ['sometimes', 'date_format:H:i', 'after:start_time'],
+            'break_minutes' => ['nullable', 'integer', 'min:0'],
+            'status' => ['sometimes', 'in:scheduled,confirmed,completed,cancelled'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 }

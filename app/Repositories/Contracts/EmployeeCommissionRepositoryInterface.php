@@ -4,20 +4,38 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\EmployeeCommission;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
-interface EmployeeCommissionRepositoryInterface
+interface EmployeeCommissionRepositoryInterface extends BaseRepositoryInterface
 {
-    public function all(): Collection;
-    public function find(string $id): ?EmployeeCommission;
-    public function create(array $data): EmployeeCommission;
-    public function update(string $id, array $data): bool;
-    public function delete(string $id): bool;
-    public function getByEmployee(string $employeeId): Collection;
-    public function getUnpaid(string $employeeId = null): Collection;
-    public function getPaid(string $employeeId = null): Collection;
-    public function getByDateRange(string $startDate, string $endDate): Collection;
-    public function getTotalCommissionForEmployee(string $employeeId, string $startDate = null, string $endDate = null): float;
-    public function markAsPaid(array $commissionIds, string $paidDate): bool;
+    /**
+     * Find commissions by employee.
+     */
+    public function findByEmployee(string $employeeId, int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * Find commissions by payment status.
+     */
+    public function findByStatus(string $status, ?string $employeeId = null): Collection;
+
+    /**
+     * Find unpaid commissions.
+     */
+    public function findUnpaid(?string $employeeId = null): Collection;
+
+    /**
+     * Find commissions by date range.
+     */
+    public function findByDateRange(string $startDate, string $endDate, ?string $employeeId = null): Collection;
+
+    /**
+     * Get commission summary.
+     */
+    public function getSummary(string $employeeId, string $startDate, string $endDate): array;
+
+    /**
+     * Get total unpaid amount.
+     */
+    public function getTotalUnpaid(?string $employeeId = null): float;
 }
