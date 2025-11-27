@@ -2,6 +2,38 @@ import { configure } from 'vee-validate'
 import { localize, setLocale } from '@vee-validate/i18n'
 import tr from '@vee-validate/i18n/dist/locale/tr.json'
 import en from '@vee-validate/i18n/dist/locale/en.json'
+import * as yup from 'yup'
+
+// Configure Yup locale for Turkish
+yup.setLocale({
+  mixed: {
+    default: 'Geçersiz değer',
+    required: '${path} alanı zorunludur',
+    notType: '${path} geçerli bir ${type} olmalıdır',
+  },
+  string: {
+    email: 'Geçerli bir e-posta adresi giriniz',
+    min: '${path} en az ${min} karakter olmalıdır',
+    max: '${path} en fazla ${max} karakter olmalıdır',
+    url: 'Geçerli bir URL giriniz',
+    uuid: 'Geçerli bir UUID giriniz',
+  },
+  number: {
+    min: '${path} en az ${min} olmalıdır',
+    max: '${path} en fazla ${max} olmalıdır',
+    positive: '${path} pozitif bir sayı olmalıdır',
+    negative: '${path} negatif bir sayı olmalıdır',
+    integer: '${path} tam sayı olmalıdır',
+  },
+  date: {
+    min: '${path} ${min} tarihinden sonra olmalıdır',
+    max: '${path} ${max} tarihinden önce olmalıdır',
+  },
+  array: {
+    min: 'En az ${min} öğe seçmelisiniz',
+    max: 'En fazla ${max} öğe seçebilirsiniz',
+  },
+})
 
 // Configure VeeValidate
 configure({
@@ -53,4 +85,4 @@ configure({
 // Set default locale to Turkish
 setLocale('tr')
 
-export { setLocale }
+export { setLocale, yup }
