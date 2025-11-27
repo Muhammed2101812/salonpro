@@ -110,10 +110,9 @@
 
             <!-- Branch & Gender Row -->
             <div class="grid grid-cols-2 gap-4">
-              <SelectInput
+              <BranchSelect
                 name="branch_id"
                 label="Şube"
-                :options="branchOptions"
                 placeholder="Şube seçiniz"
                 required
               />
@@ -169,18 +168,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useCustomerStore } from '@/stores/customer'
-import { useBranchStore } from '@/stores/branch'
 import { customerSchema } from '@/composables/useValidation'
 import FormModal from '@/components/FormModal.vue'
 import ValidatedForm from '@/components/ValidatedForm.vue'
 import TextInput from '@/components/form/TextInput.vue'
 import SelectInput from '@/components/form/SelectInput.vue'
 import TextareaInput from '@/components/form/TextareaInput.vue'
+import BranchSelect from '@/components/form/BranchSelect.vue'
 
 const customerStore = useCustomerStore()
-const branchStore = useBranchStore()
 const showModal = ref(false)
 const isEdit = ref(false)
 const editingId = ref<string | null>(null)
@@ -197,13 +195,6 @@ const form = ref({
   city: '',
   notes: ''
 })
-
-const branchOptions = computed(() =>
-  branchStore.branches.map(branch => ({
-    value: branch.id,
-    label: branch.name
-  }))
-)
 
 const genderOptions = [
   { value: 'male', label: 'Erkek' },
@@ -281,6 +272,5 @@ const handleDelete = async (id: string) => {
 
 onMounted(() => {
   customerStore.fetchCustomers()
-  branchStore.fetchBranches()
 })
 </script>
