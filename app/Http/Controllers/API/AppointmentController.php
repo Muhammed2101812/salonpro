@@ -7,6 +7,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
+use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,8 @@ class AppointmentController extends BaseController
      */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Appointment::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -47,6 +50,8 @@ class AppointmentController extends BaseController
      */
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
+        $this->authorize('create', Appointment::class);
+
         $appointment = $this->appointmentService->create($request->validated());
 
         return $this->sendSuccess(
@@ -63,6 +68,8 @@ class AppointmentController extends BaseController
     {
         $appointment = $this->appointmentService->findByIdOrFail($id);
 
+        $this->authorize('view', $appointment);
+
         return $this->sendSuccess(
             new AppointmentResource($appointment),
             'Randevu başarıyla getirildi'
@@ -74,6 +81,10 @@ class AppointmentController extends BaseController
      */
     public function update(UpdateAppointmentRequest $request, string $id): JsonResponse
     {
+        $appointment = $this->appointmentService->findByIdOrFail($id);
+
+        $this->authorize('update', $appointment);
+
         $appointment = $this->appointmentService->update($id, $request->validated());
 
         return $this->sendSuccess(
@@ -87,6 +98,10 @@ class AppointmentController extends BaseController
      */
     public function destroy(string $id): JsonResponse
     {
+        $appointment = $this->appointmentService->findByIdOrFail($id);
+
+        $this->authorize('delete', $appointment);
+
         $this->appointmentService->delete($id);
 
         return $this->sendSuccess(
@@ -100,6 +115,10 @@ class AppointmentController extends BaseController
      */
     public function restore(string $id): JsonResponse
     {
+        $appointment = $this->appointmentService->findByIdOrFail($id);
+
+        $this->authorize('restore', $appointment);
+
         $this->appointmentService->restore($id);
 
         return $this->sendSuccess(
@@ -113,6 +132,10 @@ class AppointmentController extends BaseController
      */
     public function forceDestroy(string $id): JsonResponse
     {
+        $appointment = $this->appointmentService->findByIdOrFail($id);
+
+        $this->authorize('forceDelete', $appointment);
+
         $this->appointmentService->forceDelete($id);
 
         return $this->sendSuccess(
