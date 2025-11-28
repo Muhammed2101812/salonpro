@@ -7,6 +7,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
+use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,8 @@ class CustomerController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Customer::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerController extends BaseController
 
     public function store(StoreCustomerRequest $request): JsonResponse
     {
+        $this->authorize('create', Customer::class);
+
         $customer = $this->customerService->create($request->validated());
 
         return $this->sendSuccess(
@@ -51,6 +56,8 @@ class CustomerController extends BaseController
     {
         $customer = $this->customerService->findByIdOrFail($id);
 
+        $this->authorize('view', $customer);
+
         return $this->sendSuccess(
             new CustomerResource($customer),
             'Customer retrieved successfully'
@@ -59,6 +66,10 @@ class CustomerController extends BaseController
 
     public function update(UpdateCustomerRequest $request, string $id): JsonResponse
     {
+        $customer = $this->customerService->findByIdOrFail($id);
+
+        $this->authorize('update', $customer);
+
         $customer = $this->customerService->update($id, $request->validated());
 
         return $this->sendSuccess(
@@ -69,6 +80,10 @@ class CustomerController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $customer = $this->customerService->findByIdOrFail($id);
+
+        $this->authorize('delete', $customer);
+
         $this->customerService->delete($id);
 
         return $this->sendSuccess(
@@ -79,6 +94,10 @@ class CustomerController extends BaseController
 
     public function restore(string $id): JsonResponse
     {
+        $customer = $this->customerService->findByIdOrFail($id);
+
+        $this->authorize('restore', $customer);
+
         $this->customerService->restore($id);
 
         return $this->sendSuccess(
@@ -89,6 +108,10 @@ class CustomerController extends BaseController
 
     public function forceDestroy(string $id): JsonResponse
     {
+        $customer = $this->customerService->findByIdOrFail($id);
+
+        $this->authorize('forceDelete', $customer);
+
         $this->customerService->forceDelete($id);
 
         return $this->sendSuccess(

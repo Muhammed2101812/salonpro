@@ -9,6 +9,7 @@ use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Expense;
+use App\Models\InventoryMovement;
 use App\Models\Invoice;
 use App\Models\LoyaltyProgram;
 use App\Models\MarketingCampaign;
@@ -24,6 +25,7 @@ use App\Policies\BranchPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\EmployeePolicy;
 use App\Policies\ExpensePolicy;
+use App\Policies\InventoryPolicy;
 use App\Policies\InvoicePolicy;
 use App\Policies\LoyaltyProgramPolicy;
 use App\Policies\MarketingCampaignPolicy;
@@ -49,6 +51,7 @@ class AuthServiceProvider extends ServiceProvider
         Customer::class => CustomerPolicy::class,
         Employee::class => EmployeePolicy::class,
         Expense::class => ExpensePolicy::class,
+        InventoryMovement::class => InventoryPolicy::class,
         Invoice::class => InvoicePolicy::class,
         LoyaltyProgram::class => LoyaltyProgramPolicy::class,
         MarketingCampaign::class => MarketingCampaignPolicy::class,
