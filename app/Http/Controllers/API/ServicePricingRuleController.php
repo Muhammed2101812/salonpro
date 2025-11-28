@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServicePricingRuleRequest;
 use App\Http\Requests\UpdateServicePricingRuleRequest;
 use App\Http\Resources\ServicePricingRuleResource;
 use App\Services\ServicePricingRuleService;
+use App\Models\ServicePricingRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ServicePricingRuleController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ServicePricingRule::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ServicePricingRuleController extends BaseController
 
     public function store(StoreServicePricingRuleRequest $request): JsonResponse
     {
+        $this->authorize('create', ServicePricingRule::class);
+
         $servicePricingRule = $this->servicePricingRuleService->create($request->validated());
 
         return $this->sendSuccess(

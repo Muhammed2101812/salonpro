@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServiceRequirementRequest;
 use App\Http\Requests\UpdateServiceRequirementRequest;
 use App\Http\Resources\ServiceRequirementResource;
 use App\Services\ServiceRequirementService;
+use App\Models\ServiceRequirement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ServiceRequirementController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ServiceRequirement::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ServiceRequirementController extends BaseController
 
     public function store(StoreServiceRequirementRequest $request): JsonResponse
     {
+        $this->authorize('create', ServiceRequirement::class);
+
         $serviceRequirement = $this->serviceRequirementService->create($request->validated());
 
         return $this->sendSuccess(

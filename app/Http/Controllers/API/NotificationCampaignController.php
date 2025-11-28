@@ -8,6 +8,7 @@ use App\Http\Requests\StoreNotificationCampaignRequest;
 use App\Http\Requests\UpdateNotificationCampaignRequest;
 use App\Http\Resources\NotificationCampaignResource;
 use App\Services\NotificationCampaignService;
+use App\Models\NotificationCampaign;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class NotificationCampaignController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', NotificationCampaign::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class NotificationCampaignController extends BaseController
 
     public function store(StoreNotificationCampaignRequest $request): JsonResponse
     {
+        $this->authorize('create', NotificationCampaign::class);
+
         $notificationCampaign = $this->notificationCampaignService->create($request->validated());
 
         return $this->sendSuccess(

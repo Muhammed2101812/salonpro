@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServicePriceHistoryRequest;
 use App\Http\Requests\UpdateServicePriceHistoryRequest;
 use App\Http\Resources\ServicePriceHistoryResource;
 use App\Services\ServicePriceHistoryService;
+use App\Models\ServicePriceHistory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ServicePriceHistoryController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ServicePriceHistory::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ServicePriceHistoryController extends BaseController
 
     public function store(StoreServicePriceHistoryRequest $request): JsonResponse
     {
+        $this->authorize('create', ServicePriceHistory::class);
+
         $servicePriceHistory = $this->servicePriceHistoryService->create($request->validated());
 
         return $this->sendSuccess(

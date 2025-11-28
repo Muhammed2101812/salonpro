@@ -8,6 +8,7 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Services\PaymentService;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class PaymentController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Payment::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,8 +41,13 @@ class PaymentController extends BaseController
 
     public function store(StorePaymentRequest $request): JsonResponse
     {
+        $this->authorize('create', Payment::class);
+
         try {
             $payment = $this->paymentService->create($request->validated());
+
+        $this->authorize('view', $payment);
+
 
             return $this->sendSuccess(
                 new PaymentResource($payment->load(['customer', 'appointment', 'sale'])),
@@ -69,6 +77,9 @@ class PaymentController extends BaseController
     {
         $payment = $this->paymentService->update($id, $request->validated());
 
+        $this->authorize('update', $payment);
+
+
         return $this->sendSuccess(
             new PaymentResource($payment->load(['customer', 'appointment', 'sale'])),
             'Payment updated successfully'
@@ -77,6 +88,10 @@ class PaymentController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $payment = $this->paymentService->findByIdOrFail($id);
+
+        $this->authorize('delete', $payment);
+
         $this->paymentService->delete($id);
 
         return $this->sendSuccess(
@@ -87,6 +102,10 @@ class PaymentController extends BaseController
 
     public function restore(string $id): JsonResponse
     {
+        $payment = $this->paymentService->findByIdOrFail($id);
+
+        $this->authorize('restore', $payment);
+
         $this->paymentService->restore($id);
 
         return $this->sendSuccess(
@@ -97,6 +116,10 @@ class PaymentController extends BaseController
 
     public function forceDestroy(string $id): JsonResponse
     {
+        $payment = $this->paymentService->findByIdOrFail($id);
+
+        $this->authorize('forceDelete', $payment);
+
         $this->paymentService->forceDelete($id);
 
         return $this->sendSuccess(

@@ -9,6 +9,7 @@ use App\Http\Requests\KpiDefinition\StoreKpiDefinitionRequest;
 use App\Http\Requests\KpiDefinition\UpdateKpiDefinitionRequest;
 use App\Http\Resources\KpiDefinitionResource;
 use App\Services\Contracts\KpiDefinitionServiceInterface;
+use App\Models\KpiDefinition;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class KpiDefinitionController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', KpiDefinition::class);
+
         $perPage = (int) $request->query('per_page', 15);
         $kpis = $this->kpiDefinitionService->getAll($perPage);
 
@@ -30,6 +33,8 @@ class KpiDefinitionController extends Controller
 
     public function store(StoreKpiDefinitionRequest $request): JsonResponse
     {
+        $this->authorize('create', KpiDefinition::class);
+
         $kpi = $this->kpiDefinitionService->create($request->validated());
 
         return response()->json([

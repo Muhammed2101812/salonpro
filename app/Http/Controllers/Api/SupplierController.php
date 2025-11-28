@@ -9,6 +9,7 @@ use App\Http\Requests\Supplier\StoreSupplierRequest;
 use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Http\Resources\SupplierResource;
 use App\Services\Contracts\SupplierServiceInterface;
+use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class SupplierController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Supplier::class);
+
         if ($request->has('search')) {
             $suppliers = $this->supplierService->search(
                 $request->get('search'),
@@ -51,7 +54,12 @@ class SupplierController extends BaseController
      */
     public function store(StoreSupplierRequest $request): SupplierResource
     {
+        $this->authorize('create', Supplier::class);
+
         $supplier = $this->supplierService->create($request->validated());
+
+        $this->authorize('view', $supplier);
+
 
         return SupplierResource::make($supplier);
     }
@@ -73,6 +81,9 @@ class SupplierController extends BaseController
     {
         $supplier = $this->supplierService->update($id, $request->validated());
 
+        $this->authorize('update', $supplier);
+
+
         return SupplierResource::make($supplier);
     }
 
@@ -81,6 +92,10 @@ class SupplierController extends BaseController
      */
     public function destroy(string $id): JsonResponse
     {
+        $supplier = $this->supplierService->findByIdOrFail($id);
+
+        $this->authorize('delete', $supplier);
+
         $this->supplierService->delete($id);
 
         return response()->json(['message' => 'Supplier deleted successfully']);

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerSegmentMemberRequest;
 use App\Http\Requests\UpdateCustomerSegmentMemberRequest;
 use App\Http\Resources\CustomerSegmentMemberResource;
 use App\Services\CustomerSegmentMemberService;
+use App\Models\CustomerSegmentMember;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomerSegmentMemberController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomerSegmentMember::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerSegmentMemberController extends BaseController
 
     public function store(StoreCustomerSegmentMemberRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomerSegmentMember::class);
+
         $customerSegmentMember = $this->customerSegmentMemberService->create($request->validated());
 
         return $this->sendSuccess(

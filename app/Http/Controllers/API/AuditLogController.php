@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAuditLogRequest;
 use App\Http\Requests\UpdateAuditLogRequest;
 use App\Http\Resources\AuditLogResource;
 use App\Services\AuditLogService;
+use App\Models\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AuditLogController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AuditLog::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AuditLogController extends BaseController
 
     public function store(StoreAuditLogRequest $request): JsonResponse
     {
+        $this->authorize('create', AuditLog::class);
+
         $auditLog = $this->auditLogService->create($request->validated());
 
         return $this->sendSuccess(

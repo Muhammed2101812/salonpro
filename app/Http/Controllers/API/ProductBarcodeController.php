@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductBarcodeRequest;
 use App\Http\Requests\UpdateProductBarcodeRequest;
 use App\Http\Resources\ProductBarcodeResource;
 use App\Services\ProductBarcodeService;
+use App\Models\ProductBarcode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductBarcodeController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductBarcode::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductBarcodeController extends BaseController
 
     public function store(StoreProductBarcodeRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductBarcode::class);
+
         $productBarcode = $this->productBarcodeService->create($request->validated());
 
         return $this->sendSuccess(

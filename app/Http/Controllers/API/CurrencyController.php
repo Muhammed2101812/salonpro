@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCurrencyRequest;
 use App\Http\Requests\UpdateCurrencyRequest;
 use App\Http\Resources\CurrencyResource;
 use App\Services\CurrencyService;
+use App\Models\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CurrencyController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Currency::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,7 +41,12 @@ class CurrencyController extends BaseController
 
     public function store(StoreCurrencyRequest $request): JsonResponse
     {
+        $this->authorize('create', Currency::class);
+
         $currency = $this->currencyService->create($request->validated());
+
+        $this->authorize('view', $currency);
+
 
         return $this->sendSuccess(
             new CurrencyResource($currency),
@@ -61,6 +69,9 @@ class CurrencyController extends BaseController
     {
         $currency = $this->currencyService->update($id, $request->validated());
 
+        $this->authorize('update', $currency);
+
+
         return $this->sendSuccess(
             new CurrencyResource($currency),
             'Currency başarıyla güncellendi'
@@ -69,6 +80,10 @@ class CurrencyController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $currency = $this->currencyService->findByIdOrFail($id);
+
+        $this->authorize('delete', $currency);
+
         $this->currencyService->delete($id);
 
         return $this->sendSuccess(

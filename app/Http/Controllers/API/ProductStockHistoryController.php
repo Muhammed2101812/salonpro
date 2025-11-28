@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductStockHistoryRequest;
 use App\Http\Requests\UpdateProductStockHistoryRequest;
 use App\Http\Resources\ProductStockHistoryResource;
 use App\Services\ProductStockHistoryService;
+use App\Models\ProductStockHistory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductStockHistoryController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductStockHistory::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductStockHistoryController extends BaseController
 
     public function store(StoreProductStockHistoryRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductStockHistory::class);
+
         $productStockHistory = $this->productStockHistoryService->create($request->validated());
 
         return $this->sendSuccess(

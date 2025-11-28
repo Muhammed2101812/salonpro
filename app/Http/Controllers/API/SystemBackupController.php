@@ -8,6 +8,7 @@ use App\Http\Requests\StoreSystemBackupRequest;
 use App\Http\Requests\UpdateSystemBackupRequest;
 use App\Http\Resources\SystemBackupResource;
 use App\Services\SystemBackupService;
+use App\Models\SystemBackup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class SystemBackupController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', SystemBackup::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class SystemBackupController extends BaseController
 
     public function store(StoreSystemBackupRequest $request): JsonResponse
     {
+        $this->authorize('create', SystemBackup::class);
+
         $systemBackup = $this->systemBackupService->create($request->validated());
 
         return $this->sendSuccess(

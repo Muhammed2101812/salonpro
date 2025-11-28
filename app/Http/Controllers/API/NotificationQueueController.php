@@ -8,6 +8,7 @@ use App\Http\Requests\StoreNotificationQueueRequest;
 use App\Http\Requests\UpdateNotificationQueueRequest;
 use App\Http\Resources\NotificationQueueResource;
 use App\Services\NotificationQueueService;
+use App\Models\NotificationQueue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class NotificationQueueController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', NotificationQueue::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class NotificationQueueController extends BaseController
 
     public function store(StoreNotificationQueueRequest $request): JsonResponse
     {
+        $this->authorize('create', NotificationQueue::class);
+
         $notificationQueue = $this->notificationQueueService->create($request->validated());
 
         return $this->sendSuccess(

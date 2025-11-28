@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBankTransactionRequest;
 use App\Http\Requests\UpdateBankTransactionRequest;
 use App\Http\Resources\BankTransactionResource;
 use App\Services\BankTransactionService;
+use App\Models\BankTransaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class BankTransactionController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', BankTransaction::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class BankTransactionController extends BaseController
 
     public function store(StoreBankTransactionRequest $request): JsonResponse
     {
+        $this->authorize('create', BankTransaction::class);
+
         $bankTransaction = $this->bankTransactionService->create($request->validated());
 
         return $this->sendSuccess(

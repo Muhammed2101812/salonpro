@@ -8,6 +8,7 @@ use App\Http\Requests\StorePurchaseOrderItemRequest;
 use App\Http\Requests\UpdatePurchaseOrderItemRequest;
 use App\Http\Resources\PurchaseOrderItemResource;
 use App\Services\PurchaseOrderItemService;
+use App\Models\PurchaseOrderItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class PurchaseOrderItemController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', PurchaseOrderItem::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class PurchaseOrderItemController extends BaseController
 
     public function store(StorePurchaseOrderItemRequest $request): JsonResponse
     {
+        $this->authorize('create', PurchaseOrderItem::class);
+
         $purchaseOrderItem = $this->purchaseOrderItemService->create($request->validated());
 
         return $this->sendSuccess(

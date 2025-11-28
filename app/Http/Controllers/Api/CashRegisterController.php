@@ -9,6 +9,7 @@ use App\Http\Requests\CashRegister\StoreCashRegisterRequest;
 use App\Http\Requests\CashRegister\UpdateCashRegisterRequest;
 use App\Http\Resources\CashRegisterResource;
 use App\Services\Contracts\CashRegisterServiceInterface;
+use App\Models\CashRegister;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class CashRegisterController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CashRegister::class);
+
         $branchId = $request->get('branch_id');
 
         if ($request->has('active')) {
@@ -42,6 +45,8 @@ class CashRegisterController extends BaseController
      */
     public function store(StoreCashRegisterRequest $request): CashRegisterResource
     {
+        $this->authorize('create', CashRegister::class);
+
         $register = $this->cashRegisterService->create($request->validated());
 
         return CashRegisterResource::make($register);

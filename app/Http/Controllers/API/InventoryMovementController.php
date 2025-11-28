@@ -8,6 +8,7 @@ use App\Http\Requests\StoreInventoryMovementRequest;
 use App\Http\Requests\UpdateInventoryMovementRequest;
 use App\Http\Resources\InventoryMovementResource;
 use App\Services\InventoryMovementService;
+use App\Models\InventoryMovement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class InventoryMovementController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', InventoryMovement::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class InventoryMovementController extends BaseController
 
     public function store(StoreInventoryMovementRequest $request): JsonResponse
     {
+        $this->authorize('create', InventoryMovement::class);
+
         try {
             $data = $request->validated();
             $data['user_id'] = $request->user()->id; // Set current user

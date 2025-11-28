@@ -8,6 +8,7 @@ use App\Http\Requests\StorePerformanceMetricRequest;
 use App\Http\Requests\UpdatePerformanceMetricRequest;
 use App\Http\Resources\PerformanceMetricResource;
 use App\Services\PerformanceMetricService;
+use App\Models\PerformanceMetric;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class PerformanceMetricController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', PerformanceMetric::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class PerformanceMetricController extends BaseController
 
     public function store(StorePerformanceMetricRequest $request): JsonResponse
     {
+        $this->authorize('create', PerformanceMetric::class);
+
         $performanceMetric = $this->performanceMetricService->create($request->validated());
 
         return $this->sendSuccess(

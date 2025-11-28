@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentCancellationRequest;
 use App\Http\Requests\UpdateAppointmentCancellationRequest;
 use App\Http\Resources\AppointmentCancellationResource;
 use App\Services\AppointmentCancellationService;
+use App\Models\AppointmentCancellation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,6 +27,8 @@ class AppointmentCancellationController extends BaseController
      */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AppointmentCancellation::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -47,6 +50,8 @@ class AppointmentCancellationController extends BaseController
      */
     public function store(StoreAppointmentCancellationRequest $request): JsonResponse
     {
+        $this->authorize('create', AppointmentCancellation::class);
+
         $cancellation = $this->appointmentCancellationService->create($request->validated());
 
         return $this->sendSuccess(

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentWaitlistRequest;
 use App\Http\Requests\UpdateAppointmentWaitlistRequest;
 use App\Http\Resources\AppointmentWaitlistResource;
 use App\Services\AppointmentWaitlistService;
+use App\Models\AppointmentWaitlist;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AppointmentWaitlistController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AppointmentWaitlist::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AppointmentWaitlistController extends BaseController
 
     public function store(StoreAppointmentWaitlistRequest $request): JsonResponse
     {
+        $this->authorize('create', AppointmentWaitlist::class);
+
         $appointmentWaitlist = $this->appointmentWaitlistService->create($request->validated());
 
         return $this->sendSuccess(

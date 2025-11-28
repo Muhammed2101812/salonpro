@@ -8,6 +8,7 @@ use App\Http\Requests\StoreSurveyRequest;
 use App\Http\Requests\UpdateSurveyRequest;
 use App\Http\Resources\SurveyResource;
 use App\Services\SurveyService;
+use App\Models\Survey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class SurveyController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Survey::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,7 +41,12 @@ class SurveyController extends BaseController
 
     public function store(StoreSurveyRequest $request): JsonResponse
     {
+        $this->authorize('create', Survey::class);
+
         $survey = $this->surveyService->create($request->validated());
+
+        $this->authorize('view', $survey);
+
 
         return $this->sendSuccess(
             new SurveyResource($survey),
@@ -61,6 +69,9 @@ class SurveyController extends BaseController
     {
         $survey = $this->surveyService->update($id, $request->validated());
 
+        $this->authorize('update', $survey);
+
+
         return $this->sendSuccess(
             new SurveyResource($survey),
             'Survey başarıyla güncellendi'
@@ -69,6 +80,10 @@ class SurveyController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $survey = $this->surveyService->findByIdOrFail($id);
+
+        $this->authorize('delete', $survey);
+
         $this->surveyService->delete($id);
 
         return $this->sendSuccess(

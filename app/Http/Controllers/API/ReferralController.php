@@ -8,6 +8,7 @@ use App\Http\Requests\StoreReferralRequest;
 use App\Http\Requests\UpdateReferralRequest;
 use App\Http\Resources\ReferralResource;
 use App\Services\ReferralService;
+use App\Models\Referral;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ReferralController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Referral::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,7 +41,12 @@ class ReferralController extends BaseController
 
     public function store(StoreReferralRequest $request): JsonResponse
     {
+        $this->authorize('create', Referral::class);
+
         $referral = $this->referralService->create($request->validated());
+
+        $this->authorize('view', $referral);
+
 
         return $this->sendSuccess(
             new ReferralResource($referral),
@@ -61,6 +69,9 @@ class ReferralController extends BaseController
     {
         $referral = $this->referralService->update($id, $request->validated());
 
+        $this->authorize('update', $referral);
+
+
         return $this->sendSuccess(
             new ReferralResource($referral),
             'Referral başarıyla güncellendi'
@@ -69,6 +80,10 @@ class ReferralController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $referral = $this->referralService->findByIdOrFail($id);
+
+        $this->authorize('delete', $referral);
+
         $this->referralService->delete($id);
 
         return $this->sendSuccess(

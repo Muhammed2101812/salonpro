@@ -8,6 +8,7 @@ use App\Http\Requests\StoreChartOfAccountRequest;
 use App\Http\Requests\UpdateChartOfAccountRequest;
 use App\Http\Resources\ChartOfAccountResource;
 use App\Services\ChartOfAccountService;
+use App\Models\ChartOfAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ChartOfAccountController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ChartOfAccount::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ChartOfAccountController extends BaseController
 
     public function store(StoreChartOfAccountRequest $request): JsonResponse
     {
+        $this->authorize('create', ChartOfAccount::class);
+
         $chartOfAccount = $this->chartOfAccountService->create($request->validated());
 
         return $this->sendSuccess(

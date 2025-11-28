@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEmployeePerformanceRequest;
 use App\Http\Requests\UpdateEmployeePerformanceRequest;
 use App\Http\Resources\EmployeePerformanceResource;
 use App\Services\EmployeePerformanceService;
+use App\Models\EmployeePerformance;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class EmployeePerformanceController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeePerformance::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class EmployeePerformanceController extends BaseController
 
     public function store(StoreEmployeePerformanceRequest $request): JsonResponse
     {
+        $this->authorize('create', EmployeePerformance::class);
+
         $employeePerformance = $this->employeePerformanceService->create($request->validated());
 
         return $this->sendSuccess(

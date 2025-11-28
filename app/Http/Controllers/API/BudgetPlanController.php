@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBudgetPlanRequest;
 use App\Http\Requests\UpdateBudgetPlanRequest;
 use App\Http\Resources\BudgetPlanResource;
 use App\Services\BudgetPlanService;
+use App\Models\BudgetPlan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class BudgetPlanController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', BudgetPlan::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class BudgetPlanController extends BaseController
 
     public function store(StoreBudgetPlanRequest $request): JsonResponse
     {
+        $this->authorize('create', BudgetPlan::class);
+
         $budgetPlan = $this->budgetPlanService->create($request->validated());
 
         return $this->sendSuccess(

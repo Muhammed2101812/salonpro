@@ -8,6 +8,7 @@ use App\Http\Requests\StoreTranslationRequest;
 use App\Http\Requests\UpdateTranslationRequest;
 use App\Http\Resources\TranslationResource;
 use App\Services\TranslationService;
+use App\Models\Translation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class TranslationController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Translation::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,7 +41,12 @@ class TranslationController extends BaseController
 
     public function store(StoreTranslationRequest $request): JsonResponse
     {
+        $this->authorize('create', Translation::class);
+
         $translation = $this->translationService->create($request->validated());
+
+        $this->authorize('view', $translation);
+
 
         return $this->sendSuccess(
             new TranslationResource($translation),
@@ -61,6 +69,9 @@ class TranslationController extends BaseController
     {
         $translation = $this->translationService->update($id, $request->validated());
 
+        $this->authorize('update', $translation);
+
+
         return $this->sendSuccess(
             new TranslationResource($translation),
             'Translation başarıyla güncellendi'
@@ -69,6 +80,10 @@ class TranslationController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $translation = $this->translationService->findByIdOrFail($id);
+
+        $this->authorize('delete', $translation);
+
         $this->translationService->delete($id);
 
         return $this->sendSuccess(

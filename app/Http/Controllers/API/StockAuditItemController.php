@@ -8,6 +8,7 @@ use App\Http\Requests\StoreStockAuditItemRequest;
 use App\Http\Requests\UpdateStockAuditItemRequest;
 use App\Http\Resources\StockAuditItemResource;
 use App\Services\StockAuditItemService;
+use App\Models\StockAuditItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class StockAuditItemController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', StockAuditItem::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class StockAuditItemController extends BaseController
 
     public function store(StoreStockAuditItemRequest $request): JsonResponse
     {
+        $this->authorize('create', StockAuditItem::class);
+
         $stockAuditItem = $this->stockAuditItemService->create($request->validated());
 
         return $this->sendSuccess(

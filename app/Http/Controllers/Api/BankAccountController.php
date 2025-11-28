@@ -9,6 +9,7 @@ use App\Http\Requests\BankAccount\StoreBankAccountRequest;
 use App\Http\Requests\BankAccount\UpdateBankAccountRequest;
 use App\Http\Resources\BankAccountResource;
 use App\Services\Contracts\BankAccountServiceInterface;
+use App\Models\BankAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class BankAccountController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', BankAccount::class);
+
         $branchId = $request->get('branch_id');
 
         if ($request->has('active')) {
@@ -42,6 +45,8 @@ class BankAccountController extends BaseController
      */
     public function store(StoreBankAccountRequest $request): BankAccountResource
     {
+        $this->authorize('create', BankAccount::class);
+
         $account = $this->bankAccountService->create($request->validated());
 
         return BankAccountResource::make($account);

@@ -9,6 +9,7 @@ use App\Http\Requests\PurchaseOrder\StorePurchaseOrderRequest;
 use App\Http\Requests\PurchaseOrder\UpdatePurchaseOrderRequest;
 use App\Http\Resources\PurchaseOrderResource;
 use App\Services\Contracts\PurchaseOrderServiceInterface;
+use App\Models\PurchaseOrder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class PurchaseOrderController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', PurchaseOrder::class);
+
         $branchId = $request->get('branch_id');
         $supplierId = $request->get('supplier_id');
         $perPage = (int) $request->get('per_page', 15);
@@ -66,6 +69,8 @@ class PurchaseOrderController extends BaseController
      */
     public function store(StorePurchaseOrderRequest $request): PurchaseOrderResource
     {
+        $this->authorize('create', PurchaseOrder::class);
+
         $purchaseOrder = $this->purchaseOrderService->createWithItems($request->validated());
 
         return PurchaseOrderResource::make($purchaseOrder);

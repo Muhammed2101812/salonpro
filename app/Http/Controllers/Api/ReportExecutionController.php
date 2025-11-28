@@ -9,6 +9,7 @@ use App\Http\Requests\ReportExecution\StoreReportExecutionRequest;
 use App\Http\Requests\ReportExecution\UpdateReportExecutionRequest;
 use App\Http\Resources\ReportExecutionResource;
 use App\Services\Contracts\ReportExecutionServiceInterface;
+use App\Models\ReportExecution;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class ReportExecutionController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ReportExecution::class);
+
         $perPage = (int) $request->query('per_page', 15);
         $executions = $this->reportExecutionService->getAll($perPage);
 
@@ -30,6 +33,8 @@ class ReportExecutionController extends Controller
 
     public function store(StoreReportExecutionRequest $request): JsonResponse
     {
+        $this->authorize('create', ReportExecution::class);
+
         $execution = $this->reportExecutionService->executeReport($request->validated());
 
         return response()->json([

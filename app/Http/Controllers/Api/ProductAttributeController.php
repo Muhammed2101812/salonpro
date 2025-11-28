@@ -9,6 +9,7 @@ use App\Http\Requests\ProductAttribute\StoreProductAttributeRequest;
 use App\Http\Requests\ProductAttribute\UpdateProductAttributeRequest;
 use App\Http\Resources\ProductAttributeResource;
 use App\Services\Contracts\ProductAttributeServiceInterface;
+use App\Models\ProductAttribute;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class ProductAttributeController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductAttribute::class);
+
         $perPage = (int) $request->query('per_page', 15);
         $attributes = $this->attributeService->getAll($perPage);
 
@@ -30,6 +33,8 @@ class ProductAttributeController extends Controller
 
     public function store(StoreProductAttributeRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductAttribute::class);
+
         $attribute = $this->attributeService->create($request->validated());
 
         return response()->json([

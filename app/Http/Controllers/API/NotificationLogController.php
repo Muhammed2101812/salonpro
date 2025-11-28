@@ -8,6 +8,7 @@ use App\Http\Requests\StoreNotificationLogRequest;
 use App\Http\Requests\UpdateNotificationLogRequest;
 use App\Http\Resources\NotificationLogResource;
 use App\Services\NotificationLogService;
+use App\Models\NotificationLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class NotificationLogController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', NotificationLog::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class NotificationLogController extends BaseController
 
     public function store(StoreNotificationLogRequest $request): JsonResponse
     {
+        $this->authorize('create', NotificationLog::class);
+
         $notificationLog = $this->notificationLogService->create($request->validated());
 
         return $this->sendSuccess(

@@ -9,6 +9,7 @@ use App\Http\Requests\ReportTemplate\StoreReportTemplateRequest;
 use App\Http\Requests\ReportTemplate\UpdateReportTemplateRequest;
 use App\Http\Resources\ReportTemplateResource;
 use App\Services\Contracts\ReportTemplateServiceInterface;
+use App\Models\ReportTemplate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class ReportTemplateController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ReportTemplate::class);
+
         $perPage = (int) $request->query('per_page', 15);
         $templates = $this->reportTemplateService->getAll($perPage);
 
@@ -30,6 +33,8 @@ class ReportTemplateController extends Controller
 
     public function store(StoreReportTemplateRequest $request): JsonResponse
     {
+        $this->authorize('create', ReportTemplate::class);
+
         $template = $this->reportTemplateService->create($request->validated());
 
         return response()->json([

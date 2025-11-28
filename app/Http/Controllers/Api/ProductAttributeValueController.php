@@ -9,6 +9,7 @@ use App\Http\Requests\ProductAttributeValue\StoreProductAttributeValueRequest;
 use App\Http\Requests\ProductAttributeValue\UpdateProductAttributeValueRequest;
 use App\Http\Resources\ProductAttributeValueResource;
 use App\Services\Contracts\ProductAttributeValueServiceInterface;
+use App\Models\ProductAttributeValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class ProductAttributeValueController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductAttributeValue::class);
+
         $productId = $request->query('product_id');
         $attributeId = $request->query('attribute_id');
 
@@ -39,6 +42,8 @@ class ProductAttributeValueController extends Controller
 
     public function store(StoreProductAttributeValueRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductAttributeValue::class);
+
         $value = $this->attributeValueService->setProductAttribute(
             $request->input('product_id'),
             $request->input('attribute_id'),

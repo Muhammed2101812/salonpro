@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Dashboard;
 use App\Models\Appointment;
 use App\Models\Branch;
 use App\Models\Customer;
@@ -19,6 +20,8 @@ class DashboardController extends BaseController
 {
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', Dashboard::class);
+
         try {
             $stats = [
                 'total_customers' => Customer::count(),

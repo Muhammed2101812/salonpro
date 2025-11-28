@@ -8,6 +8,7 @@ use App\Http\Requests\StoreExpenseRequest;
 use App\Http\Requests\UpdateExpenseRequest;
 use App\Http\Resources\ExpenseResource;
 use App\Services\ExpenseService;
+use App\Models\Expense;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,8 @@ class ExpenseController extends BaseController
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Expense::class);
+
         $perPage = (int) $request->get('per_page', 15);
         if ($request->has('per_page')) {
             return $this->sendPaginated(ExpenseResource::collection($this->expenseService->getPaginated($perPage)), 'Expenses retrieved');
@@ -27,6 +30,8 @@ class ExpenseController extends BaseController
 
     public function store(StoreExpenseRequest $request): JsonResponse
     {
+        $this->authorize('create', Expense::class);
+
         return $this->sendSuccess(new ExpenseResource($this->expenseService->create($request->validated())), 'Expense created', 201);
     }
 
@@ -42,6 +47,10 @@ class ExpenseController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $expense = $this->expenseService->findByIdOrFail($id);
+
+        $this->authorize('delete', $expense);
+
         $this->expenseService->delete($id);
 
         return $this->sendSuccess(null, 'Expense deleted');

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAnalyticsEventRequest;
 use App\Http\Requests\UpdateAnalyticsEventRequest;
 use App\Http\Resources\AnalyticsEventResource;
 use App\Services\AnalyticsEventService;
+use App\Models\AnalyticsEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AnalyticsEventController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AnalyticsEvent::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AnalyticsEventController extends BaseController
 
     public function store(StoreAnalyticsEventRequest $request): JsonResponse
     {
+        $this->authorize('create', AnalyticsEvent::class);
+
         $analyticsEvent = $this->analyticsEventService->create($request->validated());
 
         return $this->sendSuccess(

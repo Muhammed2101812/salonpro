@@ -9,6 +9,7 @@ use App\Http\Requests\Webhook\StoreWebhookRequest;
 use App\Http\Requests\Webhook\UpdateWebhookRequest;
 use App\Http\Resources\WebhookResource;
 use App\Services\Contracts\WebhookServiceInterface;
+use App\Models\Webhook;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class WebhookController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Webhook::class);
+
         $perPage = (int) $request->query('per_page', 15);
         $webhooks = $this->webhookService->getAll($perPage);
 
@@ -30,7 +33,12 @@ class WebhookController extends Controller
 
     public function store(StoreWebhookRequest $request): JsonResponse
     {
+        $this->authorize('create', Webhook::class);
+
         $webhook = $this->webhookService->create($request->validated());
+
+        $this->authorize('view', $webhook);
+
 
         return response()->json([
             'message' => 'Webhook created successfully',
@@ -51,6 +59,9 @@ class WebhookController extends Controller
     {
         $webhook = $this->webhookService->update($id, $request->validated());
 
+        $this->authorize('update', $webhook);
+
+
         return response()->json([
             'message' => 'Webhook updated successfully',
             'data' => WebhookResource::make($webhook),
@@ -59,6 +70,10 @@ class WebhookController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
+        $webhook = $this->webhookService->findByIdOrFail($id);
+
+        $this->authorize('delete', $webhook);
+
         $this->webhookService->delete($id);
 
         return response()->json([

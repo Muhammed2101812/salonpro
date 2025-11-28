@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerFeedbackRequest;
 use App\Http\Requests\UpdateCustomerFeedbackRequest;
 use App\Http\Resources\CustomerFeedbackResource;
 use App\Services\CustomerFeedbackService;
+use App\Models\CustomerFeedback;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomerFeedbackController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomerFeedback::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerFeedbackController extends BaseController
 
     public function store(StoreCustomerFeedbackRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomerFeedback::class);
+
         $customerFeedback = $this->customerFeedbackService->create($request->validated());
 
         return $this->sendSuccess(

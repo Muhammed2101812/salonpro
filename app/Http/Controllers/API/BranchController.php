@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBranchRequest;
 use App\Http\Requests\UpdateBranchRequest;
 use App\Http\Resources\BranchResource;
 use App\Services\BranchService;
+use App\Models\Branch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,6 +27,8 @@ class BranchController extends BaseController
      */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Branch::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -47,7 +50,12 @@ class BranchController extends BaseController
      */
     public function store(StoreBranchRequest $request): JsonResponse
     {
+        $this->authorize('create', Branch::class);
+
         $branch = $this->branchService->create($request->validated());
+
+        $this->authorize('view', $branch);
+
 
         return $this->sendSuccess(
             new BranchResource($branch),
@@ -76,6 +84,9 @@ class BranchController extends BaseController
     {
         $branch = $this->branchService->update($id, $request->validated());
 
+        $this->authorize('update', $branch);
+
+
         return $this->sendSuccess(
             new BranchResource($branch),
             'Branch updated successfully'
@@ -87,6 +98,10 @@ class BranchController extends BaseController
      */
     public function destroy(string $id): JsonResponse
     {
+        $branch = $this->branchService->findByIdOrFail($id);
+
+        $this->authorize('delete', $branch);
+
         $this->branchService->delete($id);
 
         return $this->sendSuccess(
@@ -100,6 +115,10 @@ class BranchController extends BaseController
      */
     public function restore(string $id): JsonResponse
     {
+        $branch = $this->branchService->findByIdOrFail($id);
+
+        $this->authorize('restore', $branch);
+
         $this->branchService->restore($id);
 
         return $this->sendSuccess(
@@ -113,6 +132,10 @@ class BranchController extends BaseController
      */
     public function forceDestroy(string $id): JsonResponse
     {
+        $branch = $this->branchService->findByIdOrFail($id);
+
+        $this->authorize('forceDelete', $branch);
+
         $this->branchService->forceDelete($id);
 
         return $this->sendSuccess(

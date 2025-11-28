@@ -9,6 +9,7 @@ use App\Http\Requests\Integration\StoreIntegrationRequest;
 use App\Http\Requests\Integration\UpdateIntegrationRequest;
 use App\Http\Resources\IntegrationResource;
 use App\Services\Contracts\IntegrationServiceInterface;
+use App\Models\Integration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class IntegrationController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Integration::class);
+
         $perPage = (int) $request->query('per_page', 15);
         $integrations = $this->integrationService->getAll($perPage);
 
@@ -30,7 +33,12 @@ class IntegrationController extends Controller
 
     public function store(StoreIntegrationRequest $request): JsonResponse
     {
+        $this->authorize('create', Integration::class);
+
         $integration = $this->integrationService->create($request->validated());
+
+        $this->authorize('view', $integration);
+
 
         return response()->json([
             'message' => 'Integration created successfully',
@@ -51,6 +59,9 @@ class IntegrationController extends Controller
     {
         $integration = $this->integrationService->update($id, $request->validated());
 
+        $this->authorize('update', $integration);
+
+
         return response()->json([
             'message' => 'Integration updated successfully',
             'data' => IntegrationResource::make($integration),
@@ -59,6 +70,10 @@ class IntegrationController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
+        $integration = $this->integrationService->findByIdOrFail($id);
+
+        $this->authorize('delete', $integration);
+
         $this->integrationService->delete($id);
 
         return response()->json([

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreMarketingCampaignRequest;
 use App\Http\Requests\UpdateMarketingCampaignRequest;
 use App\Http\Resources\MarketingCampaignResource;
 use App\Services\MarketingCampaignService;
+use App\Models\MarketingCampaign;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class MarketingCampaignController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', MarketingCampaign::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class MarketingCampaignController extends BaseController
 
     public function store(StoreMarketingCampaignRequest $request): JsonResponse
     {
+        $this->authorize('create', MarketingCampaign::class);
+
         $marketingCampaign = $this->marketingCampaignService->create($request->validated());
 
         return $this->sendSuccess(

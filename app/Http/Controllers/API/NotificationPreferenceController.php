@@ -8,6 +8,7 @@ use App\Http\Requests\StoreNotificationPreferenceRequest;
 use App\Http\Requests\UpdateNotificationPreferenceRequest;
 use App\Http\Resources\NotificationPreferenceResource;
 use App\Services\NotificationPreferenceService;
+use App\Models\NotificationPreference;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class NotificationPreferenceController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', NotificationPreference::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class NotificationPreferenceController extends BaseController
 
     public function store(StoreNotificationPreferenceRequest $request): JsonResponse
     {
+        $this->authorize('create', NotificationPreference::class);
+
         $notificationPreference = $this->notificationPreferenceService->create($request->validated());
 
         return $this->sendSuccess(

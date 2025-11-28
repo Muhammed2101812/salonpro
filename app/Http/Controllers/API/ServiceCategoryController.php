@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServiceCategoryRequest;
 use App\Http\Requests\UpdateServiceCategoryRequest;
 use App\Http\Resources\ServiceCategoryResource;
 use App\Services\ServiceCategoryService;
+use App\Models\ServiceCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,6 +27,8 @@ class ServiceCategoryController extends BaseController
      */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ServiceCategory::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -47,6 +50,8 @@ class ServiceCategoryController extends BaseController
      */
     public function store(StoreServiceCategoryRequest $request): JsonResponse
     {
+        $this->authorize('create', ServiceCategory::class);
+
         $category = $this->serviceCategoryService->create($request->validated());
 
         return $this->sendSuccess(

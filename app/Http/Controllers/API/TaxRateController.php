@@ -8,6 +8,7 @@ use App\Http\Requests\StoreTaxRateRequest;
 use App\Http\Requests\UpdateTaxRateRequest;
 use App\Http\Resources\TaxRateResource;
 use App\Services\TaxRateService;
+use App\Models\TaxRate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class TaxRateController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', TaxRate::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class TaxRateController extends BaseController
 
     public function store(StoreTaxRateRequest $request): JsonResponse
     {
+        $this->authorize('create', TaxRate::class);
+
         $taxRate = $this->taxRateService->create($request->validated());
 
         return $this->sendSuccess(

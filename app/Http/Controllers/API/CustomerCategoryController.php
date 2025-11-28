@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerCategoryRequest;
 use App\Http\Requests\UpdateCustomerCategoryRequest;
 use App\Http\Resources\CustomerCategoryResource;
 use App\Services\CustomerCategoryService;
+use App\Models\CustomerCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomerCategoryController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomerCategory::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerCategoryController extends BaseController
 
     public function store(StoreCustomerCategoryRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomerCategory::class);
+
         $customerCategory = $this->customerCategoryService->create($request->validated());
 
         return $this->sendSuccess(

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEmployeeShiftRequest;
 use App\Http\Requests\UpdateEmployeeShiftRequest;
 use App\Http\Resources\EmployeeShiftResource;
 use App\Services\EmployeeShiftService;
+use App\Models\EmployeeShift;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class EmployeeShiftController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeShift::class);
+
         // Check if date range filter is provided
         if ($request->has('start_date') && $request->has('end_date')) {
             $shifts = $this->employeeShiftService->getShiftsInRange(
@@ -52,6 +55,8 @@ class EmployeeShiftController extends BaseController
 
     public function store(StoreEmployeeShiftRequest $request): JsonResponse
     {
+        $this->authorize('create', EmployeeShift::class);
+
         $shift = $this->employeeShiftService->create($request->validated());
 
         return $this->sendSuccess(

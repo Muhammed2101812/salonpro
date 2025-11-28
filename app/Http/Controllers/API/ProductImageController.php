@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductImageRequest;
 use App\Http\Requests\UpdateProductImageRequest;
 use App\Http\Resources\ProductImageResource;
 use App\Services\ProductImageService;
+use App\Models\ProductImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductImageController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductImage::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductImageController extends BaseController
 
     public function store(StoreProductImageRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductImage::class);
+
         $productImage = $this->productImageService->create($request->validated());
 
         return $this->sendSuccess(

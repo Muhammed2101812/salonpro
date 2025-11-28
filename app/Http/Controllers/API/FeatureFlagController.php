@@ -8,6 +8,7 @@ use App\Http\Requests\StoreFeatureFlagRequest;
 use App\Http\Requests\UpdateFeatureFlagRequest;
 use App\Http\Resources\FeatureFlagResource;
 use App\Services\FeatureFlagService;
+use App\Models\FeatureFlag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class FeatureFlagController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', FeatureFlag::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class FeatureFlagController extends BaseController
 
     public function store(StoreFeatureFlagRequest $request): JsonResponse
     {
+        $this->authorize('create', FeatureFlag::class);
+
         $featureFlag = $this->featureFlagService->create($request->validated());
 
         return $this->sendSuccess(

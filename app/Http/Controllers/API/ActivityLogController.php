@@ -8,6 +8,7 @@ use App\Http\Requests\StoreActivityLogRequest;
 use App\Http\Requests\UpdateActivityLogRequest;
 use App\Http\Resources\ActivityLogResource;
 use App\Services\ActivityLogService;
+use App\Models\ActivityLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ActivityLogController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ActivityLog::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ActivityLogController extends BaseController
 
     public function store(StoreActivityLogRequest $request): JsonResponse
     {
+        $this->authorize('create', ActivityLog::class);
+
         $activityLog = $this->activityLogService->create($request->validated());
 
         return $this->sendSuccess(

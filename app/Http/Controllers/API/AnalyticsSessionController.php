@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAnalyticsSessionRequest;
 use App\Http\Requests\UpdateAnalyticsSessionRequest;
 use App\Http\Resources\AnalyticsSessionResource;
 use App\Services\AnalyticsSessionService;
+use App\Models\AnalyticsSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AnalyticsSessionController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AnalyticsSession::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AnalyticsSessionController extends BaseController
 
     public function store(StoreAnalyticsSessionRequest $request): JsonResponse
     {
+        $this->authorize('create', AnalyticsSession::class);
+
         $analyticsSession = $this->analyticsSessionService->create($request->validated());
 
         return $this->sendSuccess(

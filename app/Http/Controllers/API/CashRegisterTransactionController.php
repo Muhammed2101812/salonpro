@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCashRegisterTransactionRequest;
 use App\Http\Requests\UpdateCashRegisterTransactionRequest;
 use App\Http\Resources\CashRegisterTransactionResource;
 use App\Services\CashRegisterTransactionService;
+use App\Models\CashRegisterTransaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CashRegisterTransactionController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CashRegisterTransaction::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CashRegisterTransactionController extends BaseController
 
     public function store(StoreCashRegisterTransactionRequest $request): JsonResponse
     {
+        $this->authorize('create', CashRegisterTransaction::class);
+
         $cashRegisterTransaction = $this->cashRegisterTransactionService->create($request->validated());
 
         return $this->sendSuccess(

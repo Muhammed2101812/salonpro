@@ -8,6 +8,7 @@ use App\Http\Requests\StoreReportScheduleRequest;
 use App\Http\Requests\UpdateReportScheduleRequest;
 use App\Http\Resources\ReportScheduleResource;
 use App\Services\ReportScheduleService;
+use App\Models\ReportSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ReportScheduleController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ReportSchedule::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ReportScheduleController extends BaseController
 
     public function store(StoreReportScheduleRequest $request): JsonResponse
     {
+        $this->authorize('create', ReportSchedule::class);
+
         $reportSchedule = $this->reportScheduleService->create($request->validated());
 
         return $this->sendSuccess(

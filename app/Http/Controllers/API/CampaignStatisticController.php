@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCampaignStatisticRequest;
 use App\Http\Requests\UpdateCampaignStatisticRequest;
 use App\Http\Resources\CampaignStatisticResource;
 use App\Services\CampaignStatisticService;
+use App\Models\CampaignStatistic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CampaignStatisticController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CampaignStatistic::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CampaignStatisticController extends BaseController
 
     public function store(StoreCampaignStatisticRequest $request): JsonResponse
     {
+        $this->authorize('create', CampaignStatistic::class);
+
         $campaignStatistic = $this->campaignStatisticService->create($request->validated());
 
         return $this->sendSuccess(

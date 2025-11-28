@@ -6,6 +6,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Resources\SaleResource;
 use App\Services\SaleService;
+use App\Models\Sale;
 use Illuminate\Http\Request;
 
 class SaleController extends BaseController
@@ -14,6 +15,8 @@ class SaleController extends BaseController
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Sale::class);
+
         $perPage = (int) $request->get('per_page', 15);
         if ($request->has('per_page')) {
             return $this->sendPaginated(SaleResource::collection($this->saleService->getPaginated($perPage)), 'Sales retrieved');
@@ -24,6 +27,8 @@ class SaleController extends BaseController
 
     public function store(Request $request)
     {
+        $this->authorize('create', Sale::class);
+
         return $this->sendSuccess(new SaleResource($this->saleService->create($request->all())), 'Sale created', 201);
     }
 

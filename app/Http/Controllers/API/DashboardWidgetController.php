@@ -8,6 +8,7 @@ use App\Http\Requests\StoreDashboardWidgetRequest;
 use App\Http\Requests\UpdateDashboardWidgetRequest;
 use App\Http\Resources\DashboardWidgetResource;
 use App\Services\DashboardWidgetService;
+use App\Models\DashboardWidget;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class DashboardWidgetController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', DashboardWidget::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class DashboardWidgetController extends BaseController
 
     public function store(StoreDashboardWidgetRequest $request): JsonResponse
     {
+        $this->authorize('create', DashboardWidget::class);
+
         $dashboardWidget = $this->dashboardWidgetService->create($request->validated());
 
         return $this->sendSuccess(

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Services\ProductService;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,6 +27,8 @@ class ProductController extends BaseController
      */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Product::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -47,7 +50,15 @@ class ProductController extends BaseController
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
+        $this->authorize('create', Product::class);
+
         $product = $this->productService->create($request->validated());
+
+        $this->authorize('view', $product);
+
+
+        $this->authorize('view', $product);
+
 
         return $this->sendSuccess(
             new ProductResource($product),
@@ -76,6 +87,9 @@ class ProductController extends BaseController
     {
         $product = $this->productService->update($id, $request->validated());
 
+        $this->authorize('update', $product);
+
+
         return $this->sendSuccess(
             new ProductResource($product),
             'Product updated successfully'
@@ -87,6 +101,10 @@ class ProductController extends BaseController
      */
     public function destroy(string $id): JsonResponse
     {
+        $product = $this->productService->findByIdOrFail($id);
+
+        $this->authorize('delete', $product);
+
         $this->productService->delete($id);
 
         return $this->sendSuccess(
@@ -100,6 +118,10 @@ class ProductController extends BaseController
      */
     public function restore(string $id): JsonResponse
     {
+        $product = $this->productService->findByIdOrFail($id);
+
+        $this->authorize('restore', $product);
+
         $this->productService->restore($id);
 
         return $this->sendSuccess(
@@ -113,6 +135,10 @@ class ProductController extends BaseController
      */
     public function forceDestroy(string $id): JsonResponse
     {
+        $product = $this->productService->findByIdOrFail($id);
+
+        $this->authorize('forceDelete', $product);
+
         $this->productService->forceDelete($id);
 
         return $this->sendSuccess(

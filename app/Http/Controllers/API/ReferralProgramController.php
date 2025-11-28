@@ -8,6 +8,7 @@ use App\Http\Requests\StoreReferralProgramRequest;
 use App\Http\Requests\UpdateReferralProgramRequest;
 use App\Http\Resources\ReferralProgramResource;
 use App\Services\ReferralProgramService;
+use App\Models\ReferralProgram;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ReferralProgramController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ReferralProgram::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ReferralProgramController extends BaseController
 
     public function store(StoreReferralProgramRequest $request): JsonResponse
     {
+        $this->authorize('create', ReferralProgram::class);
+
         $referralProgram = $this->referralProgramService->create($request->validated());
 
         return $this->sendSuccess(

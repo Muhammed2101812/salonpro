@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerNoteRequest;
 use App\Http\Requests\UpdateCustomerNoteRequest;
 use App\Http\Resources\CustomerNoteResource;
 use App\Services\CustomerNoteService;
+use App\Models\CustomerNote;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomerNoteController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomerNote::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerNoteController extends BaseController
 
     public function store(StoreCustomerNoteRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomerNote::class);
+
         $customerNote = $this->customerNoteService->create($request->validated());
 
         return $this->sendSuccess(

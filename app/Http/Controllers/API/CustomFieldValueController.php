@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomFieldValueRequest;
 use App\Http\Requests\UpdateCustomFieldValueRequest;
 use App\Http\Resources\CustomFieldValueResource;
 use App\Services\CustomFieldValueService;
+use App\Models\CustomFieldValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomFieldValueController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomFieldValue::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomFieldValueController extends BaseController
 
     public function store(StoreCustomFieldValueRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomFieldValue::class);
+
         $customFieldValue = $this->customFieldValueService->create($request->validated());
 
         return $this->sendSuccess(

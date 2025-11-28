@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductBundleRequest;
 use App\Http\Requests\UpdateProductBundleRequest;
 use App\Http\Resources\ProductBundleResource;
 use App\Services\ProductBundleService;
+use App\Models\ProductBundle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductBundleController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductBundle::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductBundleController extends BaseController
 
     public function store(StoreProductBundleRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductBundle::class);
+
         $productBundle = $this->productBundleService->create($request->validated());
 
         return $this->sendSuccess(

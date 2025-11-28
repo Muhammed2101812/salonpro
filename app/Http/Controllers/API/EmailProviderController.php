@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEmailProviderRequest;
 use App\Http\Requests\UpdateEmailProviderRequest;
 use App\Http\Resources\EmailProviderResource;
 use App\Services\EmailProviderService;
+use App\Models\EmailProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class EmailProviderController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmailProvider::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class EmailProviderController extends BaseController
 
     public function store(StoreEmailProviderRequest $request): JsonResponse
     {
+        $this->authorize('create', EmailProvider::class);
+
         $emailProvider = $this->emailProviderService->create($request->validated());
 
         return $this->sendSuccess(

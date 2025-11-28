@@ -9,6 +9,7 @@ use App\Http\Requests\EmployeeLeave\StoreEmployeeLeaveRequest;
 use App\Http\Requests\EmployeeLeave\UpdateEmployeeLeaveRequest;
 use App\Http\Resources\EmployeeLeaveResource;
 use App\Services\Contracts\EmployeeLeaveServiceInterface;
+use App\Models\EmployeeLeave;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class EmployeeLeaveController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeLeave::class);
+
         $employeeId = $request->get('employee_id');
         $perPage = (int) $request->get('per_page', 15);
 
@@ -52,6 +55,8 @@ class EmployeeLeaveController extends BaseController
      */
     public function store(StoreEmployeeLeaveRequest $request): EmployeeLeaveResource
     {
+        $this->authorize('create', EmployeeLeave::class);
+
         $leave = $this->leaveService->requestLeave($request->validated());
 
         return EmployeeLeaveResource::make($leave);

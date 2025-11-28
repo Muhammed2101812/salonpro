@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentReminderRequest;
 use App\Http\Requests\UpdateAppointmentReminderRequest;
 use App\Http\Resources\AppointmentReminderResource;
 use App\Services\AppointmentReminderService;
+use App\Models\AppointmentReminder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AppointmentReminderController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AppointmentReminder::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AppointmentReminderController extends BaseController
 
     public function store(StoreAppointmentReminderRequest $request): JsonResponse
     {
+        $this->authorize('create', AppointmentReminder::class);
+
         $appointmentReminder = $this->appointmentReminderService->create($request->validated());
 
         return $this->sendSuccess(

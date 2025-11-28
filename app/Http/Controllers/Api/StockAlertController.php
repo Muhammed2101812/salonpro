@@ -9,6 +9,7 @@ use App\Http\Requests\StockAlert\StoreStockAlertRequest;
 use App\Http\Requests\StockAlert\UpdateStockAlertRequest;
 use App\Http\Resources\StockAlertResource;
 use App\Services\Contracts\StockAlertServiceInterface;
+use App\Models\StockAlert;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,6 +23,8 @@ class StockAlertController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', StockAlert::class);
+
         $branchId = $request->query('branch_id');
         $perPage = (int) $request->query('per_page', 15);
 
@@ -34,6 +37,8 @@ class StockAlertController extends Controller
 
     public function store(StoreStockAlertRequest $request): JsonResponse
     {
+        $this->authorize('create', StockAlert::class);
+
         $alert = $this->stockAlertService->create($request->validated());
 
         return response()->json([

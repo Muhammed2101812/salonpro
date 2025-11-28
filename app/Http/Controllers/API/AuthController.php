@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Auth;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,5 +45,42 @@ class AuthController extends BaseController
     public function profile(Request $request): JsonResponse
     {
         return $this->sendSuccess($request->user(), 'Profile retrieved');
+    }
+
+    public function currentBranch(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Kullanıcının branch'i varsa döndür
+        if ($user->branch_id) {
+            $branch = $user->branch;
+            return $this->sendSuccess($branch, 'Current branch retrieved');
+        }
+
+        return $this->sendSuccess(null, 'No branch assigned');
+    }
+
+    public function setCurrentBranch(Request $request): JsonResponse
+    {
+        $request->validate([
+            'branch_id' => 'required|exists:branches,id',
+        ]);
+
+        $user = $request->user();
+
+        // Kullanıcının bu şubeye erişim yetkisi var mı kontrol et
+        // Super Admin ve Organization Admin tüm şubelere erişebilir
+        if (! $user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
+            // Diğer kullanıcılar sadece kendi şubelerine erişebilir
+            if ($user->branch_id != $request->branch_id) {
+                return $this->sendError('Bu şubeye erişim yetkiniz yok', 403);
+            }
+        }
+
+        // Kullanıcının tercih ettiği şubeyi kaydet (opsiyonel - settings tablosuna yazılabilir)
+        // Şimdilik sadece şube bilgisini döndürelim
+        $branch = \App\Models\Branch::find($request->branch_id);
+
+        return $this->sendSuccess($branch, 'Current branch set successfully');
     }
 }

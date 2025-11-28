@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEmployeeCertificationRequest;
 use App\Http\Requests\UpdateEmployeeCertificationRequest;
 use App\Http\Resources\EmployeeCertificationResource;
 use App\Services\EmployeeCertificationService;
+use App\Models\EmployeeCertification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class EmployeeCertificationController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeCertification::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class EmployeeCertificationController extends BaseController
 
     public function store(StoreEmployeeCertificationRequest $request): JsonResponse
     {
+        $this->authorize('create', EmployeeCertification::class);
+
         $employeeCertification = $this->employeeCertificationService->create($request->validated());
 
         return $this->sendSuccess(

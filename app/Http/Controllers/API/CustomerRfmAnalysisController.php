@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerRfmAnalysisRequest;
 use App\Http\Requests\UpdateCustomerRfmAnalysisRequest;
 use App\Http\Resources\CustomerRfmAnalysisResource;
 use App\Services\CustomerRfmAnalysisService;
+use App\Models\CustomerRfmAnalysis;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomerRfmAnalysisController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomerRfmAnalysis::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerRfmAnalysisController extends BaseController
 
     public function store(StoreCustomerRfmAnalysisRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomerRfmAnalysis::class);
+
         $customerRfmAnalysis = $this->customerRfmAnalysisService->create($request->validated());
 
         return $this->sendSuccess(

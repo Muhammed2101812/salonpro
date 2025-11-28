@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Http\Resources\ServiceResource;
 use App\Services\ServiceService;
+use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,6 +27,8 @@ class ServiceController extends BaseController
      */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Service::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -47,7 +50,12 @@ class ServiceController extends BaseController
      */
     public function store(StoreServiceRequest $request): JsonResponse
     {
+        $this->authorize('create', Service::class);
+
         $service = $this->serviceService->create($request->validated());
+
+        $this->authorize('view', $service);
+
 
         return $this->sendSuccess(
             new ServiceResource($service),
@@ -76,6 +84,9 @@ class ServiceController extends BaseController
     {
         $service = $this->serviceService->update($id, $request->validated());
 
+        $this->authorize('update', $service);
+
+
         return $this->sendSuccess(
             new ServiceResource($service),
             'Service updated successfully'
@@ -87,6 +98,10 @@ class ServiceController extends BaseController
      */
     public function destroy(string $id): JsonResponse
     {
+        $service = $this->serviceService->findByIdOrFail($id);
+
+        $this->authorize('delete', $service);
+
         $this->serviceService->delete($id);
 
         return $this->sendSuccess(
@@ -100,6 +115,10 @@ class ServiceController extends BaseController
      */
     public function restore(string $id): JsonResponse
     {
+        $service = $this->serviceService->findByIdOrFail($id);
+
+        $this->authorize('restore', $service);
+
         $this->serviceService->restore($id);
 
         return $this->sendSuccess(
@@ -113,6 +132,10 @@ class ServiceController extends BaseController
      */
     public function forceDestroy(string $id): JsonResponse
     {
+        $service = $this->serviceService->findByIdOrFail($id);
+
+        $this->authorize('forceDelete', $service);
+
         $this->serviceService->forceDelete($id);
 
         return $this->sendSuccess(

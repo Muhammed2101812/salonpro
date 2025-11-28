@@ -9,6 +9,7 @@ use App\Http\Requests\EmployeeCommission\StoreEmployeeCommissionRequest;
 use App\Http\Requests\EmployeeCommission\UpdateEmployeeCommissionRequest;
 use App\Http\Resources\EmployeeCommissionResource;
 use App\Services\Contracts\EmployeeCommissionServiceInterface;
+use App\Models\EmployeeCommission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class EmployeeCommissionController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeCommission::class);
+
         $employeeId = $request->get('employee_id');
         $perPage = (int) $request->get('per_page', 15);
 
@@ -52,6 +55,8 @@ class EmployeeCommissionController extends BaseController
      */
     public function store(StoreEmployeeCommissionRequest $request): EmployeeCommissionResource
     {
+        $this->authorize('create', EmployeeCommission::class);
+
         $commission = $this->commissionService->create($request->validated());
 
         return EmployeeCommissionResource::make($commission);

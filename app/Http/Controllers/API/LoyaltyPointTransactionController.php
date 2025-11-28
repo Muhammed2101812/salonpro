@@ -8,6 +8,7 @@ use App\Http\Requests\StoreLoyaltyPointTransactionRequest;
 use App\Http\Requests\UpdateLoyaltyPointTransactionRequest;
 use App\Http\Resources\LoyaltyPointTransactionResource;
 use App\Services\LoyaltyPointTransactionService;
+use App\Models\LoyaltyPointTransaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class LoyaltyPointTransactionController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', LoyaltyPointTransaction::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class LoyaltyPointTransactionController extends BaseController
 
     public function store(StoreLoyaltyPointTransactionRequest $request): JsonResponse
     {
+        $this->authorize('create', LoyaltyPointTransaction::class);
+
         $loyaltyPointTransaction = $this->loyaltyPointTransactionService->create($request->validated());
 
         return $this->sendSuccess(

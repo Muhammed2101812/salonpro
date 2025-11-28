@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductSupplierPriceRequest;
 use App\Http\Requests\UpdateProductSupplierPriceRequest;
 use App\Http\Resources\ProductSupplierPriceResource;
 use App\Services\ProductSupplierPriceService;
+use App\Models\ProductSupplierPrice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductSupplierPriceController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductSupplierPrice::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductSupplierPriceController extends BaseController
 
     public function store(StoreProductSupplierPriceRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductSupplierPrice::class);
+
         $productSupplierPrice = $this->productSupplierPriceService->create($request->validated());
 
         return $this->sendSuccess(

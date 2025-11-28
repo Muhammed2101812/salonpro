@@ -8,6 +8,7 @@ use App\Http\Requests\StoreSmsProviderRequest;
 use App\Http\Requests\UpdateSmsProviderRequest;
 use App\Http\Resources\SmsProviderResource;
 use App\Services\SmsProviderService;
+use App\Models\SmsProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class SmsProviderController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', SmsProvider::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class SmsProviderController extends BaseController
 
     public function store(StoreSmsProviderRequest $request): JsonResponse
     {
+        $this->authorize('create', SmsProvider::class);
+
         $smsProvider = $this->smsProviderService->create($request->validated());
 
         return $this->sendSuccess(

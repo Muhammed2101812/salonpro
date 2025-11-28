@@ -8,6 +8,7 @@ use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\UpdateJournalEntryRequest;
 use App\Http\Resources\JournalEntryResource;
 use App\Services\JournalEntryService;
+use App\Models\JournalEntry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class JournalEntryController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', JournalEntry::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class JournalEntryController extends BaseController
 
     public function store(StoreJournalEntryRequest $request): JsonResponse
     {
+        $this->authorize('create', JournalEntry::class);
+
         $journalEntry = $this->journalEntryService->create($request->validated());
 
         return $this->sendSuccess(

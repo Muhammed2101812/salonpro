@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreStockAuditRequest;
 use App\Http\Requests\UpdateStockAuditRequest;
 use App\Services\StockAuditService;
+use App\Models\StockAudit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,8 @@ class StockAuditController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', StockAudit::class);
+
         try {
             $perPage = $request->input('per_page', 15);
             $filters = $request->only(['branch_id', 'status', 'start_date', 'end_date', 'search']);
@@ -38,6 +41,8 @@ class StockAuditController extends Controller
 
     public function store(StoreStockAuditRequest $request): JsonResponse
     {
+        $this->authorize('create', StockAudit::class);
+
         try {
             $audit = $this->service->createAudit($request->validated());
             

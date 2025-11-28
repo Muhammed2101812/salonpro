@@ -8,6 +8,7 @@ use App\Http\Requests\StoreLeadActivityRequest;
 use App\Http\Requests\UpdateLeadActivityRequest;
 use App\Http\Resources\LeadActivityResource;
 use App\Services\LeadActivityService;
+use App\Models\LeadActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class LeadActivityController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', LeadActivity::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class LeadActivityController extends BaseController
 
     public function store(StoreLeadActivityRequest $request): JsonResponse
     {
+        $this->authorize('create', LeadActivity::class);
+
         $leadActivity = $this->leadActivityService->create($request->validated());
 
         return $this->sendSuccess(

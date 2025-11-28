@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServiceAddonRequest;
 use App\Http\Requests\UpdateServiceAddonRequest;
 use App\Http\Resources\ServiceAddonResource;
 use App\Services\ServiceAddonService;
+use App\Models\ServiceAddon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ServiceAddonController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ServiceAddon::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ServiceAddonController extends BaseController
 
     public function store(StoreServiceAddonRequest $request): JsonResponse
     {
+        $this->authorize('create', ServiceAddon::class);
+
         $serviceAddon = $this->serviceAddonService->create($request->validated());
 
         return $this->sendSuccess(

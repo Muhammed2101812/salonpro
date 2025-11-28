@@ -8,6 +8,7 @@ use App\Http\Requests\StoreInvoiceItemRequest;
 use App\Http\Requests\UpdateInvoiceItemRequest;
 use App\Http\Resources\InvoiceItemResource;
 use App\Services\InvoiceItemService;
+use App\Models\InvoiceItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class InvoiceItemController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', InvoiceItem::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class InvoiceItemController extends BaseController
 
     public function store(StoreInvoiceItemRequest $request): JsonResponse
     {
+        $this->authorize('create', InvoiceItem::class);
+
         $invoiceItem = $this->invoiceItemService->create($request->validated());
 
         return $this->sendSuccess(

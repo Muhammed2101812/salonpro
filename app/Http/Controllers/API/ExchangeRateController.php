@@ -8,6 +8,7 @@ use App\Http\Requests\StoreExchangeRateRequest;
 use App\Http\Requests\UpdateExchangeRateRequest;
 use App\Http\Resources\ExchangeRateResource;
 use App\Services\ExchangeRateService;
+use App\Models\ExchangeRate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ExchangeRateController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ExchangeRate::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ExchangeRateController extends BaseController
 
     public function store(StoreExchangeRateRequest $request): JsonResponse
     {
+        $this->authorize('create', ExchangeRate::class);
+
         $exchangeRate = $this->exchangeRateService->create($request->validated());
 
         return $this->sendSuccess(

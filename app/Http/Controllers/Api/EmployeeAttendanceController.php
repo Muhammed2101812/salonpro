@@ -9,6 +9,7 @@ use App\Http\Requests\EmployeeAttendance\StoreEmployeeAttendanceRequest;
 use App\Http\Requests\EmployeeAttendance\UpdateEmployeeAttendanceRequest;
 use App\Http\Resources\EmployeeAttendanceResource;
 use App\Services\Contracts\EmployeeAttendanceServiceInterface;
+use App\Models\EmployeeAttendance;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,6 +25,8 @@ class EmployeeAttendanceController extends BaseController
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeAttendance::class);
+
         $employeeId = $request->get('employee_id');
         $branchId = $request->get('branch_id');
         $perPage = (int) $request->get('per_page', 15);

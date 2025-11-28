@@ -7,6 +7,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateBranchSettingsRequest;
 use App\Services\BranchSettingService;
+use App\Models\BranchSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,6 +22,8 @@ class BranchSettingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', BranchSetting::class);
+
         $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
         $group = $request->query('group');
 

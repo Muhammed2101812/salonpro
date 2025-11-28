@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductDiscountRequest;
 use App\Http\Requests\UpdateProductDiscountRequest;
 use App\Http\Resources\ProductDiscountResource;
 use App\Services\ProductDiscountService;
+use App\Models\ProductDiscount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductDiscountController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductDiscount::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductDiscountController extends BaseController
 
     public function store(StoreProductDiscountRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductDiscount::class);
+
         $productDiscount = $this->productDiscountService->create($request->validated());
 
         return $this->sendSuccess(

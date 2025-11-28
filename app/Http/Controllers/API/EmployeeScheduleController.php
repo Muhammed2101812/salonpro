@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEmployeeScheduleRequest;
 use App\Http\Requests\UpdateEmployeeScheduleRequest;
 use App\Http\Resources\EmployeeScheduleResource;
 use App\Services\EmployeeScheduleService;
+use App\Models\EmployeeSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class EmployeeScheduleController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeSchedule::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class EmployeeScheduleController extends BaseController
 
     public function store(StoreEmployeeScheduleRequest $request): JsonResponse
     {
+        $this->authorize('create', EmployeeSchedule::class);
+
         $employeeSchedule = $this->employeeScheduleService->create($request->validated());
 
         return $this->sendSuccess(

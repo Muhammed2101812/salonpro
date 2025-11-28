@@ -8,6 +8,7 @@ use App\Http\Requests\StoreUserPreferenceRequest;
 use App\Http\Requests\UpdateUserPreferenceRequest;
 use App\Http\Resources\UserPreferenceResource;
 use App\Services\UserPreferenceService;
+use App\Models\UserPreference;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class UserPreferenceController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', UserPreference::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class UserPreferenceController extends BaseController
 
     public function store(StoreUserPreferenceRequest $request): JsonResponse
     {
+        $this->authorize('create', UserPreference::class);
+
         $userPreference = $this->userPreferenceService->create($request->validated());
 
         return $this->sendSuccess(

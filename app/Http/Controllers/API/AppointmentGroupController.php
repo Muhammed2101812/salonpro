@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentGroupRequest;
 use App\Http\Requests\UpdateAppointmentGroupRequest;
 use App\Http\Resources\AppointmentGroupResource;
 use App\Services\AppointmentGroupService;
+use App\Models\AppointmentGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AppointmentGroupController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AppointmentGroup::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AppointmentGroupController extends BaseController
 
     public function store(StoreAppointmentGroupRequest $request): JsonResponse
     {
+        $this->authorize('create', AppointmentGroup::class);
+
         $appointmentGroup = $this->appointmentGroupService->create($request->validated());
 
         return $this->sendSuccess(

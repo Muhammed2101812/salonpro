@@ -8,6 +8,7 @@ use App\Http\Requests\StoreDocumentTemplateRequest;
 use App\Http\Requests\UpdateDocumentTemplateRequest;
 use App\Http\Resources\DocumentTemplateResource;
 use App\Services\DocumentTemplateService;
+use App\Models\DocumentTemplate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class DocumentTemplateController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', DocumentTemplate::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class DocumentTemplateController extends BaseController
 
     public function store(StoreDocumentTemplateRequest $request): JsonResponse
     {
+        $this->authorize('create', DocumentTemplate::class);
+
         $documentTemplate = $this->documentTemplateService->create($request->validated());
 
         return $this->sendSuccess(

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEmployeeSkillRequest;
 use App\Http\Requests\UpdateEmployeeSkillRequest;
 use App\Http\Resources\EmployeeSkillResource;
 use App\Services\EmployeeSkillService;
+use App\Models\EmployeeSkill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class EmployeeSkillController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeSkill::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class EmployeeSkillController extends BaseController
 
     public function store(StoreEmployeeSkillRequest $request): JsonResponse
     {
+        $this->authorize('create', EmployeeSkill::class);
+
         $employeeSkill = $this->employeeSkillService->create($request->validated());
 
         return $this->sendSuccess(

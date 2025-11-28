@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerSegmentRequest;
 use App\Http\Requests\UpdateCustomerSegmentRequest;
 use App\Http\Resources\CustomerSegmentResource;
 use App\Services\CustomerSegmentService;
+use App\Models\CustomerSegment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CustomerSegmentController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', CustomerSegment::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class CustomerSegmentController extends BaseController
 
     public function store(StoreCustomerSegmentRequest $request): JsonResponse
     {
+        $this->authorize('create', CustomerSegment::class);
+
         $customerSegment = $this->customerSegmentService->create($request->validated());
 
         return $this->sendSuccess(

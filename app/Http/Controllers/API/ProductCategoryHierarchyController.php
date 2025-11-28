@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductCategoryHierarchyRequest;
 use App\Http\Requests\UpdateProductCategoryHierarchyRequest;
 use App\Http\Resources\ProductCategoryHierarchyResource;
 use App\Services\ProductCategoryHierarchyService;
+use App\Models\ProductCategoryHierarchy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class ProductCategoryHierarchyController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', ProductCategoryHierarchy::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class ProductCategoryHierarchyController extends BaseController
 
     public function store(StoreProductCategoryHierarchyRequest $request): JsonResponse
     {
+        $this->authorize('create', ProductCategoryHierarchy::class);
+
         $productCategoryHierarchy = $this->productCategoryHierarchyService->create($request->validated());
 
         return $this->sendSuccess(

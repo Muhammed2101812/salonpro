@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentRecurrenceRequest;
 use App\Http\Requests\UpdateAppointmentRecurrenceRequest;
 use App\Http\Resources\AppointmentRecurrenceResource;
 use App\Services\AppointmentRecurrenceService;
+use App\Models\AppointmentRecurrence;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class AppointmentRecurrenceController extends BaseController
 
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
+        $this->authorize('viewAny', AppointmentRecurrence::class);
+
         $perPage = (int) $request->get('per_page', 15);
 
         if ($request->has('per_page')) {
@@ -38,6 +41,8 @@ class AppointmentRecurrenceController extends BaseController
 
     public function store(StoreAppointmentRecurrenceRequest $request): JsonResponse
     {
+        $this->authorize('create', AppointmentRecurrence::class);
+
         $appointmentRecurrence = $this->appointmentRecurrenceService->create($request->validated());
 
         return $this->sendSuccess(
