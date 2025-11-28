@@ -56,6 +56,8 @@ class CouponUsageController extends BaseController
     {
         $couponUsage = $this->couponUsageService->findByIdOrFail($id);
 
+        $this->authorize('view', $couponUsage);
+
         return $this->sendSuccess(
             new CouponUsageResource($couponUsage),
             'CouponUsage başarıyla getirildi'
@@ -64,6 +66,10 @@ class CouponUsageController extends BaseController
 
     public function update(UpdateCouponUsageRequest $request, string $id): JsonResponse
     {
+        $couponUsage = $this->couponUsageService->findByIdOrFail($id);
+
+        $this->authorize('update', $couponUsage);
+
         $couponUsage = $this->couponUsageService->update($id, $request->validated());
 
         return $this->sendSuccess(
@@ -74,6 +80,10 @@ class CouponUsageController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $couponUsage = $this->couponUsageService->findByIdOrFail($id);
+
+        $this->authorize('delete', $couponUsage);
+
         $this->couponUsageService->delete($id);
 
         return $this->sendSuccess(

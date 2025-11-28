@@ -56,6 +56,8 @@ class ChartOfAccountController extends BaseController
     {
         $chartOfAccount = $this->chartOfAccountService->findByIdOrFail($id);
 
+        $this->authorize('view', $chartOfAccount);
+
         return $this->sendSuccess(
             new ChartOfAccountResource($chartOfAccount),
             'ChartOfAccount başarıyla getirildi'
@@ -64,6 +66,10 @@ class ChartOfAccountController extends BaseController
 
     public function update(UpdateChartOfAccountRequest $request, string $id): JsonResponse
     {
+        $chartOfAccount = $this->chartOfAccountService->findByIdOrFail($id);
+
+        $this->authorize('update', $chartOfAccount);
+
         $chartOfAccount = $this->chartOfAccountService->update($id, $request->validated());
 
         return $this->sendSuccess(
@@ -74,6 +80,10 @@ class ChartOfAccountController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $chartOfAccount = $this->chartOfAccountService->findByIdOrFail($id);
+
+        $this->authorize('delete', $chartOfAccount);
+
         $this->chartOfAccountService->delete($id);
 
         return $this->sendSuccess(

@@ -56,6 +56,8 @@ class CashRegisterTransactionController extends BaseController
     {
         $cashRegisterTransaction = $this->cashRegisterTransactionService->findByIdOrFail($id);
 
+        $this->authorize('view', $cashRegisterTransaction);
+
         return $this->sendSuccess(
             new CashRegisterTransactionResource($cashRegisterTransaction),
             'CashRegisterTransaction başarıyla getirildi'
@@ -64,6 +66,10 @@ class CashRegisterTransactionController extends BaseController
 
     public function update(UpdateCashRegisterTransactionRequest $request, string $id): JsonResponse
     {
+        $cashRegisterTransaction = $this->cashRegisterTransactionService->findByIdOrFail($id);
+
+        $this->authorize('update', $cashRegisterTransaction);
+
         $cashRegisterTransaction = $this->cashRegisterTransactionService->update($id, $request->validated());
 
         return $this->sendSuccess(
@@ -74,6 +80,10 @@ class CashRegisterTransactionController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $cashRegisterTransaction = $this->cashRegisterTransactionService->findByIdOrFail($id);
+
+        $this->authorize('delete', $cashRegisterTransaction);
+
         $this->cashRegisterTransactionService->delete($id);
 
         return $this->sendSuccess(

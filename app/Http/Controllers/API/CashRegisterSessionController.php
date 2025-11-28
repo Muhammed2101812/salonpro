@@ -56,6 +56,8 @@ class CashRegisterSessionController extends BaseController
     {
         $cashRegisterSession = $this->cashRegisterSessionService->findByIdOrFail($id);
 
+        $this->authorize('view', $cashRegisterSession);
+
         return $this->sendSuccess(
             new CashRegisterSessionResource($cashRegisterSession),
             'CashRegisterSession başarıyla getirildi'
@@ -64,6 +66,10 @@ class CashRegisterSessionController extends BaseController
 
     public function update(UpdateCashRegisterSessionRequest $request, string $id): JsonResponse
     {
+        $cashRegisterSession = $this->cashRegisterSessionService->findByIdOrFail($id);
+
+        $this->authorize('update', $cashRegisterSession);
+
         $cashRegisterSession = $this->cashRegisterSessionService->update($id, $request->validated());
 
         return $this->sendSuccess(
@@ -74,6 +80,10 @@ class CashRegisterSessionController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
+        $cashRegisterSession = $this->cashRegisterSessionService->findByIdOrFail($id);
+
+        $this->authorize('delete', $cashRegisterSession);
+
         $this->cashRegisterSessionService->delete($id);
 
         return $this->sendSuccess(

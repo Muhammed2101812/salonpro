@@ -45,9 +45,6 @@ class CurrencyController extends BaseController
 
         $currency = $this->currencyService->create($request->validated());
 
-        $this->authorize('view', $currency);
-
-
         return $this->sendSuccess(
             new CurrencyResource($currency),
             'Currency başarıyla oluşturuldu',
@@ -59,6 +56,8 @@ class CurrencyController extends BaseController
     {
         $currency = $this->currencyService->findByIdOrFail($id);
 
+        $this->authorize('view', $currency);
+
         return $this->sendSuccess(
             new CurrencyResource($currency),
             'Currency başarıyla getirildi'
@@ -67,10 +66,11 @@ class CurrencyController extends BaseController
 
     public function update(UpdateCurrencyRequest $request, string $id): JsonResponse
     {
-        $currency = $this->currencyService->update($id, $request->validated());
+        $currency = $this->currencyService->findByIdOrFail($id);
 
         $this->authorize('update', $currency);
 
+        $currency = $this->currencyService->update($id, $request->validated());
 
         return $this->sendSuccess(
             new CurrencyResource($currency),
