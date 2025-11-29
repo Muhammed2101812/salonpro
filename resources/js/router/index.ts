@@ -160,6 +160,21 @@ const router = createRouter({
 console.log('Router instance created');
 console.log('Router has these routes:', router.getRoutes());
 
+// Prefetch all route components after initial load
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    // Wait a bit for initial page to settle
+    setTimeout(() => {
+      routes.forEach(route => {
+        if (typeof route.component === 'function') {
+          // Trigger lazy loading in background
+          route.component();
+        }
+      });
+    }, 1000);
+  });
+}
+
 router.beforeEach((to, from, next) => {
   console.log(`[Router Guard] Navigating from ${from.path} to ${to.path}`);
   const token = localStorage.getItem('auth_token');

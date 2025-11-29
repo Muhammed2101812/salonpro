@@ -18,7 +18,17 @@ class AppointmentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+
+        // Create admin role
+        $adminRole = \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        $adminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.view']));
+        $adminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.create']));
+        $adminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.update']));
+        $adminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.delete']));
+
+        $branch = \App\Models\Branch::factory()->create();
+        $this->user = User::factory()->create(['branch_id' => $branch->id]);
+        $this->user->assignRole('admin');
     }
 
     public function test_can_list_appointments(): void
@@ -57,7 +67,7 @@ class AppointmentTest extends TestCase
 
     public function test_can_show_appointment(): void
     {
-        $appointment = Appointment::factory()->create();
+        $appointment = Appointment::factory()->create(['branch_id' => $this->user->branch_id]);
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->getJson("/api/v1/appointments/{$appointment->id}");
@@ -71,8 +81,8 @@ class AppointmentTest extends TestCase
 
     public function test_can_update_appointment(): void
     {
-        $appointment = Appointment::factory()->create();
-        $updateData = Appointment::factory()->make()->toArray();
+        $appointment = Appointment::factory()->create(['branch_id' => $this->user->branch_id]);
+        $updateData = Appointment::factory()->make(['branch_id' => $this->user->branch_id])->toArray();
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->putJson("/api/v1/appointments/{$appointment->id}", $updateData);
@@ -87,7 +97,7 @@ class AppointmentTest extends TestCase
 
     public function test_can_delete_appointment(): void
     {
-        $appointment = Appointment::factory()->create();
+        $appointment = Appointment::factory()->create(['branch_id' => $this->user->branch_id]);
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->deleteJson("/api/v1/appointments/{$appointment->id}");

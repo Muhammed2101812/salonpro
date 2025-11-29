@@ -74,8 +74,9 @@ class AppointmentTest extends TestCase
         $appointment = Appointment::factory()->create();
 
         $this->assertNotNull($appointment->id);
+        // Laravel uses UUID v7 (ordered UUIDs), so check general UUID format
         $this->assertMatchesRegularExpression(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
             $appointment->id
         );
     }

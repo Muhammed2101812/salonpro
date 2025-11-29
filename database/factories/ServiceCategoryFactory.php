@@ -22,7 +22,16 @@ class ServiceCategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            // Add factory definitions here
+            'name' => fake()->words(2, true),
+            'description' => fake()->optional()->sentence(),
+            'is_active' => true,
         ];
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_active' => false,
+        ]);
     }
 }

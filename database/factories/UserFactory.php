@@ -24,10 +24,13 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'branch_id' => \App\Models\Branch::factory(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'phone' => fake()->unique()->numerify('+90##########'),
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }

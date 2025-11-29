@@ -16,6 +16,7 @@ class BranchTest extends TestCase
     {
         $branch = Branch::create([
             'name' => 'Main Branch',
+            'code' => 'MAIN01',
             'phone' => '+902121234567',
             'email' => 'main@salon.com',
             'address' => '123 Main St',
@@ -26,6 +27,7 @@ class BranchTest extends TestCase
 
         $this->assertDatabaseHas('branches', [
             'name' => 'Main Branch',
+            'code' => 'MAIN01',
             'city' => 'Istanbul',
         ]);
 
@@ -38,7 +40,7 @@ class BranchTest extends TestCase
 
         $this->assertNotNull($branch->id);
         $this->assertMatchesRegularExpression(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
             $branch->id
         );
     }

@@ -22,7 +22,23 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
-            // Add factory definitions here
+            'branch_id' => \App\Models\Branch::factory(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
+            'phone' => fake()->unique()->numerify('+90##########'),
+            'email' => fake()->unique()->safeEmail(),
+            'date_of_birth' => fake()->date(),
+            'gender' => fake()->randomElement(['male', 'female', 'other']),
+            'address' => fake()->address(),
+            'notes' => fake()->optional()->sentence(),
+            'is_active' => true,
         ];
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_active' => false,
+        ]);
     }
 }

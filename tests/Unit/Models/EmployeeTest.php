@@ -23,15 +23,15 @@ class EmployeeTest extends TestCase
             'last_name' => 'Smith',
             'phone' => '+905559876543',
             'email' => 'jane@salon.com',
-            'position' => 'Hairstylist',
-            'hire_date' => '2025-01-01',
+            'specialties' => json_encode(['Haircut', 'Coloring']),
+            'commission_rate' => 15.50,
             'is_active' => true,
         ]);
 
         $this->assertDatabaseHas('employees', [
             'first_name' => 'Jane',
             'last_name' => 'Smith',
-            'position' => 'Hairstylist',
+            'phone' => '+905559876543',
         ]);
 
         $this->assertInstanceOf(Employee::class, $employee);
@@ -52,7 +52,7 @@ class EmployeeTest extends TestCase
 
         $this->assertNotNull($employee->id);
         $this->assertMatchesRegularExpression(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
             $employee->id
         );
     }
