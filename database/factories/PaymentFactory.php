@@ -21,8 +21,18 @@ class PaymentFactory extends Factory
      */
     public function definition(): array
     {
+        $paymentMethods = ['cash', 'credit_card', 'debit_card', 'bank_transfer'];
+        $statuses = ['pending', 'completed', 'failed', 'refunded'];
+
         return [
-            // Add factory definitions here
+            'appointment_id' => null, // Can be set when creating payment for appointment
+            'sale_id' => null, // Can be set when creating payment for sale
+            'customer_id' => \App\Models\Customer::factory(),
+            'amount' => fake()->randomFloat(2, 10, 1000),
+            'payment_method' => fake()->randomElement($paymentMethods),
+            'payment_date' => fake()->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
+            'status' => fake()->randomElement($statuses),
+            'notes' => fake()->optional(0.3)->sentence(),
         ];
     }
 }
