@@ -28,9 +28,23 @@ class AppointmentPolicyTest extends TestCase
 
         $this->policy = new AppointmentPolicy();
         $this->branch = Branch::factory()->create();
+
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.view-all']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.create']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.update']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'appointments.delete']));
+
         $this->receptionistRole = Role::create(['name' => 'Receptionist']);
+        $this->receptionistRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'appointments.view']));
+        $this->receptionistRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'appointments.create']));
+        $this->receptionistRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'appointments.update']));
+        $this->receptionistRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'appointments.delete']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'appointments.view']));
     }
 
     public function test_receptionist_can_view_any_appointments(): void
