@@ -10,7 +10,7 @@
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        <div class="fixed inset-0 bg-white/30 backdrop-blur-sm transition-opacity" />
       </TransitionChild>
 
       <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -27,6 +27,18 @@
             <DialogPanel
               class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6"
             >
+              <!-- Close Button -->
+              <button
+                type="button"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+                @click="emit('update:modelValue', false)"
+              >
+                <span class="sr-only">Kapat</span>
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
               <div>
                 <div class="mt-3 text-center sm:mt-0 sm:text-left">
                   <DialogTitle as="h3" class="text-2xl font-semibold leading-6 text-gray-900 mb-6">
@@ -43,14 +55,14 @@
                   class="inline-flex w-full justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:w-auto"
                   @click="emit('save')"
                 >
-                  Save
+                  Kaydet
                 </button>
                 <button
                   type="button"
                   class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                   @click="emit('update:modelValue', false)"
                 >
-                  Cancel
+                  İptal
                 </button>
               </div>
             </DialogPanel>

@@ -27,11 +27,19 @@ export const useSettingStore = defineStore('setting', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await api.get('/settings');
-        this.settings = response.data;
+        const response: any = await api.get('/settings');
+        // Response formatına göre data'yı al (ResourceCollection veya sendSuccess formatı)
+        if (Array.isArray(response)) {
+          this.settings = response;
+        } else if (response?.data && Array.isArray(response.data)) {
+          this.settings = response.data;
+        } else {
+          this.settings = [];
+        }
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Ayarlar yüklenemedi';
         console.error('Ayarlar listesi hatası:', error);
+        this.settings = [];
       } finally {
         this.loading = false;
       }
@@ -41,9 +49,13 @@ export const useSettingStore = defineStore('setting', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await api.post('/settings', settingData);
-        this.settings.push(response.data.data);
-        return response.data.data;
+        const response: any = await api.post('/settings', settingData);
+        // sendSuccess formatı: { data: { ... } } veya direkt obje
+        const newSetting = response?.data?.data || response?.data || response;
+        if (newSetting && newSetting.id) {
+          this.settings.push(newSetting);
+        }
+        return newSetting;
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Ayar eklenemedi';
         console.error('Ayar ekleme hatası:', error);
@@ -57,12 +69,14 @@ export const useSettingStore = defineStore('setting', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await api.put(`/settings/${id}`, settingData);
+        const response: any = await api.put(`/settings/${id}`, settingData);
+        // sendSuccess formatı: { data: { ... } } veya direkt obje
+        const updatedSetting = response?.data?.data || response?.data || response;
         const index = this.settings.findIndex(s => s.id === id);
-        if (index !== -1) {
-          this.settings[index] = response.data.data;
+        if (index !== -1 && updatedSetting) {
+          this.settings[index] = updatedSetting;
         }
-        return response.data.data;
+        return updatedSetting;
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Ayar güncellenemedi';
         console.error('Ayar güncelleme hatası:', error);

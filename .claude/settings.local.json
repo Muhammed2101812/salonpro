@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(npm run build:*)",
+      "Bash(dir:*)",
+      "Bash(del /Q bootstrapcache*.php)",
+      "Bash(curl:*)",
+      "Bash(php -r:*)",
+      "Bash(echo:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

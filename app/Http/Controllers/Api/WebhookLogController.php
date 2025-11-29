@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\WebhookLogResource;
 use App\Services\Contracts\WebhookLogServiceInterface;
+use App\Models\WebhookLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class WebhookLogController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', WebhookLog::class);
+
         $webhookId = $request->query('webhook_id');
         $perPage = (int) $request->query('per_page', 15);
 

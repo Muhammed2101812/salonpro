@@ -41,9 +41,12 @@
     </div>
 
     <!-- Modal -->
-    <div v-if="showModal" class="modal" @click.self="closeModal">
-      <div class="modal-content">
-        <h2>{{ editingPayment ? 'Ödeme Düzenle' : 'Yeni Ödeme' }}</h2>
+    <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2>{{ editingPayment ? 'Ödeme Düzenle' : 'Yeni Ödeme' }}</h2>
+          <button type="button" @click="closeModal" class="modal-close-btn">&times;</button>
+        </div>
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
             <label>Müşteri *</label>
@@ -298,29 +301,6 @@ th {
 .btn-delete {
   background-color: #ef5350;
   color: white;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 .form-group {

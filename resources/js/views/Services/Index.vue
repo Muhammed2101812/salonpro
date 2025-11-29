@@ -136,8 +136,9 @@
     </div>
 
     <!-- Category Modal -->
-    <div v-if="showCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div v-if="showCategoryModal" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeCategoryModal">
+      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl relative">
+        <button type="button" @click="closeCategoryModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         <h2 class="text-2xl font-bold mb-6">{{ isEditCategory ? 'Kategori Düzenle' : 'Kategori Ekle' }}</h2>
         <form @submit.prevent="handleCategorySubmit" class="space-y-4">
           <div>
@@ -163,8 +164,9 @@
     </div>
 
     <!-- Service Modal -->
-    <div v-if="showServiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div v-if="showServiceModal" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeServiceModal">
+      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl relative">
+        <button type="button" @click="closeServiceModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         <h2 class="text-2xl font-bold mb-6">{{ isEditService ? 'Hizmet Düzenle' : 'Hizmet Ekle' }}</h2>
         <form @submit.prevent="handleServiceSubmit" class="space-y-4">
           <div>

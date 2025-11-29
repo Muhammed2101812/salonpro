@@ -268,9 +268,9 @@ class Product extends Model
     }
 
     /**
-     * Get attribute value by code.
+     * Get product attribute value by code.
      */
-    public function getAttributeValue(string $code): mixed
+    public function getProductAttributeValue(string $code): mixed
     {
         $attributeValue = $this->attributeValues()
             ->whereHas('attribute', function ($query) use ($code) {

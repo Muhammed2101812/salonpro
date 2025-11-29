@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\Customer;
@@ -8,7 +10,7 @@ use App\Models\User;
 class CustomerPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Determine if the user can view any customers.
      */
     public function viewAny(User $user): bool
     {
@@ -16,20 +18,21 @@ class CustomerPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Determine if the user can view the customer.
      */
     public function view(User $user, Customer $customer): bool
     {
-        if (! $user->can('customers.view')) {
-            return false;
+        // Super admin and organization admin can view all
+        if ($user->hasRole(['Super Admin', 'Organization Admin'])) {
+            return true;
         }
 
-        // Branch isolation: User can only view customers from their branch
-        return $this->checkBranchAccess($user, $customer);
+        // Other users can only view customers in their branch
+        return $user->can('customers.view') && $user->branch_id === $customer->branch_id;
     }
 
     /**
-     * Determine whether the user can create models.
+     * Determine if the user can create customers.
      */
     public function create(User $user): bool
     {
@@ -37,56 +40,52 @@ class CustomerPolicy
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determine if the user can update the customer.
      */
     public function update(User $user, Customer $customer): bool
     {
-        if (! $user->can('customers.update')) {
-            return false;
+        // Super admin and organization admin can update all
+        if ($user->hasRole(['Super Admin', 'Organization Admin'])) {
+            return true;
         }
 
-        return $this->checkBranchAccess($user, $customer);
+        // Other users can only update customers in their branch
+        return $user->can('customers.update') && $user->branch_id === $customer->branch_id;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine if the user can delete the customer.
      */
     public function delete(User $user, Customer $customer): bool
     {
-        if (! $user->can('customers.delete')) {
-            return false;
+        // Super admin and organization admin can delete all
+        if ($user->hasRole(['Super Admin', 'Organization Admin'])) {
+            return true;
         }
 
-        return $this->checkBranchAccess($user, $customer);
+        // Other users can only delete customers in their branch
+        return $user->can('customers.delete') && $user->branch_id === $customer->branch_id;
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine if the user can restore the customer.
      */
     public function restore(User $user, Customer $customer): bool
     {
-        if (! $user->can('customers.update')) {
-            return false;
-        }
-
-        return $this->checkBranchAccess($user, $customer);
+        return $this->delete($user, $customer);
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine if the user can permanently delete the customer.
      */
     public function forceDelete(User $user, Customer $customer): bool
     {
-        if (! $user->can('customers.delete')) {
-            return false;
-        }
-
-        // Only Super Admin and Org Admin can force delete
-        return $user->hasAnyRole(['Super Admin', 'Organization Admin']);
+        // Only super admin can force delete
+        return $user->hasRole('Super Admin');
     }
 
     /**
-     * Determine whether the user can export customer data.
+     * Determine if the user can export customers.
      */
     public function export(User $user): bool
     {
@@ -94,16 +93,10 @@ class CustomerPolicy
     }
 
     /**
-     * Check if user has access to customer based on branch.
+     * Determine if the user can view customers across all branches.
      */
-    private function checkBranchAccess(User $user, Customer $customer): bool
+    public function viewAll(User $user): bool
     {
-        // Super Admin and Org Admin have access to all branches
-        if ($user->hasAnyRole(['Super Admin', 'Organization Admin'])) {
-            return true;
-        }
-
-        // Other users can only access their branch's customers
-        return $user->branch_id === $customer->branch_id;
+        return $user->hasRole(['Super Admin', 'Organization Admin', 'Marketing Manager']);
     }
 }

@@ -54,6 +54,10 @@ Route::prefix('v1')->group(function (): void {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'profile']);
 
+        // User Branch Settings
+        Route::get('user/current-branch', [AuthController::class, 'currentBranch'])->name('user.current-branch');
+        Route::post('user/set-current-branch', [AuthController::class, 'setCurrentBranch'])->name('user.set-current-branch');
+
         // Dashboard
         Route::get('dashboard', [DashboardController::class, 'index']);
 

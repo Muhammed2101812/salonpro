@@ -19,6 +19,13 @@ class Customer extends Model
     use SoftDeletes;
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['name'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -124,5 +131,13 @@ class Customer extends Model
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Get the customer's name (alias for full_name).
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->getFullNameAttribute();
     }
 }

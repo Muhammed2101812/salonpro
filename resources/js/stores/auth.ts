@@ -15,9 +15,14 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null;
     try {
       const response: any = await api.post('/login', { email, password });
+      // response = { success, message, data: { user, token } }
       token.value = response.data.token;
       user.value = response.data.user;
-      localStorage.setItem('auth_token', token.value!);
+      console.log('Login response:', response);
+      console.log('Token:', token.value);
+      if (token.value) {
+        localStorage.setItem('auth_token', token.value);
+      }
       return true;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Login failed';

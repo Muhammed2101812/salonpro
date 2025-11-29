@@ -17,6 +17,13 @@ class Employee extends Model
     use HasUuids;
     use SoftDeletes;
 
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['name'];
+
     protected $fillable = [
         'branch_id',
         'user_id',
@@ -79,5 +86,13 @@ class Employee extends Model
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Get the employee's name (alias for full_name).
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->getFullNameAttribute();
     }
 }
