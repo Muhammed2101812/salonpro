@@ -467,20 +467,15 @@ const getPaymentMethodLabel = (method: string) => {
   return labels[method] || method;
 };
 
-onMounted(async () => {
-  try {
-    await Promise.all([
-      customerStore.fetchCustomers(),
-      appointmentStore.fetchAppointments(),
-      productStore.fetchProducts(),
-      serviceStore.fetchServices(),
-      paymentStore.fetchPayments(),
-      expenseStore.fetchExpenses(),
-      saleStore.fetchSales(),
-    ]);
-  } catch (error) {
-    console.error('Failed to fetch dashboard data:', error);
-  }
+onMounted(() => {
+  // Fire all requests concurrently without blocking render
+  customerStore.fetchCustomers().catch(err => console.error('Failed to fetch customers:', err));
+  appointmentStore.fetchAppointments().catch(err => console.error('Failed to fetch appointments:', err));
+  productStore.fetchProducts().catch(err => console.error('Failed to fetch products:', err));
+  serviceStore.fetchServices().catch(err => console.error('Failed to fetch services:', err));
+  paymentStore.fetchPayments().catch(err => console.error('Failed to fetch payments:', err));
+  expenseStore.fetchExpenses().catch(err => console.error('Failed to fetch expenses:', err));
+  saleStore.fetchSales().catch(err => console.error('Failed to fetch sales:', err));
 });
 </script>
 
