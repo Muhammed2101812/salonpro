@@ -28,9 +28,23 @@ class ExpensePolicyTest extends TestCase
 
         $this->policy = new ExpensePolicy();
         $this->branch = Branch::factory()->create();
+
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'expenses.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'expenses.create']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'expenses.update']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'expenses.delete']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'expenses.approve']));
+
         $this->accountantRole = Role::create(['name' => 'Accountant']);
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'expenses.view']));
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'expenses.create']));
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'expenses.update']));
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'expenses.delete']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'expenses.view']));
     }
 
     public function test_accountant_can_view_any_expenses(): void

@@ -28,9 +28,20 @@ class PaymentPolicyTest extends TestCase
 
         $this->policy = new PaymentPolicy();
         $this->branch = Branch::factory()->create();
+
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'payments.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'payments.create']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'payments.refund']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'payments.view-reports']));
+
         $this->accountantRole = Role::create(['name' => 'Accountant']);
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payments.view']));
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payments.create']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payments.view']));
     }
 
     public function test_accountant_can_view_any_payments(): void

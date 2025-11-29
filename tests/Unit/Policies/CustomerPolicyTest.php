@@ -31,10 +31,21 @@ class CustomerPolicyTest extends TestCase
         // Create branch
         $this->branch = Branch::factory()->create();
 
-        // Create roles
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'customers.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'customers.create']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'customers.update']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'customers.delete']));
+
         $this->branchManagerRole = Role::create(['name' => 'Branch Manager']);
+        $this->branchManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'customers.view']));
+        $this->branchManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'customers.create']));
+        $this->branchManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'customers.update']));
+        $this->branchManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'customers.delete']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'customers.view']));
     }
 
     public function test_super_admin_can_view_any_customers(): void

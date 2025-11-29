@@ -28,9 +28,18 @@ class InvoicePolicyTest extends TestCase
 
         $this->policy = new InvoicePolicy();
         $this->branch = Branch::factory()->create();
+
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'payments.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'payments.create']));
+
         $this->accountantRole = Role::create(['name' => 'Accountant']);
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payments.view']));
+        $this->accountantRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payments.create']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payments.view']));
     }
 
     public function test_accountant_can_view_any_invoices(): void

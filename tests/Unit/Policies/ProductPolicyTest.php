@@ -27,12 +27,23 @@ class ProductPolicyTest extends TestCase
         parent::setUp();
 
         $this->policy = new ProductPolicy();
-
         $this->branch = Branch::factory()->create();
 
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'products.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'products.create']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'products.update']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'products.delete']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'products.manage-inventory']));
+
         $this->inventoryManagerRole = Role::create(['name' => 'Inventory Manager']);
+        $this->inventoryManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'products.view']));
+        $this->inventoryManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'products.create']));
+        $this->inventoryManagerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'products.update']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'products.view']));
     }
 
     public function test_inventory_manager_can_view_any_products(): void

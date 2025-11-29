@@ -28,9 +28,22 @@ class SalePolicyTest extends TestCase
 
         $this->policy = new SalePolicy();
         $this->branch = Branch::factory()->create();
+
+        // Create roles with permissions
         $this->superAdminRole = Role::create(['name' => 'Super Admin']);
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'sales.view']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'sales.create']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'sales.update']));
+        $this->superAdminRole->givePermissionTo(\Spatie\Permission\Models\Permission::create(['name' => 'sales.delete']));
+
         $this->salesRepRole = Role::create(['name' => 'Sales Rep']);
+        $this->salesRepRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'sales.view']));
+        $this->salesRepRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'sales.create']));
+        $this->salesRepRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'sales.update']));
+        $this->salesRepRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'sales.delete']));
+
         $this->viewerRole = Role::create(['name' => 'Viewer']);
+        $this->viewerRole->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'sales.view']));
     }
 
     public function test_sales_rep_can_view_any_sales(): void
