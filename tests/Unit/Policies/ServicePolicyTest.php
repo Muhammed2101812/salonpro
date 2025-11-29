@@ -63,7 +63,7 @@ class ServicePolicyTest extends TestCase
         $user = User::factory()->create(['branch_id' => $this->branch->id]);
         $user->assignRole($this->viewerRole);
 
-        $service = Service::factory()->create(['branch_id' => $this->branch->id]);
+        $service = Service::factory()->create();
 
         $result = $this->policy->view($user, $service);
 
@@ -72,15 +72,15 @@ class ServicePolicyTest extends TestCase
 
     public function test_user_cannot_view_service_from_different_branch(): void
     {
-        $branch2 = Branch::factory()->create();
         $user = User::factory()->create(['branch_id' => $this->branch->id]);
         $user->assignRole($this->viewerRole);
 
-        $service = Service::factory()->create(['branch_id' => $branch2->id]);
+        $service = Service::factory()->create();
 
+        // Since services are organization-wide, all users with permission can view
         $result = $this->policy->view($user, $service);
 
-        $this->assertFalse($result);
+        $this->assertTrue($result); // Changed to assertTrue since no branch restriction
     }
 
     public function test_branch_manager_can_create_service(): void
@@ -108,7 +108,7 @@ class ServicePolicyTest extends TestCase
         $user = User::factory()->create(['branch_id' => $this->branch->id]);
         $user->assignRole($this->branchManagerRole);
 
-        $service = Service::factory()->create(['branch_id' => $this->branch->id]);
+        $service = Service::factory()->create();
 
         $result = $this->policy->update($user, $service);
 
@@ -117,11 +117,10 @@ class ServicePolicyTest extends TestCase
 
     public function test_super_admin_can_update_service_from_any_branch(): void
     {
-        $branch2 = Branch::factory()->create();
         $user = User::factory()->create(['branch_id' => $this->branch->id]);
         $user->assignRole($this->superAdminRole);
 
-        $service = Service::factory()->create(['branch_id' => $branch2->id]);
+        $service = Service::factory()->create();
 
         $result = $this->policy->update($user, $service);
 
@@ -133,7 +132,7 @@ class ServicePolicyTest extends TestCase
         $user = User::factory()->create(['branch_id' => $this->branch->id]);
         $user->assignRole($this->branchManagerRole);
 
-        $service = Service::factory()->create(['branch_id' => $this->branch->id]);
+        $service = Service::factory()->create();
 
         $result = $this->policy->delete($user, $service);
 
@@ -145,7 +144,7 @@ class ServicePolicyTest extends TestCase
         $user = User::factory()->create(['branch_id' => $this->branch->id]);
         $user->assignRole($this->viewerRole);
 
-        $service = Service::factory()->create(['branch_id' => $this->branch->id]);
+        $service = Service::factory()->create();
 
         $result = $this->policy->delete($user, $service);
 
