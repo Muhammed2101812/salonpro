@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api from '@/services/api';
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 interface Product {
   id: string;
   name: string;
@@ -26,13 +28,21 @@ export const useProductStore = defineStore('product', () => {
   const currentProduct = ref<Product | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const lastFetched = ref<number>(0);
 
-  const fetchProducts = async (params?: any) => {
+  const fetchProducts = async (params?: any, forceRefresh = false) => {
+    // Return cached data if still valid
+    const now = Date.now();
+    if (!forceRefresh && products.value.length > 0 && (now - lastFetched.value) < CACHE_TTL) {
+      return { data: products.value };
+    }
+
     loading.value = true;
     error.value = null;
     try {
       const response: any = await api.get('/products', params);
       products.value = response.data;
+      lastFetched.value = Date.now();
       return response;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Ürünler yüklenirken hata oluştu';

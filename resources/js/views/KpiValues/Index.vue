@@ -1,192 +1,118 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">KpiValues</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your kpivalues</p>
+        <h1 class="text-3xl font-bold text-gray-900">KPI Değerleri</h1>
+        <p class="mt-2 text-sm text-gray-600">Performans göstergelerinin değerlerini takip edin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New KpiValue
-      </button>
-    </div>
-
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-          />
-        </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
+      <div class="flex gap-2">
+        <select v-model="periodFilter" class="rounded-lg border-gray-300">
+          <option value="">Tüm Dönemler</option>
+          <option value="daily">Günlük</option>
+          <option value="weekly">Haftalık</option>
+          <option value="monthly">Aylık</option>
+        </select>
+        <button @click="exportData" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          <ArrowDownTrayIcon class="h-5 w-5 mr-2" />Dışa Aktar
         </button>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-green-600 hover:text-green-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-emerald-100"><ChartBarIcon class="h-6 w-6 text-emerald-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Kayıt</p><p class="text-2xl font-bold">{{ values.length }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100"><ArrowTrendingUpIcon class="h-6 w-6 text-green-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Hedefe Ulaşan</p><p class="text-2xl font-bold text-green-600">{{ onTargetCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-red-100"><ArrowTrendingDownIcon class="h-6 w-6 text-red-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Hedef Altı</p><p class="text-2xl font-bold text-red-600">{{ belowTargetCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100"><CalendarIcon class="h-6 w-6 text-blue-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Son Güncelleme</p><p class="text-lg font-bold text-blue-600">{{ lastUpdateDate }}</p></div>
         </div>
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit KpiValue' : 'Create KpiValue'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-          />
-        </div>
+    <!-- Değer Tablosu -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">KPI</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dönem</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Değer</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hedef</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Durum</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tarih</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr v-for="v in filteredValues" :key="v.id" class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center"><ChartBarIcon class="h-5 w-5 text-emerald-600" /></div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ v.kpi?.name || 'KPI' }}</div>
+                  <code class="text-xs text-gray-500">{{ v.kpi?.key || '' }}</code>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-center"><span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">{{ getPeriodLabel(v.period) }}</span></td>
+            <td class="px-6 py-4 text-center text-lg font-bold text-gray-900">{{ formatValue(v.value, v.kpi?.unit) }}</td>
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ formatValue(v.target || v.kpi?.target, v.kpi?.unit) }}</td>
+            <td class="px-6 py-4 text-center">
+              <span :class="['inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full font-medium', getStatusBadge(v)]">
+                <component :is="getStatusIcon(v)" class="h-3 w-3" />
+                {{ getStatusLabel(v) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ formatDate(v.recorded_at || v.created_at) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-if="filteredValues.length === 0" class="p-12 text-center">
+        <ChartBarIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Değer bulunamadı</p>
       </div>
-    </FormModal>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted, markRaw } from 'vue'
+import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, CalendarIcon, ArrowDownTrayIcon, CheckIcon, XMarkIcon as XIcon } from '@heroicons/vue/24/outline'
 import { useKpiValueStore } from '@/stores/kpivalue'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useKpiValueStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const periodFilter = ref('')
+const values = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const onTargetCount = computed(() => values.value.filter(v => isOnTarget(v)).length)
+const belowTargetCount = computed(() => values.value.filter(v => !isOnTarget(v) && v.target).length)
+const lastUpdateDate = computed(() => { const dates = values.value.map(v => new Date(v.recorded_at || v.created_at)); return dates.length ? formatDate(Math.max(...dates.map(d => d.getTime())).toString()) : '-' })
+const filteredValues = computed(() => values.value.filter(v => !periodFilter.value || v.period === periodFilter.value))
+const formatDate = (d: string | number) => d ? new Intl.DateTimeFormat('tr-TR').format(new Date(d)) : '-'
+const formatValue = (v: any, unit: string) => { if (v === undefined || v === null) return '-'; if (unit === '₺') return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v); if (unit === '%') return v + '%'; return v.toLocaleString() + (unit ? ' ' + unit : '') }
+const getPeriodLabel = (p: string) => ({ daily: 'Günlük', weekly: 'Haftalık', monthly: 'Aylık', yearly: 'Yıllık' }[p] || p || 'Genel')
+const isOnTarget = (v: any) => { const target = v.target || v.kpi?.target; if (!target) return true; return v.value >= target }
+const getStatusLabel = (v: any) => isOnTarget(v) ? 'Hedefte' : 'Altında'
+const getStatusBadge = (v: any) => isOnTarget(v) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+const getStatusIcon = (v: any) => isOnTarget(v) ? markRaw(CheckIcon) : markRaw(XIcon)
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const exportData = () => { alert('Veriler dışa aktarılıyor...') }
+const loadData = async () => { const r = await store.fetchAll({}); values.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

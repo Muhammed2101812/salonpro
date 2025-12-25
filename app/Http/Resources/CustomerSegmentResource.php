@@ -18,7 +18,13 @@ class CustomerSegmentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            // Add fields here
+            'name' => $this->name,
+            'description' => $this->description,
+            'criteria' => $this->criteria,
+            'is_active' => $this->is_active,
+            'auto_update' => $this->auto_update,
+            'customers_count' => $this->customers_count ?? 0,
+            'last_updated_at' => $this->last_updated_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

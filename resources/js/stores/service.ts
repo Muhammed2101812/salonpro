@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api from '@/services/api';
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 interface ServiceCategory {
   id: string;
   name: string;
@@ -32,14 +34,22 @@ export const useServiceStore = defineStore('service', () => {
   const currentCategory = ref<ServiceCategory | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const lastServicesFetched = ref<number>(0);
+  const lastCategoriesFetched = ref<number>(0);
 
   // Service Category Methods
-  const fetchCategories = async (params?: any) => {
+  const fetchCategories = async (params?: any, forceRefresh = false) => {
+    const now = Date.now();
+    if (!forceRefresh && categories.value.length > 0 && (now - lastCategoriesFetched.value) < CACHE_TTL) {
+      return { data: categories.value };
+    }
+
     loading.value = true;
     error.value = null;
     try {
       const response: any = await api.get('/service-categories', params);
       categories.value = response.data;
+      lastCategoriesFetched.value = Date.now();
       return response;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Kategoriler yüklenirken hata oluştu';
@@ -122,12 +132,18 @@ export const useServiceStore = defineStore('service', () => {
   };
 
   // Service Methods
-  const fetchServices = async (params?: any) => {
+  const fetchServices = async (params?: any, forceRefresh = false) => {
+    const now = Date.now();
+    if (!forceRefresh && services.value.length > 0 && (now - lastServicesFetched.value) < CACHE_TTL) {
+      return { data: services.value };
+    }
+
     loading.value = true;
     error.value = null;
     try {
       const response: any = await api.get('/services', params);
       services.value = response.data;
+      lastServicesFetched.value = Date.now();
       return response;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Hizmetler yüklenirken hata oluştu';

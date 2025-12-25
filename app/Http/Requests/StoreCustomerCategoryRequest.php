@@ -16,7 +16,9 @@ class StoreCustomerCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Add validation rules here
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'color' => 'nullable|string|max:20',
         ];
     }
 

@@ -1,192 +1,110 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Referrals</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your referrals</p>
+        <h1 class="text-3xl font-bold text-gray-900">Referanslar</h1>
+        <p class="mt-2 text-sm text-gray-600">Müşteri referans kayıtlarını görüntüleyin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New Referral
-      </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
-          />
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-pink-100"><UserGroupIcon class="h-6 w-6 text-pink-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Referans</p><p class="text-2xl font-bold">{{ referrals.length }}</p></div>
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
-        </button>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100"><CheckCircleIcon class="h-6 w-6 text-green-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Başarılı</p><p class="text-2xl font-bold text-green-600">{{ successCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-yellow-100"><ClockIcon class="h-6 w-6 text-yellow-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Bekleyen</p><p class="text-2xl font-bold text-yellow-600">{{ pendingCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-purple-100"><CurrencyDollarIcon class="h-6 w-6 text-purple-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Ödül</p><p class="text-2xl font-bold text-purple-600">{{ formatCurrency(totalRewards) }}</p></div>
+        </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <!-- Referans Tablosu -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Davet Eden</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Davet Edilen</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Durum</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ödül</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tarih</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
+        <tbody class="divide-y divide-gray-200">
+          <tr v-for="r in referrals" :key="r.id" class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center">
+                  <span class="text-pink-600 font-bold">{{ getInitials(r.referrer?.name) }}</span>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ r.referrer?.name || 'Davet Eden' }}</div>
+                  <div class="text-xs text-gray-500">{{ r.referrer?.email || '' }}</div>
+                </div>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span class="text-blue-600 font-bold">{{ getInitials(r.referred?.name) }}</span>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ r.referred?.name || 'Davet Edilen' }}</div>
+                  <div class="text-xs text-gray-500">{{ r.referred?.email || '' }}</div>
+                </div>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
+            <td class="px-6 py-4 text-center"><span :class="['px-2 py-1 text-xs rounded-full font-medium', getStatusBadge(r.status)]">{{ getStatusLabel(r.status) }}</span></td>
+            <td class="px-6 py-4 text-center">
+              <span v-if="r.reward_amount" class="text-sm font-medium text-purple-600">{{ formatCurrency(r.reward_amount) }}</span>
+              <span v-else class="text-sm text-gray-400">-</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-pink-600 hover:text-pink-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ formatDate(r.created_at) }}</td>
           </tr>
         </tbody>
       </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </div>
+      <div v-if="referrals.length === 0" class="p-12 text-center">
+        <UserGroupIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Referans bulunamadı</p>
       </div>
     </div>
-
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit Referral' : 'Create Referral'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
-          />
-        </div>
-      </div>
-    </FormModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted } from 'vue'
+import { UserGroupIcon, CheckCircleIcon, ClockIcon, CurrencyDollarIcon } from '@heroicons/vue/24/outline'
 import { useReferralStore } from '@/stores/referral'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useReferralStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const referrals = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const successCount = computed(() => referrals.value.filter(r => r.status === 'completed' || r.status === 'converted').length)
+const pendingCount = computed(() => referrals.value.filter(r => r.status === 'pending').length)
+const totalRewards = computed(() => referrals.value.reduce((s, r) => s + (r.reward_amount || 0), 0))
+const formatCurrency = (a: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(a || 0)
+const formatDate = (d: string) => d ? new Intl.DateTimeFormat('tr-TR').format(new Date(d)) : '-'
+const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'
+const getStatusLabel = (s: string) => ({ pending: 'Bekliyor', completed: 'Tamamlandı', converted: 'Dönüştürüldü', expired: 'Süresi Doldu' }[s] || s || 'Bekliyor')
+const getStatusBadge = (s: string) => ({ pending: 'bg-yellow-100 text-yellow-800', completed: 'bg-green-100 text-green-800', converted: 'bg-green-100 text-green-800', expired: 'bg-gray-100 text-gray-800' }[s] || 'bg-gray-100 text-gray-800')
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const loadData = async () => { const r = await store.fetchAll({}); referrals.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

@@ -12,6 +12,7 @@ use App\Models\CustomerCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerCategoryController extends BaseController
 {
@@ -23,18 +24,8 @@ class CustomerCategoryController extends BaseController
     {
         $this->authorize('viewAny', CustomerCategory::class);
 
-        $perPage = (int) $request->get('per_page', 15);
-
-        if ($request->has('per_page')) {
-            $customerCategories = $this->customerCategoryService->getPaginated($perPage);
-
-            return $this->sendPaginated(
-                CustomerCategoryResource::collection($customerCategories),
-                'CustomerCategories başarıyla getirildi'
-            );
-        }
-
-        $customerCategories = $this->customerCategoryService->getAll();
+        $branchId = Auth::user()->branch_id;
+        $customerCategories = $this->customerCategoryService->getAllCategories($branchId);
 
         return CustomerCategoryResource::collection($customerCategories);
     }
@@ -43,7 +34,10 @@ class CustomerCategoryController extends BaseController
     {
         $this->authorize('create', CustomerCategory::class);
 
-        $customerCategory = $this->customerCategoryService->create($request->validated());
+        $data = $request->validated();
+        $data['branch_id'] = Auth::user()->branch_id;
+
+        $customerCategory = $this->customerCategoryService->createCategory($data);
 
         return $this->sendSuccess(
             new CustomerCategoryResource($customerCategory),
@@ -54,7 +48,8 @@ class CustomerCategoryController extends BaseController
 
     public function show(string $id): JsonResponse
     {
-        $customerCategory = $this->customerCategoryService->findByIdOrFail($id);
+        $customerCategory = CustomerCategory::findOrFail($id);
+        $this->authorize('view', $customerCategory);
 
         return $this->sendSuccess(
             new CustomerCategoryResource($customerCategory),
@@ -64,7 +59,11 @@ class CustomerCategoryController extends BaseController
 
     public function update(UpdateCustomerCategoryRequest $request, string $id): JsonResponse
     {
-        $customerCategory = $this->customerCategoryService->update($id, $request->validated());
+        $customerCategory = CustomerCategory::findOrFail($id);
+        $this->authorize('update', $customerCategory);
+
+        $this->customerCategoryService->updateCategory($id, $request->validated());
+        $customerCategory->refresh();
 
         return $this->sendSuccess(
             new CustomerCategoryResource($customerCategory),
@@ -74,7 +73,10 @@ class CustomerCategoryController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
-        $this->customerCategoryService->delete($id);
+        $customerCategory = CustomerCategory::findOrFail($id);
+        $this->authorize('delete', $customerCategory);
+
+        $this->customerCategoryService->deleteCategory($id);
 
         return $this->sendSuccess(
             null,
@@ -82,3 +84,4 @@ class CustomerCategoryController extends BaseController
         );
     }
 }
+

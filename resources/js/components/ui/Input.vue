@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 
 interface Props {
   modelValue?: string | number
@@ -53,6 +53,7 @@ interface Props {
   readonly?: boolean
   required?: boolean
   id?: string
+  size?: 'sm' | 'md' | 'lg'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -60,6 +61,7 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   readonly: false,
   required: false,
+  size: 'md',
 })
 
 const emit = defineEmits<{
@@ -68,17 +70,27 @@ const emit = defineEmits<{
   focus: [event: FocusEvent]
 }>()
 
+const slots = useSlots()
 const inputId = computed(() => props.id || `input-${Math.random().toString(36).substring(2, 9)}`)
 
-const inputClasses = computed(() => {
-  const base = 'block w-full rounded-md shadow-sm transition-colors sm:text-sm'
-  const padding = props.$slots?.prefix ? 'pl-10' : props.$slots?.suffix ? 'pr-10' : 'px-3'
-  const state = props.error
-    ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
-    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-  const disabled = props.disabled || props.readonly ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+const sizeClasses = {
+  sm: 'h-8 px-3 text-xs',
+  md: 'h-10 px-3 text-sm',
+  lg: 'h-12 px-4 text-base',
+}
 
-  return `${base} ${padding} py-2 ${state} ${disabled}`
+const inputClasses = computed(() => {
+  const base = 'block w-full rounded-lg border shadow-sm transition-colors focus:outline-none'
+  const padding = slots.prefix ? 'pl-10' : slots.suffix ? 'pr-10' : ''
+  const size = sizeClasses[props.size as keyof typeof sizeClasses] || sizeClasses.md
+  
+  const state = props.error
+    ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-1 focus:ring-red-500 focus:border-red-500'
+    : 'border-gray-300 focus:ring-1 focus:ring-primary focus:border-primary'
+    
+  const disabled = props.disabled || props.readonly ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white'
+
+  return `${base} ${padding} ${size} ${state} ${disabled}`
 })
 
 const handleInput = (event: Event) => {

@@ -7,6 +7,9 @@ namespace App\Providers;
 use App\Models\Appointment;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\CustomerCategory;
+use App\Models\CustomerSegment;
+use App\Models\CustomerTag;
 use App\Models\Employee;
 use App\Models\Expense;
 use App\Models\InventoryMovement;
@@ -22,7 +25,10 @@ use App\Models\StockAudit;
 use App\Models\SystemSetting;
 use App\Policies\AppointmentPolicy;
 use App\Policies\BranchPolicy;
+use App\Policies\CustomerCategoryPolicy;
 use App\Policies\CustomerPolicy;
+use App\Policies\CustomerSegmentPolicy;
+use App\Policies\CustomerTagPolicy;
 use App\Policies\EmployeePolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\InventoryPolicy;
@@ -49,6 +55,9 @@ class AuthServiceProvider extends ServiceProvider
         Appointment::class => AppointmentPolicy::class,
         Branch::class => BranchPolicy::class,
         Customer::class => CustomerPolicy::class,
+        CustomerCategory::class => CustomerCategoryPolicy::class,
+        CustomerSegment::class => CustomerSegmentPolicy::class,
+        CustomerTag::class => CustomerTagPolicy::class,
         Employee::class => EmployeePolicy::class,
         Expense::class => ExpensePolicy::class,
         InventoryMovement::class => InventoryPolicy::class,

@@ -4,74 +4,111 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../**/*.vue';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Semantic Colors */
+    --color-primary: var(--color-blue-600);
+    --color-primary-hover: var(--color-blue-700);
+    --color-primary-light: var(--color-blue-50);
+    
+    --color-secondary: var(--color-gray-600);
+    --color-secondary-hover: var(--color-gray-700);
+    --color-secondary-light: var(--color-gray-100);
+
+    --color-success: var(--color-emerald-600);
+    --color-success-hover: var(--color-emerald-700);
+    --color-success-light: var(--color-emerald-50);
+
+    --color-danger: var(--color-red-600);
+    --color-danger-hover: var(--color-red-700);
+    --color-danger-light: var(--color-red-50);
+
+    --color-warning: var(--color-amber-500);
+    --color-warning-hover: var(--color-amber-600);
+    --color-warning-light: var(--color-amber-50);
+
+    --color-info: var(--color-sky-500);
+    --color-info-hover: var(--color-sky-600);
+    --color-info-light: var(--color-sky-50);
+
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    
+    /* Radius Standards */
+    --radius-card: 0.75rem; /* 12px - rounded-xl */
+    --radius-btn: 0.5rem;   /* 8px - rounded-lg */
+    --radius-input: 0.5rem; /* 8px - rounded-lg */
 }
 
-/* Global Modal Styles */
+/* Base Styles */
+@layer base {
+    body {
+        @apply bg-gray-50 text-gray-900 antialiased;
+        font-family: var(--font-sans);
+    }
+
+    h1 {
+        @apply text-3xl font-bold tracking-tight text-gray-900;
+    }
+
+    h2 {
+        @apply text-xl font-semibold text-gray-900;
+    }
+
+    h3 {
+        @apply text-lg font-medium text-gray-900;
+    }
+}
+
+/* Component Classes (to reduce repetition until full Vue component refactor) */
+@layer components {
+    .card {
+        @apply bg-white rounded-xl shadow-sm border border-gray-100;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    
+    .btn-primary {
+        @apply bg-primary text-white hover:bg-primary-hover;
+    }
+
+    .btn-secondary {
+        @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-200;
+    }
+
+    .btn-danger {
+        @apply bg-danger text-white hover:bg-danger-hover focus:ring-danger;
+    }
+
+    .input-field {
+        @apply block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm;
+    }
+    
+    .badge {
+        @apply px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+}
+
+/* Global Modal Styles (Refining existing) */
 .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
 }
 
 .modal-container {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    position: relative;
-}
-
-.modal-container.modal-large {
-    max-width: 700px;
-}
-
-.modal-container.modal-xl {
-    max-width: 900px;
+    @apply bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col relative;
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    @apply px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10;
 }
 
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
+.modal-body {
+    @apply p-6;
 }
 
-.modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #6b7280;
-    padding: 4px;
-    line-height: 1;
-    border-radius: 4px;
-    transition: all 0.2s;
-}
-
-.modal-close-btn:hover {
-    background-color: #f3f4f6;
-    color: #1f2937;
+.modal-footer {
+    @apply px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50;
 }

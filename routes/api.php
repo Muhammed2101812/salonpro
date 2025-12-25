@@ -73,6 +73,15 @@ Route::prefix('v1')->group(function (): void {
         Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
         Route::delete('customers/{customer}/force', [CustomerController::class, 'forceDestroy'])->name('customers.force-destroy');
 
+        // Customer Categories
+        Route::apiResource('customer-categories', \App\Http\Controllers\API\CustomerCategoryController::class);
+
+        // Customer Tags
+        Route::apiResource('customer-tags', \App\Http\Controllers\API\CustomerTagController::class);
+
+        // Customer Segments
+        Route::apiResource('customer-segments', \App\Http\Controllers\API\CustomerSegmentController::class);
+
         // Employees
         Route::apiResource('employees', EmployeeController::class);
         Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
@@ -149,7 +158,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('product-variants/{variant}/check-stock', [ProductVariantController::class, 'checkStock'])->name('product-variants.check-stock');
 
         // Coupons
-        Route::post('coupons/validate', [CouponController::class, 'validate'])->name('coupons.validate');
+        Route::post('coupons/validate', [CouponController::class, 'validateCoupon'])->name('coupons.validate');
         Route::post('coupons/apply', [CouponController::class, 'apply'])->name('coupons.apply');
         Route::get('coupons/{coupon}/usage', [CouponController::class, 'usage'])->name('coupons.usage');
         Route::get('coupons/customers/{customer}/usage', [CouponController::class, 'customerUsage'])->name('coupons.customer-usage');

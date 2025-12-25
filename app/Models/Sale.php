@@ -14,6 +14,13 @@ class Sale extends Model
 {
     use HasUuids,SoftDeletes;
 
+    /**
+     * Relations to eager load on every query for performance.
+     * 
+     * @var array<int, string>
+     */
+    protected $with = ['customer', 'employee'];
+
     protected $fillable = ['customer_id', 'employee_id', 'subtotal', 'discount', 'tax', 'total', 'payment_method', 'sale_date', 'notes'];
 
     protected function casts(): array

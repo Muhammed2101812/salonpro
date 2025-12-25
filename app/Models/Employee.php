@@ -18,6 +18,13 @@ class Employee extends Model
     use SoftDeletes;
 
     /**
+     * Relations to eager load on every query for performance.
+     * 
+     * @var array<int, string>
+     */
+    protected $with = ['branch'];
+
+    /**
      * The accessors to append to the model's array form.
      *
      * @var array<int, string>

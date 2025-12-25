@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Eloquent;
 
 use App\Models\WebhookLog;
-use App\Repositories\Contracts/WebhookLogRepositoryInterface;
+use App\Repositories\Contracts\WebhookLogRepositoryInterface;
 use Illuminate\Support\Collection;
 
 class WebhookLogRepository extends BaseRepository implements WebhookLogRepositoryInterface

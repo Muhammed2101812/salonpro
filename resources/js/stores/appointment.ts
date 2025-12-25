@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api from '@/services/api';
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 interface Branch {
   id: string;
   name: string;
@@ -54,13 +56,21 @@ export const useAppointmentStore = defineStore('appointment', () => {
   const currentAppointment = ref<Appointment | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const lastFetched = ref<number>(0);
 
-  const fetchAppointments = async (params?: any) => {
+  const fetchAppointments = async (params?: any, forceRefresh = false) => {
+    // Return cached data if still valid
+    const now = Date.now();
+    if (!forceRefresh && appointments.value.length > 0 && (now - lastFetched.value) < CACHE_TTL) {
+      return { data: appointments.value };
+    }
+
     loading.value = true;
     error.value = null;
     try {
       const response: any = await api.get('/appointments', params);
       appointments.value = response.data;
+      lastFetched.value = Date.now();
       return response;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Randevular yüklenirken hata oluştu';

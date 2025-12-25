@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\ReportTemplate;
 use App\Repositories\Contracts\ReportTemplateRepositoryInterface;
+use Illuminate\Support\Collection;
 
 class ReportTemplateRepository extends BaseRepository implements ReportTemplateRepositoryInterface
 {

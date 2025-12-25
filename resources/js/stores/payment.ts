@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 export interface Payment {
   id: string;
   appointment_id?: string;
@@ -20,6 +22,7 @@ interface PaymentState {
   payments: Payment[];
   loading: boolean;
   error: string | null;
+  lastFetched: number;
 }
 
 export const usePaymentStore = defineStore('payment', {
@@ -27,15 +30,22 @@ export const usePaymentStore = defineStore('payment', {
     payments: [],
     loading: false,
     error: null,
+    lastFetched: 0,
   }),
 
   actions: {
-    async fetchPayments() {
+    async fetchPayments(forceRefresh = false) {
+      const now = Date.now();
+      if (!forceRefresh && this.payments.length > 0 && (now - this.lastFetched) < CACHE_TTL) {
+        return { data: this.payments };
+      }
+
       this.loading = true;
       this.error = null;
       try {
         const response = await api.get('/payments');
         this.payments = response.data;
+        this.lastFetched = Date.now();
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Ödemeler yüklenemedi';
         console.error('Ödeme listesi hatası:', error);

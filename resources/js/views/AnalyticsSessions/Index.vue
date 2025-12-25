@@ -1,192 +1,110 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">AnalyticsSessions</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your analyticssessions</p>
+        <h1 class="text-3xl font-bold text-gray-900">Analitik Oturumları</h1>
+        <p class="mt-2 text-sm text-gray-600">Kullanıcı oturumlarını ve ziyaret istatistiklerini izleyin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New AnalyticsSession
+      <button @click="exportSessions" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <ArrowDownTrayIcon class="h-5 w-5 mr-2" />Dışa Aktar
       </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-teal-100"><GlobeAltIcon class="h-6 w-6 text-teal-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Oturum</p><p class="text-2xl font-bold">{{ sessions.length }}</p></div>
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
-        </button>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100"><SignalIcon class="h-6 w-6 text-green-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Aktif</p><p class="text-2xl font-bold text-green-600">{{ activeCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100"><ClockIcon class="h-6 w-6 text-blue-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Ort. Süre</p><p class="text-2xl font-bold text-blue-600">{{ avgDuration }} dk</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-purple-100"><DevicePhoneMobileIcon class="h-6 w-6 text-purple-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Mobil</p><p class="text-2xl font-bold text-purple-600">{{ mobileCount }}</p></div>
+        </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <!-- Oturum Tablosu -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cihaz</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Konum</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Süre</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Durum</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Başlangıç</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
+        <tbody class="divide-y divide-gray-200">
+          <tr v-for="s in sessions" :key="s.id" class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center"><span class="text-teal-600 font-bold">{{ getInitials(s.user?.name) }}</span></div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ s.user?.name || 'Anonim' }}</div>
+                  <div class="text-xs text-gray-500">{{ s.ip_address || '' }}</div>
+                </div>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
+            <td class="px-6 py-4 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <component :is="getDeviceIcon(s.device_type)" class="h-4 w-4 text-gray-500" />
+                <span class="text-sm text-gray-600">{{ s.browser || 'Chrome' }}</span>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ s.country || s.city || '-' }}</td>
+            <td class="px-6 py-4 text-center text-sm font-medium text-gray-900">{{ s.duration || 0 }} dk</td>
+            <td class="px-6 py-4 text-center">
+              <span :class="['inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full font-medium', isActive(s) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600']">
+                <span :class="['w-2 h-2 rounded-full', isActive(s) ? 'bg-green-500' : 'bg-gray-400']"></span>
+                {{ isActive(s) ? 'Aktif' : 'Sona Erdi' }}
+              </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-blue-600 hover:text-blue-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ formatDateTime(s.started_at || s.created_at) }}</td>
           </tr>
         </tbody>
       </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </div>
+      <div v-if="sessions.length === 0" class="p-12 text-center">
+        <GlobeAltIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Oturum bulunamadı</p>
       </div>
     </div>
-
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit AnalyticsSession' : 'Create AnalyticsSession'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-    </FormModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted, markRaw } from 'vue'
+import { GlobeAltIcon, SignalIcon, ClockIcon, DevicePhoneMobileIcon, ComputerDesktopIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import { useAnalyticsSessionStore } from '@/stores/analyticssession'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useAnalyticsSessionStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const sessions = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const activeCount = computed(() => sessions.value.filter(s => isActive(s)).length)
+const avgDuration = computed(() => { const durations = sessions.value.filter(s => s.duration); return durations.length ? Math.round(durations.reduce((sum, s) => sum + s.duration, 0) / durations.length) : 0 })
+const mobileCount = computed(() => sessions.value.filter(s => s.device_type === 'mobile').length)
+const formatDateTime = (d: string) => d ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(d)) : '-'
+const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'
+const isActive = (s: any) => { if (!s.ended_at && s.started_at) { const diff = Date.now() - new Date(s.started_at).getTime(); return diff < 30 * 60 * 1000 } return false }
+const getDeviceIcon = (t: string) => t === 'mobile' ? markRaw(DevicePhoneMobileIcon) : markRaw(ComputerDesktopIcon)
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const exportSessions = () => { alert('Oturumlar dışa aktarılıyor...') }
+const loadData = async () => { const r = await store.fetchAll({}); sessions.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

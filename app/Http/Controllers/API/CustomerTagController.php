@@ -12,6 +12,7 @@ use App\Models\CustomerTag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerTagController extends BaseController
 {
@@ -23,18 +24,8 @@ class CustomerTagController extends BaseController
     {
         $this->authorize('viewAny', CustomerTag::class);
 
-        $perPage = (int) $request->get('per_page', 15);
-
-        if ($request->has('per_page')) {
-            $customerTags = $this->customerTagService->getPaginated($perPage);
-
-            return $this->sendPaginated(
-                CustomerTagResource::collection($customerTags),
-                'CustomerTags başarıyla getirildi'
-            );
-        }
-
-        $customerTags = $this->customerTagService->getAll();
+        $branchId = Auth::user()->branch_id;
+        $customerTags = $this->customerTagService->getAllTags($branchId);
 
         return CustomerTagResource::collection($customerTags);
     }
@@ -43,7 +34,10 @@ class CustomerTagController extends BaseController
     {
         $this->authorize('create', CustomerTag::class);
 
-        $customerTag = $this->customerTagService->create($request->validated());
+        $data = $request->validated();
+        $data['branch_id'] = Auth::user()->branch_id;
+
+        $customerTag = $this->customerTagService->createTag($data);
 
         return $this->sendSuccess(
             new CustomerTagResource($customerTag),
@@ -54,7 +48,8 @@ class CustomerTagController extends BaseController
 
     public function show(string $id): JsonResponse
     {
-        $customerTag = $this->customerTagService->findByIdOrFail($id);
+        $customerTag = CustomerTag::findOrFail($id);
+        $this->authorize('view', $customerTag);
 
         return $this->sendSuccess(
             new CustomerTagResource($customerTag),
@@ -64,7 +59,11 @@ class CustomerTagController extends BaseController
 
     public function update(UpdateCustomerTagRequest $request, string $id): JsonResponse
     {
-        $customerTag = $this->customerTagService->update($id, $request->validated());
+        $customerTag = CustomerTag::findOrFail($id);
+        $this->authorize('update', $customerTag);
+
+        $this->customerTagService->updateTag($id, $request->validated());
+        $customerTag->refresh();
 
         return $this->sendSuccess(
             new CustomerTagResource($customerTag),
@@ -74,7 +73,10 @@ class CustomerTagController extends BaseController
 
     public function destroy(string $id): JsonResponse
     {
-        $this->customerTagService->delete($id);
+        $customerTag = CustomerTag::findOrFail($id);
+        $this->authorize('delete', $customerTag);
+
+        $this->customerTagService->deleteTag($id);
 
         return $this->sendSuccess(
             null,
@@ -82,3 +84,4 @@ class CustomerTagController extends BaseController
         );
     }
 }
+

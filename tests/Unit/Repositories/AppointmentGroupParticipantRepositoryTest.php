@@ -37,7 +37,7 @@ class AppointmentGroupParticipantRepositoryTest extends TestCase
         $result = $this->repository->create($data);
 
         $this->assertInstanceOf(AppointmentGroupParticipant::class, $result);
-        $this->assertDatabaseHas('appointmentGroupParticipants', ['id' => $result->id]);
+        $this->assertDatabaseHas('appointment_group_participants', ['id' => $result->id]);
     }
 
     public function test_can_find_record_by_id(): void
@@ -67,6 +67,6 @@ class AppointmentGroupParticipantRepositoryTest extends TestCase
         $result = $this->repository->delete($appointmentGroupParticipant->id);
 
         $this->assertTrue($result);
-        $this->assertSoftDeleted('appointmentGroupParticipants', ['id' => $appointmentGroupParticipant->id]);
+        $this->assertDatabaseMissing('appointment_group_participants', ['id' => $appointmentGroupParticipant->id]);
     }
 }

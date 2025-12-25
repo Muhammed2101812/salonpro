@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 export interface SaleItem {
   id?: string;
   product_id?: string;
@@ -33,6 +35,7 @@ interface SaleState {
   sales: Sale[];
   loading: boolean;
   error: string | null;
+  lastFetched: number;
 }
 
 export const useSaleStore = defineStore('sale', {
@@ -40,15 +43,22 @@ export const useSaleStore = defineStore('sale', {
     sales: [],
     loading: false,
     error: null,
+    lastFetched: 0,
   }),
 
   actions: {
-    async fetchSales() {
+    async fetchSales(forceRefresh = false) {
+      const now = Date.now();
+      if (!forceRefresh && this.sales.length > 0 && (now - this.lastFetched) < CACHE_TTL) {
+        return { data: this.sales };
+      }
+
       this.loading = true;
       this.error = null;
       try {
         const response = await api.get('/sales');
         this.sales = response.data;
+        this.lastFetched = Date.now();
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Satışlar yüklenemedi';
         console.error('Satış listesi hatası:', error);

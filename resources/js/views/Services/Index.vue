@@ -1,378 +1,529 @@
 <template>
-  <div class="p-8">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Hizmetler</h1>
-      <p class="mt-2 text-gray-600">Hizmet kategorileri ve hizmetlerinizi yönetin</p>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Hizmetler</h1>
+        <p class="mt-2 text-sm text-gray-600">Hizmet kategorileri ve hizmetlerinizi yönetin</p>
+      </div>
+      <div class="flex gap-3">
+        <div v-if="activeTab === 'services'" class="flex rounded-lg border border-gray-200 overflow-hidden bg-white">
+            <button
+              @click="viewMode = 'grid'"
+              :class="[ 'p-2 transition-colors', viewMode === 'grid' ? 'bg-primary text-white' : 'hover:bg-gray-50 text-gray-600' ]"
+              title="Kart Görünümü"
+            >
+              <Squares2X2Icon class="h-5 w-5" />
+            </button>
+            <button
+              @click="viewMode = 'table'"
+              :class="[ 'p-2 transition-colors', viewMode === 'table' ? 'bg-primary text-white' : 'hover:bg-gray-50 text-gray-600' ]"
+              title="Liste Görünümü"
+            >
+              <ListBulletIcon class="h-5 w-5" />
+            </button>
+        </div>
+        <Button 
+            v-if="activeTab === 'categories'"
+            variant="primary" 
+            @click="openCreateCategoryModal" 
+            :icon="PlusIcon" 
+            label="Kategori Ekle"
+            class="bg-teal-600 hover:bg-teal-700 text-white"
+        />
+        <Button 
+            v-else
+            variant="primary" 
+            @click="openCreateServiceModal" 
+            :icon="PlusIcon" 
+            label="Hizmet Ekle"
+            class="bg-teal-600 hover:bg-teal-700 text-white"
+        />
+      </div>
     </div>
+
+    <!-- Stats -->
+    <ServiceStats :stats="stats" />
 
     <!-- Tabs -->
-    <div class="mb-6 border-b border-gray-200">
-      <nav class="-mb-px flex space-x-8">
-        <button
-          @click="activeTab = 'categories'"
-          :class="[
-            activeTab === 'categories'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-          ]"
-        >
-          Kategoriler
-        </button>
-        <button
-          @click="activeTab = 'services'"
-          :class="[
-            activeTab === 'services'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-          ]"
-        >
-          Hizmetler
-        </button>
-      </nav>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="serviceStore.loading" class="text-center py-12">
-      <p class="text-gray-600">Yükleniyor...</p>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="serviceStore.error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-      {{ serviceStore.error }}
-    </div>
-
-    <!-- Categories Tab -->
-    <div v-else-if="activeTab === 'categories'">
-      <div class="mb-4 flex justify-end">
-        <button @click="openCreateCategoryModal" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-          Kategori Ekle
-        </button>
+    <Card class="overflow-hidden">
+      <div class="border-b border-gray-200">
+        <nav class="flex -mb-px">
+          <button
+            @click="activeTab = 'categories'"
+            :class="[
+              activeTab === 'categories'
+                ? 'border-teal-500 text-teal-600 bg-teal-50'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'flex-1 sm:flex-none whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center justify-center'
+            ]"
+          >
+            <FolderIcon class="h-5 w-5 mr-2 inline" />
+            Kategoriler
+            <span class="ml-2 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+              {{ serviceStore.categories.length }}
+            </span>
+          </button>
+          <button
+            @click="activeTab = 'services'"
+            :class="[
+              activeTab === 'services'
+                ? 'border-teal-500 text-teal-600 bg-teal-50'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'flex-1 sm:flex-none whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center justify-center'
+            ]"
+          >
+            <SparklesIcon class="h-5 w-5 mr-2 inline" />
+            Hizmetler
+            <span class="ml-2 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+              {{ serviceStore.services.length }}
+            </span>
+          </button>
+        </nav>
       </div>
 
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori Adı</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="category in serviceStore.categories" :key="category.id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ category.name }}</div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-gray-600">{{ category.description || '-' }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2 py-1 text-xs rounded-full font-semibold">
-                  {{ category.is_active ? 'Aktif' : 'Pasif' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                <button @click="openEditCategoryModal(category)" class="text-blue-600 hover:text-blue-900">Düzenle</button>
-                <button @click="handleDeleteCategory(category.id)" class="text-red-600 hover:text-red-900">Sil</button>
-              </td>
-            </tr>
-            <tr v-if="serviceStore.categories.length === 0">
-              <td colspan="4" class="px-6 py-12 text-center text-gray-500">Kategori bulunamadı</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <!-- Filters (Services Tab Only) -->
+      <div v-if="activeTab === 'services'" class="p-4 border-b border-gray-100 flex flex-col lg:flex-row gap-4 justify-between">
+           <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
+                <Input v-model="search" placeholder="Hizmet ara..." class="w-full lg:w-64">
+                    <template #prefix>
+                        <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
+                    </template>
+                </Input>
 
-    <!-- Services Tab -->
-    <div v-else-if="activeTab === 'services'">
-      <div class="mb-4 flex justify-end">
-        <button @click="openCreateServiceModal" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-          Hizmet Ekle
-        </button>
+               <select
+                 v-model="filters.categoryId"
+                 class="rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm py-2 px-3"
+               >
+                 <option value="">Tüm Kategoriler</option>
+                 <option v-for="cat in serviceStore.categories" :key="cat.id" :value="cat.id">
+                   {{ cat.name }}
+                 </option>
+               </select>
+
+               <div class="flex rounded-lg border border-gray-200 overflow-hidden">
+                 <button
+                   @click="filters.status = ''"
+                   :class="[
+                     'px-3 py-2 text-xs font-medium transition-colors',
+                     filters.status === '' ? 'bg-teal-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                   ]"
+                 >
+                   Tümü
+                 </button>
+                 <button
+                   @click="filters.status = 'active'"
+                   :class="[
+                     'px-3 py-2 text-xs font-medium transition-colors',
+                     filters.status === 'active' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                   ]"
+                 >
+                   Aktif
+                 </button>
+                 <button
+                   @click="filters.status = 'inactive'"
+                   :class="[
+                     'px-3 py-2 text-xs font-medium transition-colors',
+                     filters.status === 'inactive' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                   ]"
+                 >
+                   Pasif
+                 </button>
+               </div>
+           </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hizmet Adı</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Süre</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="service in serviceStore.services" :key="service.id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ service.name }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{{ getCategoryName(service.service_category_id) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ formatPrice(service.price) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ service.duration_minutes }} dk</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="service.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2 py-1 text-xs rounded-full font-semibold">
-                  {{ service.is_active ? 'Aktif' : 'Pasif' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                <button @click="openEditServiceModal(service)" class="text-blue-600 hover:text-blue-900">Düzenle</button>
-                <button @click="handleDeleteService(service.id)" class="text-red-600 hover:text-red-900">Sil</button>
-              </td>
-            </tr>
-            <tr v-if="serviceStore.services.length === 0">
-              <td colspan="6" class="px-6 py-12 text-center text-gray-500">Hizmet bulunamadı</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Content -->
+      <div v-if="serviceStore.loading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
       </div>
-    </div>
 
-    <!-- Category Modal -->
-    <div v-if="showCategoryModal" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeCategoryModal">
-      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl relative">
-        <button type="button" @click="closeCategoryModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-        <h2 class="text-2xl font-bold mb-6">{{ isEditCategory ? 'Kategori Düzenle' : 'Kategori Ekle' }}</h2>
-        <form @submit.prevent="handleCategorySubmit" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Adı *</label>
-            <input v-model="categoryForm.name" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      <div v-else class="p-6">
+          <!-- Categories Tab -->
+          <div v-if="activeTab === 'categories'">
+               <div v-if="serviceStore.categories.length === 0" class="text-center py-12 text-gray-500">
+                  <FolderIcon class="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  Kategori bulunamadı. İlk kategoriyi ekleyin.
+               </div>
+               <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div
+                    v-for="category in serviceStore.categories"
+                    :key="category.id"
+                    :class="[
+                      'rounded-xl border p-5 transition-all cursor-pointer hover:shadow-md bg-white',
+                      category.is_active ? 'border-gray-200' : 'border-gray-100 opacity-75'
+                    ]"
+                  >
+                    <div class="flex items-start justify-between mb-3">
+                      <div class="flex items-center gap-3">
+                        <div :class="['p-2 rounded-lg', getCategoryColor(category.id)]">
+                          <FolderIcon class="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h4 class="font-semibold text-gray-900">{{ category.name }}</h4>
+                          <p class="text-xs text-gray-500">{{ getCategoryServiceCount(category.id) }} hizmet</p>
+                        </div>
+                      </div>
+                      <span
+                        :class="[
+                          'px-2 py-1 text-xs font-medium rounded-full',
+                          category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        ]"
+                      >
+                        {{ category.is_active ? 'Aktif' : 'Pasif' }}
+                      </span>
+                    </div>
+                     <p v-if="category.description" class="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {{ category.description }}
+                    </p>
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                       <Button variant="ghost" size="sm" @click="openEditCategoryModal(category)">
+                          <PencilIcon class="h-4 w-4 text-teal-600" />
+                      </Button>
+                      <Button variant="ghost" size="sm" @click="handleDeleteCategory(category.id)">
+                          <TrashIcon class="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+               </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-            <textarea v-model="categoryForm.description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-          </div>
-          <div class="flex items-center">
-            <input v-model="categoryForm.is_active" type="checkbox" id="category_is_active" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-            <label for="category_is_active" class="ml-2 text-sm font-medium text-gray-700">Aktif</label>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeCategoryModal" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">İptal</button>
-            <button type="submit" :disabled="serviceStore.loading" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition">
-              {{ serviceStore.loading ? 'Kaydediliyor...' : 'Kaydet' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
 
-    <!-- Service Modal -->
-    <div v-if="showServiceModal" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeServiceModal">
-      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl relative">
-        <button type="button" @click="closeServiceModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-        <h2 class="text-2xl font-bold mb-6">{{ isEditService ? 'Hizmet Düzenle' : 'Hizmet Ekle' }}</h2>
-        <form @submit.prevent="handleServiceSubmit" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
-            <select v-model="serviceForm.service_category_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              <option value="">Kategori Seçin</option>
-              <option v-for="category in serviceStore.categories" :key="category.id" :value="category.id">
-                {{ category.name }}
-              </option>
-            </select>
+          <!-- Services Tab -->
+          <div v-else>
+               <!-- Grid View -->
+               <div v-if="viewMode === 'grid'">
+                    <div v-if="filteredServices.length === 0" class="text-center py-12 text-gray-500">
+                       <SparklesIcon class="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                       Hizmet bulunamadı.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                         <div
+                            v-for="service in filteredServices"
+                            :key="service.id"
+                            :class="[
+                              'rounded-xl border overflow-hidden transition-all hover:shadow-md bg-white',
+                              service.is_active ? 'border-gray-200' : 'border-gray-100 opacity-75'
+                            ]"
+                          >
+                            <div :class="['h-2', getCategoryColorByServiceId(service.service_category_id)]"></div>
+                            <div class="p-5">
+                              <div class="flex items-start justify-between mb-3">
+                                <div>
+                                  <h4 class="font-semibold text-gray-900">{{ service.name }}</h4>
+                                  <p class="text-xs text-gray-500">{{ getCategoryName(service.service_category_id) }}</p>
+                                </div>
+                                <span
+                                  :class="[
+                                    'px-2 py-1 text-xs font-medium rounded-full',
+                                    service.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                  ]"
+                                >
+                                  {{ service.is_active ? 'Aktif' : 'Pasif' }}
+                                </span>
+                              </div>
+                               <p v-if="service.description" class="text-sm text-gray-600 mb-4 line-clamp-2">
+                                {{ service.description }}
+                              </p>
+                               <div class="flex items-center justify-between py-3 border-t border-gray-100">
+                                <div class="flex items-center gap-4">
+                                  <div class="text-center">
+                                    <p class="text-lg font-bold text-teal-600">{{ formatCurrency(service.price) }}</p>
+                                    <p class="text-xs text-gray-500">Fiyat</p>
+                                  </div>
+                                  <div class="text-center">
+                                    <p class="text-lg font-bold text-gray-900">{{ service.duration_minutes }}</p>
+                                    <p class="text-xs text-gray-500">Dakika</p>
+                                  </div>
+                                </div>
+                              </div>
+                               <div class="flex items-center justify-end gap-2 pt-3">
+                                <Button variant="ghost" size="sm" @click="openEditServiceModal(service)">
+                                  <PencilIcon class="h-4 w-4 text-teal-600" />
+                                </Button>
+                                <Button variant="ghost" size="sm" @click="handleDeleteService(service.id)">
+                                  <TrashIcon class="h-4 w-4 text-red-600" />
+                                </Button>
+                              </div>
+                            </div>
+                         </div>
+                    </div>
+               </div>
+               
+               <!-- Table View -->
+               <div v-else>
+                   <DataTable
+                        :columns="tableColumns"
+                        :data="filteredServices"
+                    >
+                        <template #cell-name="{ row }">
+                            <div class="flex items-center gap-3">
+                              <div :class="['w-2 h-10 rounded', getCategoryColorByServiceId(row.service_category_id)]"></div>
+                              <div>
+                                <p class="text-sm font-medium text-gray-900">{{ row.name }}</p>
+                                <p v-if="row.description" class="text-xs text-gray-500 truncate max-w-xs">{{ row.description }}</p>
+                              </div>
+                            </div>
+                        </template>
+                        <template #cell-category="{ row }">
+                            {{ getCategoryName(row.service_category_id) }}
+                        </template>
+                        <template #cell-price="{ row }">
+                            <span class="text-sm font-medium text-teal-600">{{ formatCurrency(row.price) }}</span>
+                        </template>
+                        <template #cell-duration="{ row }">
+                            {{ row.duration_minutes }} dk
+                        </template>
+                        <template #cell-status="{ row }">
+                            <span
+                              :class="[
+                                'px-2 py-1 text-xs font-medium rounded-full',
+                                row.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              ]"
+                            >
+                              {{ row.is_active ? 'Aktif' : 'Pasif' }}
+                            </span>
+                        </template>
+                        <template #actions="{ row }">
+                            <div class="flex items-center justify-end gap-2">
+                                <Button variant="ghost" size="sm" @click="openEditServiceModal(row)">
+                                  <PencilIcon class="h-4 w-4 text-teal-600" />
+                                </Button>
+                                <Button variant="ghost" size="sm" @click="handleDeleteService(row.id)">
+                                  <TrashIcon class="h-4 w-4 text-red-600" />
+                                </Button>
+                            </div>
+                        </template>
+                   </DataTable>
+               </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Hizmet Adı *</label>
-            <input v-model="serviceForm.name" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-            <textarea v-model="serviceForm.description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fiyat (TL) *</label>
-              <input v-model="serviceForm.price" type="number" step="0.01" min="0" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Süre (Dakika) *</label>
-              <input v-model="serviceForm.duration_minutes" type="number" min="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-          </div>
-          <div class="flex items-center">
-            <input v-model="serviceForm.is_active" type="checkbox" id="service_is_active" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-            <label for="service_is_active" class="ml-2 text-sm font-medium text-gray-700">Aktif</label>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeServiceModal" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">İptal</button>
-            <button type="submit" :disabled="serviceStore.loading" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition">
-              {{ serviceStore.loading ? 'Kaydediliyor...' : 'Kaydet' }}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Card>
+
+    <!-- Modals -->
+    <CategoryModal
+        v-model="showCategoryModal"
+        :is-edit="isEditCategory"
+        :initial-data="categoryFormData"
+        :loading="serviceStore.loading"
+        @submit="handleCategorySubmit"
+    />
+    <ServiceModal
+        v-model="showServiceModal"
+        :is-edit="isEditService"
+        :initial-data="serviceFormData"
+        :loading="serviceStore.loading"
+        :categories="serviceStore.categories"
+        @submit="handleServiceSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useServiceStore } from '@/stores/service';
+import { ref, computed, onMounted } from 'vue'
+import {
+  PlusIcon,
+  SparklesIcon,
+  FolderIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+  ListBulletIcon,
+  Squares2X2Icon
+} from '@heroicons/vue/24/outline'
 
-const serviceStore = useServiceStore();
-const activeTab = ref<'categories' | 'services'>('categories');
+import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import Card from '@/components/ui/Card.vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import ServiceStats from '@/components/service/ServiceStats.vue'
+import CategoryModal from '@/components/service/CategoryModal.vue'
+import ServiceModal from '@/components/service/ServiceModal.vue'
 
-// Category Modal State
-const showCategoryModal = ref(false);
-const isEditCategory = ref(false);
-const editingCategoryId = ref<string | null>(null);
+import { useServiceStore } from '@/stores/service'
 
-const categoryForm = ref({
-  name: '',
-  description: '',
-  is_active: true
-});
+const serviceStore = useServiceStore()
 
-// Service Modal State
-const showServiceModal = ref(false);
-const isEditService = ref(false);
-const editingServiceId = ref<string | null>(null);
+// State
+const activeTab = ref<'categories' | 'services'>('services')
+const viewMode = ref<'grid' | 'table'>('grid')
+const search = ref('')
 
-const serviceForm = ref({
-  service_category_id: '',
-  name: '',
-  description: '',
-  price: 0,
-  duration_minutes: 30,
-  is_active: true
-});
+const filters = ref({
+  categoryId: '',
+  status: ''
+})
 
-// Category Methods
-const resetCategoryForm = () => {
-  categoryForm.value = {
-    name: '',
-    description: '',
-    is_active: true
-  };
-};
+const stats = ref({
+  totalServices: 0,
+  totalCategories: 0,
+  activeServices: 0,
+  avgPrice: 0,
+  avgDuration: 0
+})
 
+// Modals
+const showCategoryModal = ref(false)
+const isEditCategory = ref(false)
+const categoryFormData = ref<any>(null)
+const editingCategoryId = ref<string | null>(null)
+
+const showServiceModal = ref(false)
+const isEditService = ref(false)
+const serviceFormData = ref<any>(null)
+const editingServiceId = ref<string | null>(null)
+
+// Category colors
+const categoryColors = [
+  'bg-pink-500', 'bg-purple-500', 'bg-indigo-500', 'bg-blue-500',
+  'bg-cyan-500', 'bg-teal-500', 'bg-green-500', 'bg-yellow-500', 'bg-orange-500'
+]
+
+const tableColumns = [
+    { key: 'name', label: 'Hizmet' },
+    { key: 'category', label: 'Kategori' },
+    { key: 'price', label: 'Fiyat' },
+    { key: 'duration', label: 'Süre' },
+    { key: 'status', label: 'Durum' }
+]
+
+// Computed
+const filteredServices = computed(() => {
+  let result = serviceStore.services
+
+  if (search.value) {
+    const searchLower = search.value.toLowerCase()
+    result = result.filter(s => s.name?.toLowerCase().includes(searchLower))
+  }
+
+  if (filters.value.categoryId) {
+    result = result.filter(s => s.service_category_id === filters.value.categoryId)
+  }
+
+  if (filters.value.status === 'active') {
+    result = result.filter(s => s.is_active)
+  } else if (filters.value.status === 'inactive') {
+    result = result.filter(s => !s.is_active)
+  }
+
+  return result
+})
+
+// Helpers
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount || 0)
+}
+
+const getCategoryName = (categoryId: string) => {
+  const category = serviceStore.categories.find(c => c.id === categoryId)
+  return category ? category.name : '-'
+}
+
+const getCategoryServiceCount = (categoryId: string) => {
+  return serviceStore.services.filter(s => s.service_category_id === categoryId).length
+}
+
+const getCategoryColor = (categoryId: string) => {
+  const index = serviceStore.categories.findIndex(c => c.id === categoryId)
+  return categoryColors[index % categoryColors.length]
+}
+
+const getCategoryColorByServiceId = (categoryId: string) => {
+  return getCategoryColor(categoryId)
+}
+
+const updateStats = () => {
+  stats.value.totalServices = serviceStore.services.length
+  stats.value.totalCategories = serviceStore.categories.length
+  stats.value.activeServices = serviceStore.services.filter(s => s.is_active).length
+  
+  const prices = serviceStore.services.map(s => Number(s.price) || 0)
+  stats.value.avgPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0
+  
+  const durations = serviceStore.services.map(s => s.duration_minutes || 0)
+  stats.value.avgDuration = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0
+}
+
+// Category Actions
 const openCreateCategoryModal = () => {
-  resetCategoryForm();
-  isEditCategory.value = false;
-  editingCategoryId.value = null;
-  showCategoryModal.value = true;
-};
+  categoryFormData.value = null
+  isEditCategory.value = false
+  editingCategoryId.value = null
+  showCategoryModal.value = true
+}
 
 const openEditCategoryModal = (category: any) => {
-  categoryForm.value = {
-    name: category.name || '',
-    description: category.description || '',
-    is_active: category.is_active ?? true
-  };
-  isEditCategory.value = true;
-  editingCategoryId.value = category.id;
-  showCategoryModal.value = true;
-};
+  categoryFormData.value = { ...category }
+  isEditCategory.value = true
+  editingCategoryId.value = category.id
+  showCategoryModal.value = true
+}
 
-const closeCategoryModal = () => {
-  showCategoryModal.value = false;
-  resetCategoryForm();
-};
-
-const handleCategorySubmit = async () => {
+const handleCategorySubmit = async (data: any) => {
   try {
     if (isEditCategory.value && editingCategoryId.value) {
-      await serviceStore.updateCategory(editingCategoryId.value, categoryForm.value);
+      await serviceStore.updateCategory(editingCategoryId.value, data)
     } else {
-      await serviceStore.createCategory(categoryForm.value);
+      await serviceStore.createCategory(data)
     }
-    closeCategoryModal();
+    showCategoryModal.value = false
+    updateStats()
   } catch (error) {
-    console.error('Kategori kaydedilemedi:', error);
+    console.error('Kategori kaydedilemedi:', error)
   }
-};
+}
 
 const handleDeleteCategory = async (id: string) => {
-  if (confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
-    try {
-      await serviceStore.deleteCategory(id);
-    } catch (error) {
-      console.error('Kategori silinemedi:', error);
-    }
+  if (!confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) return
+  try {
+    await serviceStore.deleteCategory(id)
+    updateStats()
+  } catch (error) {
+    console.error('Kategori silinemedi:', error)
   }
-};
+}
 
-// Service Methods
-const resetServiceForm = () => {
-  serviceForm.value = {
-    service_category_id: '',
-    name: '',
-    description: '',
-    price: 0,
-    duration_minutes: 30,
-    is_active: true
-  };
-};
-
+// Service Actions
 const openCreateServiceModal = () => {
-  resetServiceForm();
-  isEditService.value = false;
-  editingServiceId.value = null;
-  showServiceModal.value = true;
-};
+  serviceFormData.value = null
+  isEditService.value = false
+  editingServiceId.value = null
+  showServiceModal.value = true
+}
 
 const openEditServiceModal = (service: any) => {
-  serviceForm.value = {
-    service_category_id: service.service_category_id || '',
-    name: service.name || '',
-    description: service.description || '',
-    price: service.price || 0,
-    duration_minutes: service.duration_minutes || 30,
-    is_active: service.is_active ?? true
-  };
-  isEditService.value = true;
-  editingServiceId.value = service.id;
-  showServiceModal.value = true;
-};
+  serviceFormData.value = { ...service }
+  isEditService.value = true
+  editingServiceId.value = service.id
+  showServiceModal.value = true
+}
 
-const closeServiceModal = () => {
-  showServiceModal.value = false;
-  resetServiceForm();
-};
-
-const handleServiceSubmit = async () => {
+const handleServiceSubmit = async (data: any) => {
   try {
-    if (isEditService.value && editingServiceId.value) {
-      await serviceStore.updateService(editingServiceId.value, serviceForm.value);
+     if (isEditService.value && editingServiceId.value) {
+      await serviceStore.updateService(editingServiceId.value, data)
     } else {
-      await serviceStore.createService(serviceForm.value);
+      await serviceStore.createService(data)
     }
-    closeServiceModal();
+    showServiceModal.value = false
+    updateStats()
   } catch (error) {
-    console.error('Hizmet kaydedilemedi:', error);
+    console.error('Hizmet kaydedilemedi:', error)
   }
-};
+}
 
 const handleDeleteService = async (id: string) => {
-  if (confirm('Bu hizmeti silmek istediğinizden emin misiniz?')) {
-    try {
-      await serviceStore.deleteService(id);
-    } catch (error) {
-      console.error('Hizmet silinemedi:', error);
-    }
+  if (!confirm('Bu hizmeti silmek istediğinizden emin misiniz?')) return
+  try {
+    await serviceStore.deleteService(id)
+    updateStats()
+  } catch (error) {
+    console.error('Hizmet silinemedi:', error)
   }
-};
+}
 
-// Helper Methods
-const getCategoryName = (categoryId: string) => {
-  const category = serviceStore.categories.find(c => c.id === categoryId);
-  return category ? category.name : '-';
-};
-
-const formatPrice = (price: string | number) => {
-  return `${Number(price).toFixed(2)} TL`;
-};
-
-// Initialize Data
 onMounted(async () => {
-  await serviceStore.fetchCategories();
-  await serviceStore.fetchServices();
-});
+    await serviceStore.fetchCategories()
+    await serviceStore.fetchServices()
+    updateStats()
+})
 </script>

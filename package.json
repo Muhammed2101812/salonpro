@@ -4,29 +4,42 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test": "vitest",
+        "test:run": "vitest run",
+        "test:coverage": "vitest run --coverage"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-vue": "^6.0.1",
+        "@vitest/coverage-v8": "^4.0.16",
+        "@vue/test-utils": "^2.4.6",
         "@vue/tsconfig": "^0.8.1",
         "axios": "^1.12.2",
         "concurrently": "^9.0.1",
+        "happy-dom": "^20.0.11",
         "laravel-vite-plugin": "^2.0.0",
         "tailwindcss": "^4.0.0",
         "typescript": "^5.9.3",
         "vite": "^7.0.7",
+        "vitest": "^4.0.16",
         "vue": "^3.5.22"
     },
     "dependencies": {
+        "@fontsource/inter": "^5.2.8",
         "@headlessui/vue": "^1.7.23",
         "@heroicons/vue": "^2.2.0",
         "@vee-validate/i18n": "^4.15.1",
         "@vee-validate/yup": "^4.15.1",
+        "chart.js": "^4.5.1",
+        "jspdf": "^3.0.4",
+        "jspdf-autotable": "^5.0.2",
         "pinia": "^3.0.3",
         "vee-validate": "^4.15.1",
+        "vue-chartjs": "^5.3.3",
         "vue-i18n": "^10.0.8",
         "vue-router": "^4.6.3",
+        "xlsx": "^0.18.5",
         "yup": "^1.7.1"
     }
 }

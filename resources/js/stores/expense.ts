@@ -1,18 +1,27 @@
-import {defineStore} from 'pinia';
-import {ref} from 'vue';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import api from '@/services/api';
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
 export const useExpenseStore = defineStore('expense', () => {
   const expenses = ref<any[]>([]);
   const loading = ref(false);
-  const error = ref<string|null>(null);
+  const error = ref<string | null>(null);
+  const lastFetched = ref<number>(0);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = async (forceRefresh = false) => {
+    const now = Date.now();
+    if (!forceRefresh && expenses.value.length > 0 && (now - lastFetched.value) < CACHE_TTL) {
+      return { data: expenses.value };
+    }
+
     loading.value = true;
     error.value = null;
     try {
       const response: any = await api.get('/expenses');
       expenses.value = response.data;
+      lastFetched.value = Date.now();
       return response;
     } catch (err: any) {
       error.value = 'Giderler yüklenirken hata oluştu';

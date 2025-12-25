@@ -18,7 +18,12 @@ class CustomerTagResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            // Add fields here
+            'branch_id' => $this->branch_id,
+            'name' => $this->name,
+            'color' => $this->color,
+            'description' => $this->description,
+            'is_active' => $this->is_active ?? true,
+            'customers_count' => $this->usage_count ?? 0,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

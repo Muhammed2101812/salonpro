@@ -1,192 +1,100 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">CouponUsages</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your couponusages</p>
+        <h1 class="text-3xl font-bold text-gray-900">Kupon Kullanımları</h1>
+        <p class="mt-2 text-sm text-gray-600">Kupon kullanım geçmişini görüntüleyin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New CouponUsage
-      </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
-          />
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-fuchsia-100"><TicketIcon class="h-6 w-6 text-fuchsia-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Kullanım</p><p class="text-2xl font-bold">{{ usages.length }}</p></div>
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
-        </button>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100"><CurrencyDollarIcon class="h-6 w-6 text-green-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam İndirim</p><p class="text-2xl font-bold text-green-600">{{ formatCurrency(totalDiscount) }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100"><UsersIcon class="h-6 w-6 text-blue-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Müşteri</p><p class="text-2xl font-bold text-blue-600">{{ uniqueCustomers }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-purple-100"><TagIcon class="h-6 w-6 text-purple-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Kupon</p><p class="text-2xl font-bold text-purple-600">{{ uniqueCoupons }}</p></div>
+        </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <!-- Kullanım Tablosu -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kupon</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Müşteri</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">İndirim</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Sipariş</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tarih</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
+        <tbody class="divide-y divide-gray-200">
+          <tr v-for="u in usages" :key="u.id" class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-lg bg-fuchsia-100 flex items-center justify-center">
+                  <TicketIcon class="h-5 w-5 text-fuchsia-600" />
+                </div>
+                <div>
+                  <code class="text-sm font-bold text-gray-900">{{ u.coupon?.code || 'KUPON' }}</code>
+                  <div class="text-xs text-gray-500">{{ u.coupon?.name || '' }}</div>
+                </div>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
+            <td class="px-6 py-4">
+              <div class="font-medium text-gray-900">{{ u.customer?.name || 'Müşteri' }}</div>
+              <div class="text-xs text-gray-500">{{ u.customer?.email || '' }}</div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
+            <td class="px-6 py-4 text-center"><span class="text-lg font-bold text-green-600">{{ formatCurrency(u.discount_amount) }}</span></td>
+            <td class="px-6 py-4 text-center">
+              <span v-if="u.order_id" class="text-sm text-blue-600">#{{ u.order_id.slice(0, 8) }}</span>
+              <span v-else class="text-sm text-gray-400">-</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-pink-600 hover:text-pink-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ formatDate(u.used_at || u.created_at) }}</td>
           </tr>
         </tbody>
       </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </div>
+      <div v-if="usages.length === 0" class="p-12 text-center">
+        <TicketIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Kullanım bulunamadı</p>
       </div>
     </div>
-
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit CouponUsage' : 'Create CouponUsage'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
-          />
-        </div>
-      </div>
-    </FormModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted } from 'vue'
+import { TicketIcon, CurrencyDollarIcon, UsersIcon, TagIcon } from '@heroicons/vue/24/outline'
 import { useCouponUsageStore } from '@/stores/couponusage'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useCouponUsageStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const usages = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const totalDiscount = computed(() => usages.value.reduce((s, u) => s + (u.discount_amount || 0), 0))
+const uniqueCustomers = computed(() => new Set(usages.value.filter(u => u.customer_id).map(u => u.customer_id)).size)
+const uniqueCoupons = computed(() => new Set(usages.value.filter(u => u.coupon_id).map(u => u.coupon_id)).size)
+const formatCurrency = (a: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(a || 0)
+const formatDate = (d: string) => d ? new Intl.DateTimeFormat('tr-TR').format(new Date(d)) : '-'
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const loadData = async () => { const r = await store.fetchAll({}); usages.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

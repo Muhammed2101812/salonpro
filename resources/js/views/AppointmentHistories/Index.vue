@@ -1,192 +1,263 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">AppointmentHistories</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your appointmenthistories</p>
+        <h1 class="text-3xl font-bold text-gray-900">Randevu Geçmişi</h1>
+        <p class="mt-2 text-sm text-gray-600">Geçmiş randevuları ve değişiklikleri görüntüleyin</p>
       </div>
       <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700"
+        @click="exportHistories"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
       >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New AppointmentHistory
+        <ArrowDownTrayIcon class="h-5 w-5 mr-2 text-gray-500" />
+        Dışa Aktar
       </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
+    <!-- İstatistik Kartları -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-slate-100">
+            <ClockIcon class="h-6 w-6 text-slate-600" />
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-gray-500">Toplam Kayıt</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100">
+            <CheckCircleIcon class="h-6 w-6 text-green-600" />
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-gray-500">Tamamlanan</p>
+            <p class="text-2xl font-bold text-green-600">{{ stats.completed }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-red-100">
+            <XCircleIcon class="h-6 w-6 text-red-600" />
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-gray-500">İptal Edilen</p>
+            <p class="text-2xl font-bold text-red-600">{{ stats.cancelled }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100">
+            <ArrowPathIcon class="h-6 w-6 text-blue-600" />
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-gray-500">Değişiklik</p>
+            <p class="text-2xl font-bold text-blue-600">{{ stats.modified }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div class="flex flex-wrap gap-3 items-center">
+          <div class="relative">
+            <MagnifyingGlassIcon class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Müşteri veya randevu ara..."
+              class="pl-10 w-64 rounded-lg border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm"
+            />
+          </div>
+
+          <div class="flex rounded-lg border border-gray-200 overflow-hidden">
+            <button
+              v-for="action in actionFilters"
+              :key="action.value"
+              @click="filters.action = filters.action === action.value ? '' : action.value"
+              :class="[
+                'px-3 py-2 text-xs font-medium transition-colors',
+                filters.action === action.value ? action.activeClass : 'bg-white text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              {{ action.label }}
+            </button>
+          </div>
+
           <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+            v-model="filters.date"
+            type="date"
+            class="rounded-lg border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm"
           />
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
+
+        <button @click="loadData" class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
           <ArrowPathIcon class="h-5 w-5" />
         </button>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-gray-600 hover:text-gray-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+    <!-- Yükleniyor -->
+    <div v-if="loading" class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-600 mx-auto"></div>
+      <p class="mt-2 text-sm text-gray-500">Yükleniyor...</p>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit AppointmentHistory' : 'Create AppointmentHistory'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
-          />
+    <!-- Timeline Görünümü -->
+    <div v-else class="space-y-4">
+      <div v-for="history in filteredHistories" :key="history.id" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex">
+          <!-- Timeline Bar -->
+          <div class="w-1.5 flex-shrink-0" :class="getActionColor(history.action)"></div>
+
+          <div class="flex-1 p-4">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start gap-3">
+                <div :class="['p-2 rounded-lg', getActionBg(history.action)]">
+                  <component :is="getActionIcon(history.action)" :class="['h-5 w-5', getActionIconColor(history.action)]" />
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">{{ getActionLabel(history.action) }}</p>
+                  <div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                    <span>{{ history.appointment?.customer?.name || 'Bilinmiyor' }}</span>
+                    <span>•</span>
+                    <span>{{ history.appointment?.service?.name }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-900">{{ formatDateTime(history.created_at) }}</p>
+                <p class="text-xs text-gray-500">{{ history.changed_by?.name || 'Sistem' }}</p>
+              </div>
+            </div>
+
+            <!-- Değişiklik Detayları -->
+            <div v-if="history.changes && Object.keys(history.changes).length > 0" class="mt-3 p-3 bg-gray-50 rounded-lg">
+              <p class="text-xs font-medium text-gray-700 mb-2">Değişiklikler:</p>
+              <div class="space-y-1">
+                <div v-for="(value, key) in history.changes" :key="key" class="flex items-center text-xs">
+                  <span class="text-gray-500 w-24">{{ getFieldLabel(key) }}:</span>
+                  <span class="text-red-600 line-through mr-2">{{ value.old || '-' }}</span>
+                  <ArrowRightIcon class="h-3 w-3 text-gray-400 mx-1" />
+                  <span class="text-green-600">{{ value.new || '-' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Randevu Bilgileri -->
+            <div class="mt-3 flex items-center gap-4 text-sm text-gray-500">
+              <span class="flex items-center gap-1">
+                <CalendarDaysIcon class="h-4 w-4" />
+                {{ formatDate(history.appointment?.appointment_date) }}
+              </span>
+              <span class="flex items-center gap-1">
+                <ClockIcon class="h-4 w-4" />
+                {{ history.appointment?.appointment_time }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-    </FormModal>
+
+      <div v-if="filteredHistories.length === 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <ClockIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" />
+        <p class="text-gray-500">Geçmiş kaydı bulunamadı</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted, markRaw } from 'vue'
+import {
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  MagnifyingGlassIcon,
+  CalendarDaysIcon,
+  ArrowPathIcon,
+  ArrowDownTrayIcon,
+  ArrowRightIcon,
+  PlusCircleIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  ArrowUturnLeftIcon
+} from '@heroicons/vue/24/outline'
 import { useAppointmentHistoryStore } from '@/stores/appointmenthistory'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useAppointmentHistoryStore()
-const items = ref([])
-const meta = ref({})
+
+const loading = ref(false)
 const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+
+const filters = ref({ action: '', date: '' })
+
+const stats = ref({ total: 0, completed: 0, cancelled: 0, modified: 0 })
+
+const actionFilters = [
+  { value: '', label: 'Tümü', activeClass: 'bg-slate-600 text-white' },
+  { value: 'created', label: 'Oluşturma', activeClass: 'bg-green-600 text-white' },
+  { value: 'updated', label: 'Güncelleme', activeClass: 'bg-blue-600 text-white' },
+  { value: 'cancelled', label: 'İptal', activeClass: 'bg-red-600 text-white' }
+]
+
+const histories = ref<any[]>([])
+
+const filteredHistories = computed(() => {
+  let result = histories.value
+  if (search.value) result = result.filter(h => h.appointment?.customer?.name?.toLowerCase().includes(search.value.toLowerCase()))
+  if (filters.value.action) result = result.filter(h => h.action === filters.value.action)
+  if (filters.value.date) result = result.filter(h => h.created_at?.startsWith(filters.value.date))
+  return result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+})
+
+const formatDate = (d: string) => d ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'long' }).format(new Date(d)) : '-'
+const formatDateTime = (d: string) => d ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(d)) : '-'
+const getActionLabel = (action: string) => ({ created: 'Randevu Oluşturuldu', updated: 'Randevu Güncellendi', cancelled: 'Randevu İptal Edildi', completed: 'Randevu Tamamlandı', rescheduled: 'Randevu Ertelendi' }[action] || action)
+const getActionColor = (action: string) => ({ created: 'bg-green-500', updated: 'bg-blue-500', cancelled: 'bg-red-500', completed: 'bg-emerald-500', rescheduled: 'bg-orange-500' }[action] || 'bg-gray-400')
+const getActionBg = (action: string) => ({ created: 'bg-green-100', updated: 'bg-blue-100', cancelled: 'bg-red-100', completed: 'bg-emerald-100', rescheduled: 'bg-orange-100' }[action] || 'bg-gray-100')
+const getActionIconColor = (action: string) => ({ created: 'text-green-600', updated: 'text-blue-600', cancelled: 'text-red-600', completed: 'text-emerald-600', rescheduled: 'text-orange-600' }[action] || 'text-gray-600')
+const getActionIcon = (action: string) => {
+  const icons: Record<string, any> = { created: markRaw(PlusCircleIcon), updated: markRaw(PencilSquareIcon), cancelled: markRaw(XCircleIcon), completed: markRaw(CheckCircleIcon), rescheduled: markRaw(ArrowUturnLeftIcon) }
+  return icons[action] || markRaw(ClockIcon)
+}
+const getFieldLabel = (field: string) => ({ appointment_date: 'Tarih', appointment_time: 'Saat', service_id: 'Hizmet', employee_id: 'Çalışan', status: 'Durum', notes: 'Notlar' }[field] || field)
+
+const updateStats = () => {
+  stats.value.total = histories.value.length
+  stats.value.completed = histories.value.filter(h => h.action === 'completed').length
+  stats.value.cancelled = histories.value.filter(h => h.action === 'cancelled').length
+  stats.value.modified = histories.value.filter(h => h.action === 'updated' || h.action === 'rescheduled').length
+}
 
 const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
+  loading.value = true
+  try {
+    const response = await store.fetchAll({})
+    histories.value = response?.data || []
+    updateStats()
+  } catch (e) { console.error(e) }
+  finally { loading.value = false }
 }
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
+const exportHistories = () => {
+  const csvContent = [
+    ['Tarih', 'Müşteri', 'Hizmet', 'İşlem', 'Yapan'].join(','),
+    ...filteredHistories.value.map(h => [h.created_at, h.appointment?.customer?.name || '', h.appointment?.service?.name || '', getActionLabel(h.action), h.changed_by?.name || 'Sistem'].join(','))
+  ].join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `randevu_gecmisi_${new Date().toISOString().split('T')[0]}.csv`
+  link.click()
 }
 
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+onMounted(() => { loadData() })
 </script>

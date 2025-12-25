@@ -1,396 +1,406 @@
 <template>
-  <div class="p-8">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Ürünler</h1>
-      <p class="mt-2 text-gray-600">Salon ürünlerinizi ve stok durumlarını yönetin</p>
-    </div>
-
-    <!-- Action Bar -->
-    <div class="mb-6 flex justify-between items-center">
-      <div class="flex space-x-2">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Ürün ara..."
-          class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <select
-          v-model="filterCategory"
-          class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="">Tüm Kategoriler</option>
-          <option v-for="cat in uniqueCategories" :key="cat" :value="cat">{{ cat }}</option>
-        </select>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Ürünler</h1>
+        <p class="mt-2 text-sm text-gray-600">Salon ürünlerinizi ve stok durumlarını yönetin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
-      >
-        Ürün Ekle
-      </button>
+      <div class="flex gap-3">
+        <div class="flex rounded-lg border border-gray-200 overflow-hidden bg-white">
+            <button
+              @click="viewMode = 'grid'"
+              :class="[ 'p-2 transition-colors', viewMode === 'grid' ? 'bg-primary text-white' : 'hover:bg-gray-50 text-gray-600' ]"
+              title="Kart Görünümü"
+            >
+              <Squares2X2Icon class="h-5 w-5" />
+            </button>
+            <button
+              @click="viewMode = 'table'"
+              :class="[ 'p-2 transition-colors', viewMode === 'table' ? 'bg-primary text-white' : 'hover:bg-gray-50 text-gray-600' ]"
+              title="Liste Görünümü"
+            >
+              <ListBulletIcon class="h-5 w-5" />
+            </button>
+        </div>
+        <Button variant="outline" @click="exportProducts" :icon="ArrowDownTrayIcon" label="Dışa Aktar" />
+        <Button variant="primary" @click="openCreateModal" :icon="PlusIcon" label="Ürün Ekle" />
+      </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="productStore.loading" class="text-center py-12">
-      <p class="text-gray-600">Yükleniyor...</p>
+    <!-- Stats -->
+    <ProductStats :stats="stats" />
+
+    <!-- Alerts -->
+    <div v-if="lowStockProducts.length > 0" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3">
+        <ExclamationTriangleIcon class="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+        <div>
+          <h4 class="font-semibold text-yellow-800">Stok Uyarısı</h4>
+          <p class="text-sm text-yellow-700 mt-1">Aşağıdaki ürünlerin stoğu kritik seviyede:</p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <span
+              v-for="product in lowStockProducts.slice(0, 5)"
+              :key="product.id"
+              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+            >
+              {{ product.name }} ({{ product.stock_quantity }} {{ product.unit }})
+            </span>
+            <span v-if="lowStockProducts.length > 5" class="text-xs text-yellow-700">
+              +{{ lowStockProducts.length - 5 }} ürün daha
+            </span>
+          </div>
+        </div>
     </div>
 
-    <!-- Error State -->
-    <div v-else-if="productStore.error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-      {{ productStore.error }}
+    <!-- Controls -->
+    <Card class="p-4">
+      <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
+           <Input v-model="search" placeholder="Ürün, barkod veya SKU ara..." class="w-full lg:w-64">
+                <template #prefix>
+                    <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
+                </template>
+           </Input>
+
+           <select
+             v-model="filters.category"
+             class="rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary text-sm py-2 px-3"
+           >
+             <option value="">Tüm Kategoriler</option>
+             <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
+               {{ cat }}
+             </option>
+           </select>
+
+           <div class="flex rounded-lg border border-gray-200 overflow-hidden">
+             <button
+               v-for="status in stockStatusFilters"
+               :key="status.value"
+               @click="filters.stockStatus = filters.stockStatus === status.value ? '' : status.value"
+               :class="[
+                 'px-3 py-2 text-xs font-medium transition-colors',
+                 filters.stockStatus === status.value
+                   ? status.activeClass
+                   : 'bg-white text-gray-700 hover:bg-gray-50'
+               ]"
+             >
+               {{ status.label }}
+             </button>
+           </div>
+        </div>
+
+        <Button variant="ghost" @click="loadData" :icon="ArrowPathIcon" />
+      </div>
+    </Card>
+
+    <!-- Loading -->
+    <div v-if="productStore.loading" class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>
 
-    <!-- Products Table -->
-    <div v-else class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün Adı</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barkod / SKU</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="product in filteredProducts" :key="product.id">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
-              <div class="text-xs text-gray-500">{{ product.unit }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-600">{{ product.barcode || '-' }}</div>
-              <div class="text-xs text-gray-500">{{ product.sku || '-' }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-              {{ product.category || '-' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ formatPrice(product.price) }}</div>
-              <div v-if="product.cost_price" class="text-xs text-gray-500">Maliyet: {{ formatPrice(product.cost_price) }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div :class="getStockColorClass(product)" class="text-sm font-medium">
-                {{ product.stock_quantity }}
+    <!-- Grid View -->
+    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+       <ProductCard
+         v-for="product in filteredProducts"
+         :key="product.id"
+         :product="product"
+         @edit="openEditModal"
+         @delete="handleDelete"
+       />
+       <div v-if="filteredProducts.length === 0" class="col-span-full text-center py-12 text-gray-500">
+          <CubeIcon class="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          Ürün bulunamadı
+       </div>
+    </div>
+
+    <!-- Table View -->
+    <DataTable
+        v-else
+        :columns="tableColumns"
+        :data="filteredProducts"
+        :exportable="true"
+        export-filename="urunler"
+        export-title="Ürün Listesi"
+    >
+        <template #cell-name="{ row }">
+            <div class="flex items-center gap-3">
+              <div :class="['w-1.5 h-10 rounded-full', getStockBarColor(row)]"></div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ row.name }}</p>
+                <p class="text-xs text-gray-500">{{ row.unit }}</p>
               </div>
-              <div class="text-xs text-gray-500">Min: {{ product.min_stock_quantity }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                v-if="product.is_out_of_stock"
-                class="px-2 py-1 text-xs rounded-full font-semibold bg-red-100 text-red-800"
-              >
-                Tükendi
-              </span>
-              <span
-                v-else-if="product.is_low_stock"
-                class="px-2 py-1 text-xs rounded-full font-semibold bg-yellow-100 text-yellow-800"
-              >
-                Az Stok
-              </span>
-              <span
-                v-else-if="product.is_active"
-                class="px-2 py-1 text-xs rounded-full font-semibold bg-green-100 text-green-800"
-              >
-                Aktif
-              </span>
-              <span
-                v-else
-                class="px-2 py-1 text-xs rounded-full font-semibold bg-gray-100 text-gray-800"
-              >
-                Pasif
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-              <button @click="openEditModal(product)" class="text-blue-600 hover:text-blue-900">Düzenle</button>
-              <button @click="handleDelete(product.id)" class="text-red-600 hover:text-red-900">Sil</button>
-            </td>
-          </tr>
-          <tr v-if="filteredProducts.length === 0">
-            <td colspan="7" class="px-6 py-12 text-center text-gray-500">Ürün bulunamadı</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </div>
+        </template>
+        <template #cell-codes="{ row }">
+            <div class="text-sm text-gray-600">{{ row.barcode || '-' }}</div>
+            <div class="text-xs text-gray-500">{{ row.sku || '-' }}</div>
+        </template>
+        <template #cell-price="{ row }">
+            <div class="text-sm font-medium text-gray-900">{{ formatCurrency(row.price) }}</div>
+            <div v-if="row.cost_price" class="text-xs text-gray-500">Maliyet: {{ formatCurrency(row.cost_price) }}</div>
+        </template>
+        <template #cell-stock="{ row }">
+            <div :class="['text-sm font-medium', getStockTextColor(row)]">
+              {{ row.stock_quantity }} {{ row.unit }}
+            </div>
+            <div class="text-xs text-gray-500">Min: {{ row.min_stock_quantity }}</div>
+        </template>
+        <template #cell-status="{ row }">
+            <span :class="['px-2 py-1 text-xs rounded-full font-semibold', getStockBadge(row)]">
+              {{ getStockLabel(row) }}
+            </span>
+        </template>
+        <template #actions="{ row }">
+            <div class="flex items-center justify-end gap-2">
+              <Button variant="ghost" size="sm" @click="openEditModal(row)">
+                  <PencilIcon class="h-4 w-4 text-primary" />
+              </Button>
+              <Button variant="ghost" size="sm" @click="handleDelete(row.id)">
+                  <TrashIcon class="h-4 w-4 text-danger" />
+              </Button>
+            </div>
+        </template>
+    </DataTable>
 
-    <!-- Product Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeModal">
-      <div class="bg-white rounded-lg p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl relative">
-        <button type="button" @click="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-        <h2 class="text-2xl font-bold mb-6">{{ isEdit ? 'Ürün Düzenle' : 'Ürün Ekle' }}</h2>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ürün Adı *</label>
-              <input
-                v-model="form.name"
-                type="text"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-              <textarea
-                v-model="form.description"
-                rows="3"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              ></textarea>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Barkod</label>
-              <input
-                v-model="form.barcode"
-                type="text"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Stok Kodu (SKU)</label>
-              <input
-                v-model="form.sku"
-                type="text"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Satış Fiyatı (TL) *</label>
-              <input
-                v-model="form.price"
-                type="number"
-                step="0.01"
-                min="0"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Maliyet Fiyatı (TL)</label>
-              <input
-                v-model="form.cost_price"
-                type="number"
-                step="0.01"
-                min="0"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Stok Miktarı *</label>
-              <input
-                v-model="form.stock_quantity"
-                type="number"
-                min="0"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Stok Seviyesi *</label>
-              <input
-                v-model="form.min_stock_quantity"
-                type="number"
-                min="0"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Birim *</label>
-              <select
-                v-model="form.unit"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="adet">Adet</option>
-                <option value="kg">Kilogram</option>
-                <option value="gram">Gram</option>
-                <option value="litre">Litre</option>
-                <option value="ml">Mililitre</option>
-                <option value="paket">Paket</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-              <input
-                v-model="form.category"
-                type="text"
-                placeholder="Örn: Şampuan, Boya, vb."
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          <div class="flex items-center">
-            <input
-              v-model="form.is_active"
-              type="checkbox"
-              id="is_active"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label for="is_active" class="ml-2 text-sm font-medium text-gray-700">Aktif</label>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              @click="closeModal"
-              class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              :disabled="productStore.loading"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
-            >
-              {{ productStore.loading ? 'Kaydediliyor...' : 'Kaydet' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <!-- Modal -->
+    <ProductModal
+        v-model="showModal"
+        :is-edit="isEdit"
+        :initial-data="modalData"
+        :loading="productStore.loading"
+        :unique-categories="uniqueCategories"
+        @submit="handleSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useProductStore } from '@/stores/product';
+import { ref, computed, onMounted } from 'vue'
+import {
+  PlusIcon,
+  CubeIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+  ArrowPathIcon,
+  ArrowDownTrayIcon,
+  ListBulletIcon,
+  Squares2X2Icon
+} from '@heroicons/vue/24/outline'
 
-const productStore = useProductStore();
+import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import Card from '@/components/ui/Card.vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import ProductStats from '@/components/product/ProductStats.vue'
+import ProductModal from '@/components/product/ProductModal.vue'
+import ProductCard from '@/components/product/ProductCard.vue'
+import { useProductStore } from '@/stores/product'
 
-// Search and filter
-const searchQuery = ref('');
-const filterCategory = ref('');
+interface Product {
+  id: string
+  name: string
+  description?: string
+  barcode?: string
+  sku?: string
+  price: number
+  cost_price?: number
+  stock_quantity: number
+  min_stock_quantity: number
+  unit: string
+  category?: string
+  is_active: boolean
+  is_low_stock?: boolean
+  is_out_of_stock?: boolean
+  [key: string]: any
+}
 
-// Modal state
-const showModal = ref(false);
-const isEdit = ref(false);
-const editingId = ref<string | null>(null);
+const productStore = useProductStore()
 
-const form = ref({
-  name: '',
-  description: '',
-  barcode: '',
-  sku: '',
-  price: 0,
-  cost_price: null as number | null,
-  stock_quantity: 0,
-  min_stock_quantity: 0,
-  unit: 'adet',
+// State
+const viewMode = ref<'grid' | 'table'>('grid')
+const search = ref('')
+const showModal = ref(false)
+const isEdit = ref(false)
+const modalData = ref<any>(null)
+const editingId = ref<string | null>(null)
+
+const filters = ref({
   category: '',
-  is_active: true
-});
+  stockStatus: ''
+})
+
+const stats = ref({
+  totalProducts: 0,
+  inStock: 0,
+  lowStock: 0,
+  outOfStock: 0,
+  totalValue: 0
+})
+
+const stockStatusFilters = [
+  { value: '', label: 'Tümü', activeClass: 'bg-primary text-white' },
+  { value: 'inStock', label: 'Stokta', activeClass: 'bg-green-600 text-white' },
+  { value: 'lowStock', label: 'Az Stok', activeClass: 'bg-yellow-600 text-white' },
+  { value: 'outOfStock', label: 'Tükendi', activeClass: 'bg-red-600 text-white' }
+]
+
+const tableColumns = [
+    { key: 'name', label: 'Ürün' },
+    { key: 'codes', label: 'Barkod / SKU' },
+    { key: 'category', label: 'Kategori' },
+    { key: 'price', label: 'Fiyat' },
+    { key: 'stock', label: 'Stok' },
+    { key: 'status', label: 'Durum' }
+]
 
 // Computed
 const uniqueCategories = computed(() => {
-  const categories = productStore.products
-    .map(p => p.category)
-    .filter(c => c);
-  return [...new Set(categories)];
-});
+  const categories = productStore.products.map((p: Product) => p.category).filter(c => c)
+  return [...new Set(categories)]
+})
 
 const filteredProducts = computed(() => {
-  let filtered = productStore.products;
+  let result = productStore.products as Product[]
 
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(p =>
-      p.name.toLowerCase().includes(query) ||
-      p.barcode?.toLowerCase().includes(query) ||
-      p.sku?.toLowerCase().includes(query)
-    );
+  if (search.value) {
+    const searchLower = search.value.toLowerCase()
+    result = result.filter(p =>
+      p.name?.toLowerCase().includes(searchLower) ||
+      p.barcode?.toLowerCase().includes(searchLower) ||
+      p.sku?.toLowerCase().includes(searchLower)
+    )
   }
 
-  if (filterCategory.value) {
-    filtered = filtered.filter(p => p.category === filterCategory.value);
+  if (filters.value.category) {
+    result = result.filter(p => p.category === filters.value.category)
   }
 
-  return filtered;
-});
+  if (filters.value.stockStatus === 'inStock') {
+    result = result.filter(p => !p.is_out_of_stock && !p.is_low_stock)
+  } else if (filters.value.stockStatus === 'lowStock') {
+    result = result.filter(p => p.is_low_stock && !p.is_out_of_stock)
+  } else if (filters.value.stockStatus === 'outOfStock') {
+    result = result.filter(p => p.is_out_of_stock)
+  }
 
-// Methods
-const resetForm = () => {
-  form.value = {
-    name: '',
-    description: '',
-    barcode: '',
-    sku: '',
-    price: 0,
-    cost_price: null,
-    stock_quantity: 0,
-    min_stock_quantity: 0,
-    unit: 'adet',
-    category: '',
-    is_active: true
-  };
-};
+  return result
+})
 
+const lowStockProducts = computed(() => {
+  return (productStore.products as Product[]).filter(p => p.is_low_stock || p.is_out_of_stock)
+})
+
+// Helpers
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount || 0)
+}
+
+const getStockLabel = (product: Product) => {
+  if (product.is_out_of_stock) return 'Tükendi'
+  if (product.is_low_stock) return 'Az Stok'
+  if (product.is_active) return 'Stokta'
+  return 'Pasif'
+}
+
+const getStockBadge = (product: Product) => {
+  if (product.is_out_of_stock) return 'bg-red-100 text-red-800'
+  if (product.is_low_stock) return 'bg-yellow-100 text-yellow-800'
+  if (product.is_active) return 'bg-green-100 text-green-800'
+  return 'bg-gray-100 text-gray-800'
+}
+
+const getStockBarColor = (product: Product) => {
+  if (product.is_out_of_stock) return 'bg-red-500'
+  if (product.is_low_stock) return 'bg-yellow-500'
+  return 'bg-green-500'
+}
+
+const getStockTextColor = (product: Product) => {
+  if (product.is_out_of_stock) return 'text-red-600'
+  if (product.is_low_stock) return 'text-yellow-600'
+  return 'text-green-600'
+}
+
+const updateStats = () => {
+  const products = productStore.products as Product[]
+  stats.value.totalProducts = products.length
+  stats.value.inStock = products.filter(p => !p.is_out_of_stock && !p.is_low_stock).length
+  stats.value.lowStock = products.filter(p => p.is_low_stock && !p.is_out_of_stock).length
+  stats.value.outOfStock = products.filter(p => p.is_out_of_stock).length
+  stats.value.totalValue = products.reduce((acc, p) => acc + (Number(p.price) * p.stock_quantity), 0)
+}
+
+const loadData = async () => {
+  await productStore.fetchProducts()
+  updateStats()
+}
+
+// Modal Actions
 const openCreateModal = () => {
-  resetForm();
-  isEdit.value = false;
-  editingId.value = null;
-  showModal.value = true;
-};
+  modalData.value = null
+  isEdit.value = false
+  editingId.value = null
+  showModal.value = true
+}
 
-const openEditModal = (product: any) => {
-  form.value = {
-    name: product.name || '',
-    description: product.description || '',
-    barcode: product.barcode || '',
-    sku: product.sku || '',
-    price: product.price || 0,
-    cost_price: product.cost_price || null,
-    stock_quantity: product.stock_quantity || 0,
-    min_stock_quantity: product.min_stock_quantity || 0,
-    unit: product.unit || 'adet',
-    category: product.category || '',
-    is_active: product.is_active ?? true
-  };
-  isEdit.value = true;
-  editingId.value = product.id;
-  showModal.value = true;
-};
+const openEditModal = (product: Product) => {
+  modalData.value = { ...product }
+  isEdit.value = true
+  editingId.value = product.id
+  showModal.value = true
+}
 
-const closeModal = () => {
-  showModal.value = false;
-  resetForm();
-};
-
-const handleSubmit = async () => {
+const handleSubmit = async (data: any) => {
   try {
     if (isEdit.value && editingId.value) {
-      await productStore.updateProduct(editingId.value, form.value);
+      await productStore.updateProduct(editingId.value, data)
     } else {
-      await productStore.createProduct(form.value);
+      await productStore.createProduct(data)
     }
-    closeModal();
+    showModal.value = false
+    updateStats()
   } catch (error) {
-    console.error('Ürün kaydedilemedi:', error);
+    console.error('Ürün kaydedilemedi:', error)
   }
-};
+}
 
 const handleDelete = async (id: string) => {
-  if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
-    try {
-      await productStore.deleteProduct(id);
-    } catch (error) {
-      console.error('Ürün silinemedi:', error);
-    }
+  if (!confirm('Bu ürünü silmek istediğinizden emin misiniz?')) return
+  try {
+    await productStore.deleteProduct(id)
+    updateStats()
+  } catch (error) {
+    console.error('Ürün silinemedi:', error)
   }
-};
+}
 
-const formatPrice = (price: string | number) => {
-  return `${Number(price).toFixed(2)} TL`;
-};
+const exportProducts = () => {
+  const csvContent = [
+    ['Ürün Adı', 'Barkod', 'SKU', 'Kategori', 'Satış Fiyatı', 'Maliyet', 'Stok', 'Min Stok', 'Birim', 'Durum'].join(','),
+    ...filteredProducts.value.map(p => [
+      p.name,
+      p.barcode || '',
+      p.sku || '',
+      p.category || '',
+      p.price,
+      p.cost_price || '',
+      p.stock_quantity,
+      p.min_stock_quantity,
+      p.unit,
+      getStockLabel(p)
+    ].join(','))
+  ].join('\n')
 
-const getStockColorClass = (product: any) => {
-  if (product.is_out_of_stock) return 'text-red-600';
-  if (product.is_low_stock) return 'text-yellow-600';
-  return 'text-green-600';
-};
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `urunler_${new Date().toISOString().split('T')[0]}.csv`
+  link.click()
+}
 
-// Initialize
-onMounted(async () => {
-  await productStore.fetchProducts();
-});
+onMounted(() => {
+  loadData()
+})
 </script>

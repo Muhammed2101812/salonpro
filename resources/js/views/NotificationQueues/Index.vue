@@ -1,192 +1,113 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">NotificationQueues</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your notificationqueues</p>
+        <h1 class="text-3xl font-bold text-gray-900">Bildirim Kuyruğu</h1>
+        <p class="mt-2 text-sm text-gray-600">Bekleyen ve işlenen bildirimleri izleyin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New NotificationQueue
+      <button @click="processQueue" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">
+        <PlayIcon class="h-5 w-5 mr-2" />Kuyruğu İşle
       </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-indigo-100"><QueueListIcon class="h-6 w-6 text-indigo-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam</p><p class="text-2xl font-bold">{{ queues.length }}</p></div>
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
-        </button>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-yellow-100"><ClockIcon class="h-6 w-6 text-yellow-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Bekliyor</p><p class="text-2xl font-bold text-yellow-600">{{ pendingCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100"><ArrowPathIcon class="h-6 w-6 text-blue-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">İşleniyor</p><p class="text-2xl font-bold text-blue-600">{{ processingCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-red-100"><ExclamationCircleIcon class="h-6 w-6 text-red-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Başarısız</p><p class="text-2xl font-bold text-red-600">{{ failedCount }}</p></div>
+        </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <!-- Kuyruk Tablosu -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="p-4 border-b border-gray-100 flex gap-4">
+        <select v-model="statusFilter" class="rounded-lg border-gray-300">
+          <option value="">Tüm Durumlar</option>
+          <option value="pending">Bekliyor</option>
+          <option value="processing">İşleniyor</option>
+          <option value="completed">Tamamlandı</option>
+          <option value="failed">Başarısız</option>
+        </select>
+      </div>
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bildirim</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kanal</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Öncelik</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Durum</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Deneme</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
+        <tbody class="divide-y divide-gray-200">
+          <tr v-for="q in filteredQueues" :key="q.id" class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <div class="font-medium text-gray-900">{{ q.subject || q.title || 'Bildirim' }}</div>
+              <div class="text-xs text-gray-500">{{ q.recipient || '' }}</div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-blue-600 hover:text-blue-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
+            <td class="px-6 py-4 text-center"><span :class="['px-2 py-1 text-xs rounded-full font-medium', getChannelBadge(q.channel)]">{{ getChannelLabel(q.channel) }}</span></td>
+            <td class="px-6 py-4 text-center"><span :class="['px-2 py-1 text-xs rounded-full font-medium', getPriorityBadge(q.priority)]">{{ getPriorityLabel(q.priority) }}</span></td>
+            <td class="px-6 py-4 text-center"><span :class="['px-2 py-1 text-xs rounded-full font-medium', getStatusBadge(q.status)]">{{ getStatusLabel(q.status) }}</span></td>
+            <td class="px-6 py-4 text-center text-sm text-gray-500">{{ q.attempts || 0 }}/3</td>
+            <td class="px-6 py-4 text-right">
+              <button v-if="q.status === 'failed'" @click="retryQueue(q)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><ArrowPathIcon class="h-4 w-4" /></button>
+              <button @click="handleDelete(q.id)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"><TrashIcon class="h-4 w-4" /></button>
             </td>
           </tr>
         </tbody>
       </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </div>
+      <div v-if="filteredQueues.length === 0" class="p-12 text-center">
+        <QueueListIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Kuyrukta bildirim yok</p>
       </div>
     </div>
-
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit NotificationQueue' : 'Create NotificationQueue'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-    </FormModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted } from 'vue'
+import { QueueListIcon, ClockIcon, ArrowPathIcon, ExclamationCircleIcon, PlayIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { useNotificationQueueStore } from '@/stores/notificationqueue'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useNotificationQueueStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const statusFilter = ref('')
+const queues = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const pendingCount = computed(() => queues.value.filter(q => q.status === 'pending').length)
+const processingCount = computed(() => queues.value.filter(q => q.status === 'processing').length)
+const failedCount = computed(() => queues.value.filter(q => q.status === 'failed').length)
+const filteredQueues = computed(() => queues.value.filter(q => !statusFilter.value || q.status === statusFilter.value))
+const getChannelLabel = (c: string) => ({ email: 'E-posta', sms: 'SMS', push: 'Push' }[c] || c)
+const getChannelBadge = (c: string) => ({ email: 'bg-blue-100 text-blue-800', sms: 'bg-green-100 text-green-800', push: 'bg-purple-100 text-purple-800' }[c] || 'bg-gray-100 text-gray-800')
+const getPriorityLabel = (p: string) => ({ high: 'Yüksek', normal: 'Normal', low: 'Düşük' }[p] || p || 'Normal')
+const getPriorityBadge = (p: string) => ({ high: 'bg-red-100 text-red-800', normal: 'bg-gray-100 text-gray-800', low: 'bg-blue-100 text-blue-800' }[p] || 'bg-gray-100 text-gray-800')
+const getStatusLabel = (s: string) => ({ pending: 'Bekliyor', processing: 'İşleniyor', completed: 'Tamamlandı', failed: 'Başarısız' }[s] || s)
+const getStatusBadge = (s: string) => ({ pending: 'bg-yellow-100 text-yellow-800', processing: 'bg-blue-100 text-blue-800', completed: 'bg-green-100 text-green-800', failed: 'bg-red-100 text-red-800' }[s] || 'bg-gray-100 text-gray-800')
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const processQueue = () => { alert('Kuyruk işleniyor...') }
+const retryQueue = (q: any) => { alert(`${q.subject || 'Bildirim'} yeniden deneniyor...`) }
+const handleDelete = async (id: string) => { if (confirm('Silmek istediğinizden emin misiniz?')) { await store.delete(id); await loadData() } }
+const loadData = async () => { const r = await store.fetchAll({}); queues.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

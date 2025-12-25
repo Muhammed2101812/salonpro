@@ -14,6 +14,13 @@ class Payment extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    /**
+     * Relations to eager load on every query for performance.
+     * 
+     * @var array<int, string>
+     */
+    protected $with = ['customer'];
+
     protected $fillable = [
         'appointment_id',
         'sale_id',

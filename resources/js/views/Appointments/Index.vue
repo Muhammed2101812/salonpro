@@ -1,652 +1,450 @@
 <template>
-  <div class="p-8">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Randevular</h1>
-      <p class="mt-2 text-gray-600">Randevularınızı yönetin</p>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Randevular</h1>
+        <p class="mt-2 text-sm text-gray-600">Randevularınızı yönetin ve takip edin</p>
+      </div>
+      <Button variant="primary" @click="openCreateModal" :icon="PlusIcon" label="Yeni Randevu" />
     </div>
 
-    <!-- Loading State -->
-    <div v-if="appointmentStore.loading && appointments.length === 0" class="text-center py-12">
-      <p class="text-gray-600">Yükleniyor...</p>
-    </div>
+    <!-- Stats -->
+    <AppointmentStats :stats="stats" />
 
-    <!-- Error State -->
-    <div v-else-if="appointmentStore.error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-      {{ appointmentStore.error }}
-    </div>
-
-    <!-- Main Content -->
-    <div v-else>
-      <!-- Controls -->
-      <div class="mb-6 flex justify-between items-center">
-        <div class="flex gap-4 items-center">
-          <!-- View Toggle -->
-          <div class="flex bg-gray-100 rounded-lg p-1">
+    <!-- Controls -->
+    <Card class="p-4">
+      <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
+          <!-- View Switcher -->
+          <div class="flex rounded-lg border border-gray-200 overflow-hidden bg-white">
             <button
               @click="viewMode = 'calendar'"
               :class="[
-                'px-4 py-2 rounded-md text-sm font-medium transition',
-                viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
+                viewMode === 'calendar' ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
               ]"
             >
-              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Takvim
+              <CalendarIcon class="h-4 w-4" />
+              Ay
+            </button>
+            <button
+              @click="viewMode = 'week'"
+              :class="[
+                'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
+                viewMode === 'week' ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              <CalendarIcon class="h-4 w-4" />
+              Hafta
             </button>
             <button
               @click="viewMode = 'list'"
               :class="[
-                'px-4 py-2 rounded-md text-sm font-medium transition',
-                viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
+                viewMode === 'list' ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
               ]"
             >
-              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
+              <ListBulletIcon class="h-4 w-4" />
               Liste
             </button>
           </div>
 
-          <!-- Month Navigation (for calendar view) -->
-          <div v-if="viewMode === 'calendar'" class="flex items-center gap-2">
-            <button @click="previousMonth" class="p-2 hover:bg-gray-100 rounded-lg transition">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span class="text-lg font-semibold px-4">{{ currentMonthYear }}</span>
-            <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded-lg transition">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            <button @click="goToToday" class="ml-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-              Bugün
-            </button>
+          <!-- Calendar Navigation -->
+          <div v-if="viewMode === 'calendar' || viewMode === 'week'" class="flex items-center gap-2">
+            <Button variant="ghost" size="sm" @click="previousPeriod" :icon="ChevronLeftIcon" />
+            <span class="text-lg font-semibold text-gray-900 min-w-[180px] text-center">{{ currentPeriodLabel }}</span>
+            <Button variant="ghost" size="sm" @click="nextPeriod" :icon="ChevronRightIcon" />
+            <Button variant="secondary" size="sm" @click="goToToday" label="Bugün" class="ml-2" />
+          </div>
+
+          <!-- List Filters -->
+          <div v-if="viewMode === 'list'" class="w-full lg:w-auto">
+             <div class="flex rounded-lg border border-gray-200 overflow-hidden">
+                <button
+                  v-for="status in statusOptions"
+                  :key="status.value"
+                  @click="filters.status = filters.status === status.value ? '' : status.value"
+                  :class="[
+                    'px-3 py-2 text-xs font-medium transition-colors',
+                    filters.status === status.value ? status.activeClass : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ]"
+                >
+                  {{ status.label }}
+                </button>
+             </div>
           </div>
         </div>
 
-        <button @click="openCreateModal" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Yeni Randevu
-        </button>
-      </div>
-
-      <!-- Calendar View -->
-      <div v-if="viewMode === 'calendar'" class="bg-white rounded-lg shadow overflow-hidden">
-        <!-- Calendar Header -->
-        <div class="grid grid-cols-7 bg-gray-50 border-b">
-          <div v-for="day in weekDays" :key="day" class="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-            {{ day }}
-          </div>
-        </div>
-
-        <!-- Calendar Grid -->
-        <div class="grid grid-cols-7 divide-x divide-y">
-          <div
-            v-for="day in calendarDays"
-            :key="day.date"
-            :class="[
-              'min-h-32 p-2 relative transition-colors',
-              !day.isCurrentMonth ? 'bg-gray-50' : 'bg-white',
-              day.isToday ? 'bg-blue-50' : '',
-              dragOverDay === day.date ? 'bg-blue-100 ring-2 ring-blue-500 ring-inset' : ''
-            ]"
-            @drop="handleDrop($event, day.date)"
-            @dragover="handleDragOver($event, day.date)"
-            @dragleave="handleDragLeave"
-          >
-            <div class="flex justify-between items-start mb-2">
-              <span :class="[
-                'text-sm font-semibold',
-                day.isToday ? 'bg-blue-600 text-white w-6 h-6 flex items-center justify-center rounded-full' : '',
-                !day.isCurrentMonth ? 'text-gray-400' : 'text-gray-700'
-              ]">
-                {{ day.dayNumber }}
-              </span>
-            </div>
-
-            <!-- Appointments for this day -->
-            <div class="space-y-1">
-              <div
-                v-for="appointment in day.appointments.slice(0, 3)"
-                :key="appointment.id"
-                draggable="true"
-                @dragstart="handleDragStart($event, appointment)"
-                @dragend="handleDragEnd"
-                @click.stop="openEditModal(appointment)"
-                :class="[
-                  'text-xs p-1.5 rounded cursor-move hover:opacity-80 transition',
-                  getStatusClass(appointment.status),
-                  draggingId === appointment.id ? 'opacity-50' : ''
-                ]"
-              >
-                <div class="font-medium truncate">{{ formatTime(appointment.appointment_date) }}</div>
-                <div class="truncate opacity-90">{{ getCustomerName(appointment.customer_id) }}</div>
-              </div>
-              <div v-if="day.appointments.length > 3" class="text-xs text-gray-500 text-center py-1">
-                +{{ day.appointments.length - 3 }} daha
-              </div>
-            </div>
-
-            <!-- Drop Indicator -->
-            <div v-if="dragOverDay === day.date" class="absolute inset-0 border-2 border-blue-500 border-dashed rounded pointer-events-none"></div>
-          </div>
+        <!-- Search (List Only) -->
+        <div v-if="viewMode === 'list'" class="w-full lg:w-64">
+             <Input v-model="searchQuery" placeholder="Müşteri veya çalışan ara...">
+                 <template #prefix>
+                     <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
+                 </template>
+             </Input>
         </div>
       </div>
+    </Card>
 
-      <!-- List View -->
-      <div v-else class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="mb-4 px-6 pt-6">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Müşteri, çalışan veya hizmet ara..."
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-        </div>
-
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih/Saat</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Çalışan</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hizmet</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şube</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Süre</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="appointment in filteredAppointments" :key="appointment.id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ formatDate(appointment.appointment_date) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{{ getCustomerName(appointment.customer_id) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{{ getEmployeeName(appointment.employee_id) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{{ getServiceName(appointment.service_id) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{{ getBranchName(appointment.branch_id) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ appointment.duration_minutes }} dk</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ formatPrice(appointment.price) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="getStatusClass(appointment.status)" class="px-2 py-1 text-xs rounded-full font-semibold">
-                  {{ getStatusLabel(appointment.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                <button @click="openEditModal(appointment)" class="text-blue-600 hover:text-blue-900">Düzenle</button>
-                <button @click="handleDelete(appointment.id)" class="text-red-600 hover:text-red-900">Sil</button>
-              </td>
-            </tr>
-            <tr v-if="filteredAppointments.length === 0">
-              <td colspan="9" class="px-6 py-12 text-center text-gray-500">Randevu bulunamadı</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Loading -->
+    <div v-if="loading && appointments.length === 0" class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>
 
-    <!-- Appointment Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 class="text-2xl font-bold mb-6">{{ isEdit ? 'Randevu Düzenle' : 'Yeni Randevu' }}</h2>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Şube *</label>
-            <select v-model="appointmentForm.branch_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              <option value="">Şube Seçin</option>
-              <option v-for="branch in branchStore.branches" :key="branch.id" :value="branch.id">
-                {{ branch.name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Müşteri *</label>
-            <select v-model="appointmentForm.customer_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              <option value="">Müşteri Seçin</option>
-              <option v-for="customer in customerStore.customers" :key="customer.id" :value="customer.id">
-                {{ customer.first_name }} {{ customer.last_name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Çalışan *</label>
-            <select v-model="appointmentForm.employee_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              <option value="">Çalışan Seçin</option>
-              <option v-for="employee in employeeStore.employees" :key="employee.id" :value="employee.id">
-                {{ employee.first_name }} {{ employee.last_name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Hizmet *</label>
-            <select v-model="appointmentForm.service_id" @change="onServiceChange" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              <option value="">Hizmet Seçin</option>
-              <option v-for="service in serviceStore.services" :key="service.id" :value="service.id">
-                {{ service.name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Randevu Tarihi *</label>
-            <input v-model="appointmentForm.appointment_date" type="datetime-local" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Süre (Dakika) *</label>
-              <input v-model="appointmentForm.duration_minutes" type="number" min="1" required readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    <!-- Calendar View (Monthly) -->
+    <AppointmentCalendar
+        v-if="viewMode === 'calendar'"
+        :appointments="enrichedAppointments"
+        :current-date="currentDate"
+        @date-click="createAppointmentOnDate"
+        @edit-appointment="openEditModal"
+        @drop-appointment="handleDrop"
+    />
+
+    <!-- Week View -->
+    <AppointmentWeekView
+        v-else-if="viewMode === 'week'"
+        :appointments="enrichedAppointments"
+        :current-date="currentDate"
+        @slot-click="createAppointmentOnSlot"
+        @edit-appointment="openEditModal"
+        @drop-appointment="handleDrop"
+    />
+
+    <!-- List View -->
+    <DataTable
+        v-else
+        :columns="tableColumns"
+        :data="filteredAppointments"
+        :exportable="true"
+        export-filename="randevular"
+        export-title="Randevu Listesi"
+    >
+        <template #cell-date="{ row }">
+            <div class="flex items-center gap-3">
+                <div :class="['w-1.5 h-10 rounded-full', getStatusColor(row.status)]"></div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(row.appointment_date) }}</p>
+                  <p class="text-xs text-gray-500">{{ row.duration_minutes }} dk</p>
+                </div>
             </div>
+        </template>
+        <template #cell-customer="{ row }">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fiyat (TL) *</label>
-              <input v-model="appointmentForm.price" type="number" step="0.01" min="0" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <p class="text-sm font-medium text-gray-900">{{ row.customer_name }}</p>
+              <p class="text-xs text-gray-500">{{ row.customer_phone }}</p>
             </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Durum *</label>
-            <select v-model="appointmentForm.status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              <option value="pending">Bekliyor</option>
-              <option value="confirmed">Onaylandı</option>
-              <option value="completed">Tamamlandı</option>
-              <option value="cancelled">İptal Edildi</option>
+        </template>
+        <template #cell-price="{ row }">
+            {{ formatCurrency(row.price) }}
+        </template>
+        <template #cell-status="{ row }">
+            <select
+                :value="row.status"
+                @change="updateStatus(row.id, ($event.target as HTMLSelectElement).value)"
+                :class="['text-xs rounded-lg font-medium px-2 py-1 border-0 cursor-pointer focus:ring-2 ring-primary/20', getStatusBg(row.status)]"
+                @click.stop
+            >
+                <option value="pending">Bekliyor</option>
+                <option value="confirmed">Onaylandı</option>
+                <option value="completed">Tamamlandı</option>
+                <option value="cancelled">İptal Edildi</option>
             </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
-            <textarea v-model="appointmentForm.notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeModal" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">İptal</button>
-            <button type="submit" :disabled="appointmentStore.loading" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition">
-              {{ appointmentStore.loading ? 'Kaydediliyor...' : 'Kaydet' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </template>
+        <template #actions="{ row }">
+             <div class="flex items-center justify-end gap-2">
+                <Button variant="ghost" size="sm" @click="openEditModal(row)">
+                   <PencilIcon class="h-4 w-4 text-primary" />
+                </Button>
+                <Button variant="ghost" size="sm" @click="handleDelete(row.id)">
+                   <TrashIcon class="h-4 w-4 text-danger" />
+                </Button>
+             </div>
+        </template>
+    </DataTable>
+
+    <!-- Modal -->
+    <AppointmentModal
+        v-model="showModal"
+        :is-edit="isEdit"
+        :initial-data="modalData"
+        :loading="saving"
+        @submit="handleModalSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useAppointmentStore } from '@/stores/appointment';
-import { useCustomerStore } from '@/stores/customer';
-import { useEmployeeStore } from '@/stores/employee';
-import { useServiceStore } from '@/stores/service';
-import { useBranchStore } from '@/stores/branch';
+import { ref, computed, onMounted, watch } from 'vue'
+import {
+  PlusIcon,
+  CalendarIcon,
+  ListBulletIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon
+} from '@heroicons/vue/24/outline'
 
-const appointmentStore = useAppointmentStore();
-const customerStore = useCustomerStore();
-const employeeStore = useEmployeeStore();
-const serviceStore = useServiceStore();
-const branchStore = useBranchStore();
+import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import Card from '@/components/ui/Card.vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import AppointmentStats from '@/components/appointment/AppointmentStats.vue'
+import AppointmentCalendar from '@/components/appointment/AppointmentCalendar.vue'
+import AppointmentWeekView from '@/components/appointment/AppointmentWeekView.vue'
+import AppointmentModal from '@/components/appointment/AppointmentModal.vue'
 
-// View State
-const viewMode = ref<'calendar' | 'list'>('calendar');
-const currentDate = ref(new Date());
+import { useAppointmentStore } from '@/stores/appointment'
+import { useCustomerStore } from '@/stores/customer'
+import { useEmployeeStore } from '@/stores/employee'
+import { useServiceStore } from '@/stores/service'
+import { useBranchStore } from '@/stores/branch'
 
-// Modal State
-const showModal = ref(false);
-const isEdit = ref(false);
-const editingId = ref<string | null>(null);
+interface Appointment {
+  id: string
+  branch_id: string
+  customer_id: string
+  employee_id: string
+  service_id: string
+  appointment_date: string
+  duration_minutes: number
+  price: number
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  notes?: string
+  [key: string]: any
+}
 
-// Search
-const searchQuery = ref('');
+const appointmentStore = useAppointmentStore()
+const customerStore = useCustomerStore()
+const employeeStore = useEmployeeStore()
+const serviceStore = useServiceStore()
+const branchStore = useBranchStore()
 
-// Drag & Drop State
-const draggingId = ref<string | null>(null);
-const draggingAppointment = ref<any>(null);
-const dragOverDay = ref<string | null>(null);
+// State
+const loading = ref(true)
+const saving = ref(false)
+const viewMode = ref<'calendar' | 'week' | 'list'>('calendar')
+const currentDate = ref(new Date())
+const showModal = ref(false)
+const isEdit = ref(false)
+const modalData = ref<any>(null)
+const editingId = ref<string | null>(null)
+const searchQuery = ref('')
+const filters = ref({ status: '' })
 
-// Form
-const appointmentForm = ref({
-  branch_id: '',
-  customer_id: '',
-  employee_id: '',
-  service_id: '',
-  appointment_date: '',
-  duration_minutes: 0,
-  price: 0,
-  status: 'pending' as 'pending' | 'confirmed' | 'cancelled' | 'completed',
-  notes: ''
-});
+const stats = ref({
+  today: 0,
+  pending: 0,
+  confirmed: 0,
+  completed: 0,
+  todayRevenue: 0
+})
 
-// Calendar Computed
-const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+const tableColumns = [
+    { key: 'date', label: 'Tarih/Saat' },
+    { key: 'customer', label: 'Müşteri' },
+    { key: 'employee_name', label: 'Çalışan' },
+    { key: 'service_name', label: 'Hizmet' },
+    { key: 'price', label: 'Fiyat' },
+    { key: 'status', label: 'Durum' },
+]
 
-const currentMonthYear = computed(() => {
-  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(currentDate.value);
-});
-
-const calendarDays = computed(() => {
-  const year = currentDate.value.getFullYear();
-  const month = currentDate.value.getMonth();
-
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-
-  // Adjust for Monday start (0 = Monday, 6 = Sunday)
-  let startDay = firstDay.getDay() - 1;
-  if (startDay === -1) startDay = 6;
-
-  const daysInMonth = lastDay.getDate();
-  const days = [];
-
-  // Previous month days
-  const prevMonthLastDay = new Date(year, month, 0).getDate();
-  for (let i = startDay - 1; i >= 0; i--) {
-    const date = new Date(year, month - 1, prevMonthLastDay - i);
-    days.push({
-      date: date.toISOString(),
-      dayNumber: prevMonthLastDay - i,
-      isCurrentMonth: false,
-      isToday: false,
-      appointments: getAppointmentsForDate(date)
-    });
-  }
-
-  // Current month days
-  const today = new Date();
-  for (let i = 1; i <= daysInMonth; i++) {
-    const date = new Date(year, month, i);
-    days.push({
-      date: date.toISOString(),
-      dayNumber: i,
-      isCurrentMonth: true,
-      isToday: date.toDateString() === today.toDateString(),
-      appointments: getAppointmentsForDate(date)
-    });
-  }
-
-  // Next month days
-  const remainingDays = 42 - days.length; // 6 weeks * 7 days
-  for (let i = 1; i <= remainingDays; i++) {
-    const date = new Date(year, month + 1, i);
-    days.push({
-      date: date.toISOString(),
-      dayNumber: i,
-      isCurrentMonth: false,
-      isToday: false,
-      appointments: getAppointmentsForDate(date)
-    });
-  }
-
-  return days;
-});
-
-const getAppointmentsForDate = (date: Date) => {
-  const dateStr = date.toDateString();
-  return appointments.value.filter(apt => {
-    const aptDate = new Date(apt.appointment_date);
-    return aptDate.toDateString() === dateStr;
-  }).sort((a, b) => {
-    return new Date(a.appointment_date).getTime() - new Date(b.appointment_date).getTime();
-  });
-};
-
-// Calendar Navigation
-const previousMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1);
-};
-
-const nextMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1);
-};
-
-const goToToday = () => {
-  currentDate.value = new Date();
-};
+const statusOptions = [
+  { value: 'pending', label: 'Bekliyor', activeClass: 'bg-yellow-600 text-white' },
+  { value: 'confirmed', label: 'Onaylı', activeClass: 'bg-blue-600 text-white' },
+  { value: 'completed', label: 'Tamam', activeClass: 'bg-green-600 text-white' },
+  { value: 'cancelled', label: 'İptal', activeClass: 'bg-red-600 text-white' }
+]
 
 // Computed
-const appointments = computed(() => appointmentStore.appointments);
+const appointments = computed(() => appointmentStore.appointments as Appointment[])
+
+// Enriched with helper names for Calendar/Table presentation
+const enrichedAppointments = computed(() => {
+    return appointments.value.map(a => {
+        const c = customerStore.customers.find((x: any) => x.id === a.customer_id)
+        const e = employeeStore.employees.find((x: any) => x.id === a.employee_id)
+        const s = serviceStore.services.find((x: any) => x.id === a.service_id)
+        return {
+            ...a,
+            customer_name: c ? `${c.first_name} ${c.last_name}` : '-',
+            customer_phone: c?.phone || '',
+            employee_name: e ? `${e.first_name} ${e.last_name}` : '-',
+            service_name: s?.name || '-'
+        }
+    })
+})
 
 const filteredAppointments = computed(() => {
-  if (!searchQuery.value) return appointments.value;
+  let result = enrichedAppointments.value
 
-  const query = searchQuery.value.toLowerCase();
-  return appointments.value.filter(appointment => {
-    const customerName = getCustomerName(appointment.customer_id).toLowerCase();
-    const employeeName = getEmployeeName(appointment.employee_id).toLowerCase();
-    const serviceName = getServiceName(appointment.service_id).toLowerCase();
+  if (filters.value.status) {
+    result = result.filter(a => a.status === filters.value.status)
+  }
 
-    return customerName.includes(query) ||
-           employeeName.includes(query) ||
-           serviceName.includes(query);
-  });
-});
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(a => {
+      return (
+          a.customer_name?.toLowerCase().includes(query) ||
+          a.employee_name?.toLowerCase().includes(query)
+      )
+    })
+  }
+
+  // List view sort: newest first
+  return result.sort((a, b) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime())
+})
+
+const currentMonthYear = computed(() => {
+  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(currentDate.value)
+})
 
 // Methods
-const resetForm = () => {
-  appointmentForm.value = {
-    branch_id: '',
-    customer_id: '',
-    employee_id: '',
-    service_id: '',
-    appointment_date: '',
-    duration_minutes: 0,
-    price: 0,
-    status: 'pending',
-    notes: ''
-  };
-};
+const formatDate = (dateString: string) => {
+    const d = new Date(dateString)
+    return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+const formatCurrency = (amount: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount || 0)
 
+const getStatusColor = (status: string) => ({ pending: 'bg-yellow-500', confirmed: 'bg-blue-500', completed: 'bg-green-500', cancelled: 'bg-red-500' }[status] || 'bg-gray-500')
+const getStatusBg = (status: string) => ({ pending: 'bg-yellow-100 text-yellow-800', confirmed: 'bg-blue-100 text-blue-800', completed: 'bg-green-100 text-green-800', cancelled: 'bg-red-100 text-red-800' }[status] || 'bg-gray-100')
+
+const updateStats = () => {
+    const today = new Date().toDateString()
+    const todayAppts = appointments.value.filter(a => new Date(a.appointment_date).toDateString() === today)
+    
+    stats.value.today = todayAppts.length
+    stats.value.pending = appointments.value.filter(a => a.status === 'pending').length
+    stats.value.confirmed = appointments.value.filter(a => a.status === 'confirmed').length
+    stats.value.completed = appointments.value.filter(a => a.status === 'completed').length
+    stats.value.todayRevenue = todayAppts.filter(a => a.status === 'completed').reduce((acc, a) => acc + Number(a.price), 0)
+}
+
+const previousMonth = () => { currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1) }
+const nextMonth = () => { currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1) }
+const previousWeek = () => { currentDate.value = new Date(currentDate.value.getTime() - 7 * 24 * 60 * 60 * 1000) }
+const nextWeek = () => { currentDate.value = new Date(currentDate.value.getTime() + 7 * 24 * 60 * 60 * 1000) }
+const goToToday = () => { currentDate.value = new Date() }
+
+// Dynamic period navigation
+const previousPeriod = () => viewMode.value === 'week' ? previousWeek() : previousMonth()
+const nextPeriod = () => viewMode.value === 'week' ? nextWeek() : nextMonth()
+
+// Dynamic period label
+const currentPeriodLabel = computed(() => {
+  if (viewMode.value === 'week') {
+    const d = currentDate.value
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Monday start
+    const startOfWeek = new Date(d.getFullYear(), d.getMonth(), diff)
+    const endOfWeek = new Date(startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000)
+    const monthFormat = new Intl.DateTimeFormat('tr-TR', { month: 'short' })
+    return `${startOfWeek.getDate()} ${monthFormat.format(startOfWeek)} - ${endOfWeek.getDate()} ${monthFormat.format(endOfWeek)}`
+  }
+  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(currentDate.value)
+})
+
+// Actions
 const openCreateModal = () => {
-  resetForm();
-  isEdit.value = false;
-  editingId.value = null;
-  showModal.value = true;
-};
+    modalData.value = null
+    isEdit.value = false
+    editingId.value = null
+    showModal.value = true
+}
+
+const createAppointmentOnDate = (dateIso: string) => {
+     // Default to 10:00 on that day
+     const d = new Date(dateIso)
+     d.setHours(10, 0, 0, 0)
+     modalData.value = { appointment_date: d.toISOString() }
+     isEdit.value = false
+     editingId.value = null
+     showModal.value = true
+}
+
+const createAppointmentOnSlot = (dateStr: string, hour: number) => {
+     const d = new Date(dateStr)
+     d.setHours(hour, 0, 0, 0)
+     modalData.value = { appointment_date: d.toISOString() }
+     isEdit.value = false
+     editingId.value = null
+     showModal.value = true
+}
 
 const openEditModal = (appointment: any) => {
-  appointmentForm.value = {
-    branch_id: appointment.branch_id || '',
-    customer_id: appointment.customer_id || '',
-    employee_id: appointment.employee_id || '',
-    service_id: appointment.service_id || '',
-    appointment_date: appointment.appointment_date ? formatDateTimeLocal(appointment.appointment_date) : '',
-    duration_minutes: appointment.duration_minutes || 0,
-    price: appointment.price || 0,
-    status: appointment.status || 'pending',
-    notes: appointment.notes || ''
-  };
-  isEdit.value = true;
-  editingId.value = appointment.id;
-  showModal.value = true;
-};
+    modalData.value = { ...appointment }
+    isEdit.value = true
+    editingId.value = appointment.id
+    showModal.value = true
+}
 
-const closeModal = () => {
-  showModal.value = false;
-  resetForm();
-};
-
-const handleSubmit = async () => {
-  try {
-    if (isEdit.value && editingId.value) {
-      await appointmentStore.updateAppointment(editingId.value, appointmentForm.value);
-    } else {
-      await appointmentStore.createAppointment(appointmentForm.value);
+const handleModalSubmit = async (data: any) => {
+    saving.value = true
+    try {
+        if (isEdit.value && editingId.value) {
+            await appointmentStore.updateAppointment(editingId.value, data)
+        } else {
+            await appointmentStore.createAppointment(data)
+        }
+        showModal.value = false
+        updateStats()
+    } catch (e) {
+        console.error('Randevu hatası:', e)
+        alert('İşlem başarısız.')
+    } finally {
+        saving.value = false
     }
-    closeModal();
-  } catch (error) {
-    console.error('Randevu kaydedilemedi:', error);
-  }
-};
+}
+
+const updateStatus = async (id: string, status: any) => {
+    try {
+        const a = appointments.value.find(x => x.id === id)
+        if (a) {
+             await appointmentStore.updateAppointment(id, { ...a, status })
+             updateStats()
+        }
+    } catch(e) { console.error(e) }
+}
 
 const handleDelete = async (id: string) => {
-  if (confirm('Bu randevuyu silmek istediğinizden emin misiniz?')) {
+    if (!confirm('Silmek istediğinizden emin misiniz?')) return
     try {
-      await appointmentStore.deleteAppointment(id);
-    } catch (error) {
-      console.error('Randevu silinemedi:', error);
+        await appointmentStore.deleteAppointment(id)
+        updateStats()
+    } catch(e) { console.error(e) }
+}
+
+const handleDrop = async (appointment: any, dateIso: string) => {
+    // Only update date/time, keep duration/customer/etc
+    const oldDate = new Date(appointment.appointment_date)
+    const newDate = new Date(dateIso)
+    // Preserve time
+    newDate.setHours(oldDate.getHours(), oldDate.getMinutes())
+    
+    try {
+        await appointmentStore.updateAppointment(appointment.id, { ...appointment, appointment_date: newDate.toISOString() })
+    } catch (e) {
+        console.error('Taşıma hatası:', e)
+        alert('Randevu taşınamadı.')
     }
-  }
-};
+}
 
-const onServiceChange = () => {
-  const selectedService = serviceStore.services.find(s => s.id === appointmentForm.value.service_id);
-  if (selectedService) {
-    appointmentForm.value.duration_minutes = selectedService.duration_minutes;
-    appointmentForm.value.price = Number(selectedService.price);
-  }
-};
-
-// Helper Methods
-const getCustomerName = (customerId: string) => {
-  const customer = customerStore.customers.find(c => c.id === customerId);
-  return customer ? `${customer.first_name} ${customer.last_name}` : '-';
-};
-
-const getEmployeeName = (employeeId: string) => {
-  const employee = employeeStore.employees.find(e => e.id === employeeId);
-  return employee ? `${employee.first_name} ${employee.last_name}` : '-';
-};
-
-const getServiceName = (serviceId: string) => {
-  const service = serviceStore.services.find(s => s.id === serviceId);
-  return service ? service.name : '-';
-};
-
-const getBranchName = (branchId: string) => {
-  const branch = branchStore.branches.find(b => b.id === branchId);
-  return branch ? branch.name : '-';
-};
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('tr-TR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date);
-};
-
-const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('tr-TR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date);
-};
-
-const formatDateTimeLocal = (dateString: string) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
-
-const formatPrice = (price: string | number) => {
-  return `${Number(price).toFixed(2)} TL`;
-};
-
-const getStatusClass = (status: string) => {
-  const classes = {
-    pending: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-    confirmed: 'bg-blue-100 text-blue-800 border border-blue-200',
-    completed: 'bg-green-100 text-green-800 border border-green-200',
-    cancelled: 'bg-red-100 text-red-800 border border-red-200'
-  };
-  return classes[status as keyof typeof classes] || 'bg-gray-100 text-gray-800';
-};
-
-const getStatusLabel = (status: string) => {
-  const labels = {
-    pending: 'Bekliyor',
-    confirmed: 'Onaylandı',
-    completed: 'Tamamlandı',
-    cancelled: 'İptal Edildi'
-  };
-  return labels[status as keyof typeof labels] || status;
-};
-
-// Drag & Drop Handlers
-const handleDragStart = (event: DragEvent, appointment: any) => {
-  draggingId.value = appointment.id;
-  draggingAppointment.value = appointment;
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('appointmentId', appointment.id);
-  }
-};
-
-const handleDragEnd = () => {
-  draggingId.value = null;
-  draggingAppointment.value = null;
-  dragOverDay.value = null;
-};
-
-const handleDragOver = (event: DragEvent, dayDate: string) => {
-  event.preventDefault();
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'move';
-  }
-  dragOverDay.value = dayDate;
-};
-
-const handleDragLeave = () => {
-  dragOverDay.value = null;
-};
-
-const handleDrop = async (event: DragEvent, dayDate: string) => {
-  event.preventDefault();
-  dragOverDay.value = null;
-
-  if (!draggingAppointment.value) return;
-
-  const oldDate = new Date(draggingAppointment.value.appointment_date);
-  const newDate = new Date(dayDate);
-
-  // Keep the time, change only the date
-  newDate.setHours(oldDate.getHours());
-  newDate.setMinutes(oldDate.getMinutes());
-
-  // Update appointment
-  try {
-    const updatedAppointment = {
-      ...draggingAppointment.value,
-      appointment_date: newDate.toISOString()
-    };
-
-    await appointmentStore.updateAppointment(draggingAppointment.value.id, updatedAppointment);
-
-    draggingId.value = null;
-    draggingAppointment.value = null;
-  } catch (error) {
-    console.error('Randevu taşınamadı:', error);
-    alert('Randevu taşınırken bir hata oluştu');
-  }
-};
-
-// Initialize Data
 onMounted(async () => {
-  try {
+    loading.value = true
     await Promise.all([
-      appointmentStore.fetchAppointments(),
-      branchStore.fetchBranches(),
-      customerStore.fetchCustomers(),
-      employeeStore.fetchEmployees(),
-      serviceStore.fetchServices()
-    ]);
-  } catch (error) {
-    console.error('Veriler yüklenirken hata oluştu:', error);
-  }
-});
+        appointmentStore.fetchAppointments(),
+        branchStore.fetchBranches(),
+        customerStore.fetchCustomers(),
+        employeeStore.fetchEmployees(),
+        serviceStore.fetchServices()
+    ])
+    updateStats()
+    loading.value = false
+})
 </script>
+
+

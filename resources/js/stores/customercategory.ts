@@ -12,9 +12,9 @@ export const useCustomerCategoryStore = defineStore('customercategory', {
     async fetchAll(params = {}) {
       this.loading = true
       try {
-        const response = await api.get('/ustomercategories', { params })
-        this.items = response.data.data
-        return response.data
+        const response: any = await api.get('/customer-categories', { params })
+        this.items = response.data
+        return response
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -26,8 +26,8 @@ export const useCustomerCategoryStore = defineStore('customercategory', {
     async fetchOne(id: string) {
       this.loading = true
       try {
-        const response = await api.get(`/ustomercategories/${id}`)
-        return response.data.data
+        const response: any = await api.get(`/customer-categories/${id}`)
+        return response.data
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -39,8 +39,8 @@ export const useCustomerCategoryStore = defineStore('customercategory', {
     async create(data: any) {
       this.loading = true
       try {
-        const response = await api.post('/ustomercategories', data)
-        return response.data.data
+        const response: any = await api.post('/customer-categories', data)
+        return response.data
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -52,8 +52,8 @@ export const useCustomerCategoryStore = defineStore('customercategory', {
     async update(id: string, data: any) {
       this.loading = true
       try {
-        const response = await api.put(`/ustomercategories/${id}`, data)
-        return response.data.data
+        const response: any = await api.put(`/customer-categories/${id}`, data)
+        return response.data
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -65,7 +65,7 @@ export const useCustomerCategoryStore = defineStore('customercategory', {
     async delete(id: string) {
       this.loading = true
       try {
-        await api.delete(`/ustomercategories/${id}`)
+        await api.delete(`/customer-categories/${id}`)
         this.items = this.items.filter(item => item.id !== id)
       } catch (error: any) {
         this.error = error.message

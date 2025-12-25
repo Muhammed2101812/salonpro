@@ -16,6 +16,13 @@ class Appointment extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    /**
+     * Relations to eager load on every query for performance.
+     * 
+     * @var array<int, string>
+     */
+    protected $with = ['branch', 'customer', 'employee', 'service'];
+
     protected $fillable = [
         'branch_id',
         'customer_id',
@@ -23,6 +30,8 @@ class Appointment extends Model
         'service_id',
         'recurrence_id',
         'appointment_date',
+        'start_time',
+        'end_time',
         'duration_minutes',
         'price',
         'status',

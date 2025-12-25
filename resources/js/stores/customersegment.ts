@@ -12,9 +12,9 @@ export const useCustomerSegmentStore = defineStore('customersegment', {
     async fetchAll(params = {}) {
       this.loading = true
       try {
-        const response = await api.get('/ustomersegments', { params })
-        this.items = response.data.data
-        return response.data
+        const response: any = await api.get('/customer-segments', { params })
+        this.items = response.data
+        return response
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -26,8 +26,8 @@ export const useCustomerSegmentStore = defineStore('customersegment', {
     async fetchOne(id: string) {
       this.loading = true
       try {
-        const response = await api.get(`/ustomersegments/${id}`)
-        return response.data.data
+        const response: any = await api.get(`/customer-segments/${id}`)
+        return response.data
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -39,8 +39,8 @@ export const useCustomerSegmentStore = defineStore('customersegment', {
     async create(data: any) {
       this.loading = true
       try {
-        const response = await api.post('/ustomersegments', data)
-        return response.data.data
+        const response: any = await api.post('/customer-segments', data)
+        return response.data
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -52,8 +52,8 @@ export const useCustomerSegmentStore = defineStore('customersegment', {
     async update(id: string, data: any) {
       this.loading = true
       try {
-        const response = await api.put(`/ustomersegments/${id}`, data)
-        return response.data.data
+        const response: any = await api.put(`/customer-segments/${id}`, data)
+        return response.data
       } catch (error: any) {
         this.error = error.message
         throw error
@@ -65,7 +65,7 @@ export const useCustomerSegmentStore = defineStore('customersegment', {
     async delete(id: string) {
       this.loading = true
       try {
-        await api.delete(`/ustomersegments/${id}`)
+        await api.delete(`/customer-segments/${id}`)
         this.items = this.items.filter(item => item.id !== id)
       } catch (error: any) {
         this.error = error.message

@@ -1,192 +1,131 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">AppointmentGroups</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your appointmentgroups</p>
+        <h1 class="text-3xl font-bold text-gray-900">Grup Randevuları</h1>
+        <p class="mt-2 text-sm text-gray-600">Birden fazla kişilik randevuları yönetin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New AppointmentGroup
+      <button @click="openCreateModal" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">
+        <PlusIcon class="h-5 w-5 mr-2" />Yeni Grup
       </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100"><UserGroupIcon class="h-6 w-6 text-blue-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Grup</p><p class="text-2xl font-bold">{{ groups.length }}</p></div>
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
-        </button>
       </div>
-    </div>
-
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-blue-600 hover:text-blue-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100"><CalendarIcon class="h-6 w-6 text-green-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Aktif</p><p class="text-2xl font-bold text-green-600">{{ activeCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-purple-100"><UsersIcon class="h-6 w-6 text-purple-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam Katılımcı</p><p class="text-2xl font-bold">{{ totalParticipants }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-yellow-100"><ClockIcon class="h-6 w-6 text-yellow-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Bugün</p><p class="text-2xl font-bold">{{ todayCount }}</p></div>
         </div>
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit AppointmentGroup' : 'Create AppointmentGroup'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+    <!-- Grup Kartları -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div v-for="group in groups" :key="group.id" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+        <div :class="['h-2', group.status === 'active' ? 'bg-green-500' : group.status === 'completed' ? 'bg-gray-400' : 'bg-yellow-500']"></div>
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h3 class="font-semibold text-gray-900">{{ group.name }}</h3>
+              <p class="text-sm text-gray-500">{{ group.service?.name || 'Hizmet belirtilmemiş' }}</p>
+            </div>
+            <span :class="['px-2 py-1 text-xs rounded-full font-medium', getStatusClass(group.status)]">{{ getStatusLabel(group.status) }}</span>
+          </div>
+          <div class="bg-blue-50 rounded-lg p-3 mb-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-blue-700 flex items-center gap-1"><CalendarDaysIcon class="h-4 w-4" />{{ formatDate(group.appointment_date) }}</span>
+              <span class="text-blue-600 font-medium">{{ group.appointment_time }}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex -space-x-2">
+              <div v-for="(p, i) in (group.participants || []).slice(0, 4)" :key="i" class="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
+                {{ p.customer?.name?.charAt(0) || '?' }}
+              </div>
+              <div v-if="(group.participants?.length || 0) > 4" class="h-8 w-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-medium">
+                +{{ (group.participants?.length || 0) - 4 }}
+              </div>
+            </div>
+            <span class="text-sm text-gray-500">{{ group.participants?.length || 0 }} / {{ group.max_participants || '∞' }}</span>
+          </div>
+          <div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
+            <button @click="editGroup(group)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><PencilIcon class="h-4 w-4" /></button>
+            <button @click="handleDelete(group.id)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"><TrashIcon class="h-4 w-4" /></button>
+          </div>
         </div>
       </div>
-    </FormModal>
+      <div v-if="groups.length === 0" class="col-span-full text-center py-12">
+        <UserGroupIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Grup randevusu bulunamadı</p>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl max-w-md w-full">
+        <div class="px-6 py-4 border-b flex items-center justify-between">
+          <h2 class="text-xl font-bold">{{ isEdit ? 'Grubu Düzenle' : 'Yeni Grup' }}</h2>
+          <button @click="showModal = false"><XMarkIcon class="h-6 w-6 text-gray-400" /></button>
+        </div>
+        <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Grup Adı *</label><input v-model="form.name" required class="w-full rounded-lg border-gray-300" /></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Tarih *</label><input v-model="form.appointment_date" type="date" required class="w-full rounded-lg border-gray-300" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Saat *</label><input v-model="form.appointment_time" type="time" required class="w-full rounded-lg border-gray-300" /></div>
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Max Katılımcı</label><input v-model.number="form.max_participants" type="number" min="2" class="w-full rounded-lg border-gray-300" /></div>
+          <div class="flex justify-end gap-3 pt-4 border-t">
+            <button type="button" @click="showModal = false" class="px-4 py-2 bg-gray-100 rounded-lg">İptal</button>
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg">Kaydet</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted } from 'vue'
+import { PlusIcon, UserGroupIcon, CalendarIcon, UsersIcon, ClockIcon, CalendarDaysIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { useAppointmentGroupStore } from '@/stores/appointmentgroup'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useAppointmentGroupStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
 const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const isEdit = ref(false)
+const editingId = ref<string | null>(null)
+const form = ref({ name: '', appointment_date: '', appointment_time: '', max_participants: 10, status: 'active' })
+const groups = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const activeCount = computed(() => groups.value.filter(g => g.status === 'active').length)
+const totalParticipants = computed(() => groups.value.reduce((s, g) => s + (g.participants?.length || 0), 0))
+const todayCount = computed(() => { const t = new Date().toISOString().split('T')[0]; return groups.value.filter(g => g.appointment_date === t).length })
+const formatDate = (d: string) => d ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'long' }).format(new Date(d)) : '-'
+const getStatusLabel = (s: string) => ({ active: 'Aktif', completed: 'Tamamlandı', cancelled: 'İptal' }[s] || s)
+const getStatusClass = (s: string) => ({ active: 'bg-green-100 text-green-800', completed: 'bg-gray-100 text-gray-800', cancelled: 'bg-red-100 text-red-800' }[s] || 'bg-gray-100')
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const openCreateModal = () => { form.value = { name: '', appointment_date: '', appointment_time: '', max_participants: 10, status: 'active' }; isEdit.value = false; showModal.value = true }
+const editGroup = (g: any) => { form.value = { ...g }; isEdit.value = true; editingId.value = g.id; showModal.value = true }
+const handleSubmit = async () => { if (isEdit.value && editingId.value) await store.update(editingId.value, form.value); else await store.create(form.value); showModal.value = false; await loadData() }
+const handleDelete = async (id: string) => { if (confirm('Silmek istediğinizden emin misiniz?')) { await store.delete(id); await loadData() } }
+const loadData = async () => { const r = await store.fetchAll({}); groups.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

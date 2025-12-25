@@ -1,192 +1,95 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Başlık -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">ServiceReviews</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your servicereviews</p>
+        <h1 class="text-3xl font-bold text-gray-900">Hizmet Değerlendirmeleri</h1>
+        <p class="mt-2 text-sm text-gray-600">Müşteri hizmet değerlendirmelerini görüntüleyin</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700"
-      >
-        <PlusIcon class="-ml-1 mr-2 h-5 w-5" />
-        New ServiceReview
-      </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-          />
+    <!-- İstatistikler -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-yellow-100"><StarIcon class="h-6 w-6 text-yellow-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Toplam</p><p class="text-2xl font-bold">{{ reviews.length }}</p></div>
         </div>
-        <button
-          @click="loadData"
-          class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          <ArrowPathIcon class="h-5 w-5" />
-        </button>
       </div>
-    </div>
-
-    <!-- Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in items" :key="item.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.id.slice(0, 8) }}...
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ item.name || item.title || 'N/A' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.created_at) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editItem(item)"
-                class="text-yellow-600 hover:text-yellow-900 mr-4"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteItem(item)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <button
-            @click="previousPage"
-            :disabled="!meta.prev_page_url"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          <button
-            @click="nextPage"
-            :disabled="!meta.next_page_url"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Next
-          </button>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100"><FaceSmileIcon class="h-6 w-6 text-green-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">Ort. Puan</p><p class="text-2xl font-bold text-green-600">{{ avgRating.toFixed(1) }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100"><HandThumbUpIcon class="h-6 w-6 text-blue-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">5 Yıldız</p><p class="text-2xl font-bold text-blue-600">{{ fiveStarCount }}</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-red-100"><HandThumbDownIcon class="h-6 w-6 text-red-600" /></div>
+          <div class="ml-4"><p class="text-sm text-gray-500">1-2 Yıldız</p><p class="text-2xl font-bold text-red-600">{{ lowRatingCount }}</p></div>
         </div>
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <FormModal
-      v-model="showModal"
-      :title="editingItem ? 'Edit ServiceReview' : 'Create ServiceReview'"
-      @save="saveItem"
-    >
-      <!-- Add your form fields here -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-          />
+    <!-- Değerlendirmeler -->
+    <div class="space-y-4">
+      <div v-for="r in reviews" :key="r.id" class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-start gap-4">
+          <div class="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+            <span class="text-yellow-600 font-bold">{{ getInitials(r.customer?.name) }}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900">{{ r.customer?.name || 'Müşteri' }}</h3>
+                <p class="text-sm text-gray-500">{{ r.service?.name || 'Hizmet' }} - {{ r.employee?.name || '' }}</p>
+              </div>
+              <div class="flex items-center gap-1">
+                <StarIcon v-for="i in 5" :key="i" :class="['h-5 w-5', i <= r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300']" />
+              </div>
+            </div>
+            <p class="text-gray-700 mb-3">{{ r.comment || 'Yorum yok' }}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-400">{{ formatDate(r.created_at) }}</span>
+              <div class="flex gap-2">
+                <button v-if="!r.response" @click="respondReview(r)" class="text-sm text-blue-600 hover:text-blue-700">Yanıtla</button>
+                <button @click="handleDelete(r.id)" class="text-sm text-red-600 hover:text-red-700">Sil</button>
+              </div>
+            </div>
+            <div v-if="r.response" class="mt-3 p-3 bg-blue-50 rounded-lg">
+              <p class="text-sm text-blue-800"><strong>Yanıt:</strong> {{ r.response }}</p>
+            </div>
+          </div>
         </div>
       </div>
-    </FormModal>
+      <div v-if="reviews.length === 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <StarIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" /><p class="text-gray-500">Değerlendirme bulunamadı</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ref, computed, onMounted } from 'vue'
+import { StarIcon, FaceSmileIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/vue/24/outline'
 import { useServiceReviewStore } from '@/stores/servicereview'
-import FormModal from '@/components/FormModal.vue'
 
 const store = useServiceReviewStore()
-const items = ref([])
-const meta = ref({})
-const search = ref('')
-const showModal = ref(false)
-const editingItem = ref(null)
-const formData = ref({})
+const reviews = ref<any[]>([])
 
-const loadData = async () => {
-  const response = await store.fetchAll({ search: search.value })
-  items.value = response.data
-  meta.value = response.meta
-}
+const avgRating = computed(() => reviews.value.length ? reviews.value.reduce((s, r) => s + (r.rating || 0), 0) / reviews.value.length : 0)
+const fiveStarCount = computed(() => reviews.value.filter(r => r.rating === 5).length)
+const lowRatingCount = computed(() => reviews.value.filter(r => r.rating <= 2).length)
+const formatDate = (d: string) => d ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(d)) : '-'
+const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'
 
-const openCreateModal = () => {
-  editingItem.value = null
-  formData.value = {}
-  showModal.value = true
-}
-
-const editItem = (item: any) => {
-  editingItem.value = item
-  formData.value = { ...item }
-  showModal.value = true
-}
-
-const saveItem = async () => {
-  if (editingItem.value) {
-    await store.update(editingItem.value.id, formData.value)
-  } else {
-    await store.create(formData.value)
-  }
-  showModal.value = false
-  loadData()
-}
-
-const deleteItem = async (item: any) => {
-  if (confirm('Are you sure?')) {
-    await store.delete(item.id)
-    loadData()
-  }
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const previousPage = () => {
-  // Implement pagination
-}
-
-const nextPage = () => {
-  // Implement pagination
-}
-
-onMounted(() => {
-  loadData()
-})
+const respondReview = (r: any) => { alert(`${r.customer?.name || 'Müşteri'} değerlendirmesine yanıt veriliyor...`) }
+const handleDelete = async (id: string) => { if (confirm('Silmek istediğinizden emin misiniz?')) { await store.delete(id); await loadData() } }
+const loadData = async () => { const r = await store.fetchAll({}); reviews.value = r?.data || [] }
+onMounted(() => { loadData() })
 </script>

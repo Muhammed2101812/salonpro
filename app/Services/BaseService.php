@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\Contracts\BaseRepositoryInterface;
+use App\Services\Contracts\BaseServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
-abstract class BaseService
+abstract class BaseService implements BaseServiceInterface
 {
     /**
      * The repository instance.
