@@ -22,6 +22,7 @@ use App\Http\Controllers\API\AppointmentController;
 use App\Http\Controllers\API\AppointmentHistoryController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\BranchController;
+use App\Http\Controllers\API\BranchSettingsController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\DashboardController;
@@ -63,6 +64,8 @@ Route::prefix('v1')->group(function (): void {
 
         // Branches
         Route::apiResource('branches', BranchController::class);
+        Route::get('branches/{branch}/settings', [BranchSettingsController::class, 'index'])->name('branches.settings.index');
+        Route::put('branches/{branch}/settings', [BranchSettingsController::class, 'update'])->name('branches.settings.update');
         Route::post('branches/{branch}/restore', [BranchController::class, 'restore'])->name('branches.restore');
         Route::delete('branches/{branch}/force', [BranchController::class, 'forceDestroy'])->name('branches.force-destroy');
 
