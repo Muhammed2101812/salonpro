@@ -2,78 +2,121 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreProductAttributeValueRequest;
-use App\Http\Requests\UpdateProductAttributeValueRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductAttributeValue\StoreProductAttributeValueRequest;
+use App\Http\Requests\ProductAttributeValue\UpdateProductAttributeValueRequest;
 use App\Http\Resources\ProductAttributeValueResource;
-use App\Services\ProductAttributeValueService;
+use App\Services\Contracts\ProductAttributeValueServiceInterface;
+use App\Models\ProductAttributeValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class ProductAttributeValueController extends BaseController
+class ProductAttributeValueController extends Controller
 {
     public function __construct(
-        protected ProductAttributeValueService $productAttributeValueService
-    ) {}
+        protected ProductAttributeValueServiceInterface $attributeValueService
+    ) {
+    }
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $perPage = (int) $request->get('per_page', 15);
+        $this->authorize('viewAny', ProductAttributeValue::class);
 
-        if ($request->has('per_page')) {
-            $productAttributeValues = $this->productAttributeValueService->getPaginated($perPage);
+        $productId = $request->query('product_id');
+        $attributeId = $request->query('attribute_id');
 
-            return $this->sendPaginated(
-                ProductAttributeValueResource::collection($productAttributeValues),
-                'ProductAttributeValues başarıyla getirildi'
-            );
+        if ($productId) {
+            $values = $this->attributeValueService->getProductAttributes($productId);
+        } elseif ($attributeId) {
+            $values = $this->attributeValueService->getAll();
+        } else {
+            $perPage = (int) $request->query('per_page', 15);
+            $values = $this->attributeValueService->getAll($perPage);
         }
 
-        $productAttributeValues = $this->productAttributeValueService->getAll();
-
-        return ProductAttributeValueResource::collection($productAttributeValues);
+        return ProductAttributeValueResource::collection($values);
     }
 
     public function store(StoreProductAttributeValueRequest $request): JsonResponse
     {
-        $productAttributeValue = $this->productAttributeValueService->create($request->validated());
+        $this->authorize('create', ProductAttributeValue::class);
 
-        return $this->sendSuccess(
-            new ProductAttributeValueResource($productAttributeValue),
-            'ProductAttributeValue başarıyla oluşturuldu',
-            201
+        $value = $this->attributeValueService->setProductAttribute(
+            $request->input('product_id'),
+            $request->input('attribute_id'),
+            $request->input('attribute_value')
         );
+
+        return response()->json([
+            'message' => 'Product attribute value set successfully',
+            'data' => ProductAttributeValueResource::make($value),
+        ], 201);
     }
 
     public function show(string $id): JsonResponse
     {
-        $productAttributeValue = $this->productAttributeValueService->findByIdOrFail($id);
+        $value = $this->attributeValueService->findById($id);
 
-        return $this->sendSuccess(
-            new ProductAttributeValueResource($productAttributeValue),
-            'ProductAttributeValue başarıyla getirildi'
-        );
+        return response()->json([
+            'data' => ProductAttributeValueResource::make($value),
+        ]);
     }
 
     public function update(UpdateProductAttributeValueRequest $request, string $id): JsonResponse
     {
-        $productAttributeValue = $this->productAttributeValueService->update($id, $request->validated());
+        $value = $this->attributeValueService->update($id, $request->validated());
 
-        return $this->sendSuccess(
-            new ProductAttributeValueResource($productAttributeValue),
-            'ProductAttributeValue başarıyla güncellendi'
-        );
+        return response()->json([
+            'message' => 'Product attribute value updated successfully',
+            'data' => ProductAttributeValueResource::make($value),
+        ]);
     }
 
     public function destroy(string $id): JsonResponse
     {
-        $this->productAttributeValueService->delete($id);
+        $this->attributeValueService->delete($id);
 
-        return $this->sendSuccess(
-            null,
-            'ProductAttributeValue başarıyla silindi'
+        return response()->json([
+            'message' => 'Product attribute value deleted successfully',
+        ]);
+    }
+
+    public function bulkSet(Request $request): JsonResponse
+    {
+        $request->validate([
+            'product_id' => ['required', 'uuid', 'exists:products,id'],
+            'attributes' => ['required', 'array'],
+            'attributes.*' => ['required', 'string'],
+        ]);
+
+        $results = $this->attributeValueService->bulkSetAttributes(
+            $request->input('product_id'),
+            $request->input('attributes')
         );
+
+        return response()->json([
+            'message' => 'Product attributes set successfully',
+            'data' => ProductAttributeValueResource::collection($results),
+        ]);
+    }
+
+    public function deleteProductAttribute(Request $request): JsonResponse
+    {
+        $request->validate([
+            'product_id' => ['required', 'uuid', 'exists:products,id'],
+            'attribute_id' => ['required', 'uuid', 'exists:product_attributes,id'],
+        ]);
+
+        $deleted = $this->attributeValueService->deleteProductAttribute(
+            $request->input('product_id'),
+            $request->input('attribute_id')
+        );
+
+        return response()->json([
+            'message' => $deleted ? 'Product attribute deleted successfully' : 'Product attribute not found',
+        ], $deleted ? 200 : 404);
     }
 }

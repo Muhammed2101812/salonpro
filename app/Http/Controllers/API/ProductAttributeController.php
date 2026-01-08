@@ -2,78 +2,93 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreProductAttributeRequest;
-use App\Http\Requests\UpdateProductAttributeRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductAttribute\StoreProductAttributeRequest;
+use App\Http\Requests\ProductAttribute\UpdateProductAttributeRequest;
 use App\Http\Resources\ProductAttributeResource;
-use App\Services\ProductAttributeService;
+use App\Services\Contracts\ProductAttributeServiceInterface;
+use App\Models\ProductAttribute;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class ProductAttributeController extends BaseController
+class ProductAttributeController extends Controller
 {
     public function __construct(
-        protected ProductAttributeService $productAttributeService
-    ) {}
+        protected ProductAttributeServiceInterface $attributeService
+    ) {
+    }
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $perPage = (int) $request->get('per_page', 15);
+        $this->authorize('viewAny', ProductAttribute::class);
 
-        if ($request->has('per_page')) {
-            $productAttributes = $this->productAttributeService->getPaginated($perPage);
+        $perPage = (int) $request->query('per_page', 15);
+        $attributes = $this->attributeService->getAll($perPage);
 
-            return $this->sendPaginated(
-                ProductAttributeResource::collection($productAttributes),
-                'ProductAttributes başarıyla getirildi'
-            );
-        }
-
-        $productAttributes = $this->productAttributeService->getAll();
-
-        return ProductAttributeResource::collection($productAttributes);
+        return ProductAttributeResource::collection($attributes);
     }
 
     public function store(StoreProductAttributeRequest $request): JsonResponse
     {
-        $productAttribute = $this->productAttributeService->create($request->validated());
+        $this->authorize('create', ProductAttribute::class);
 
-        return $this->sendSuccess(
-            new ProductAttributeResource($productAttribute),
-            'ProductAttribute başarıyla oluşturuldu',
-            201
-        );
+        $attribute = $this->attributeService->create($request->validated());
+
+        return response()->json([
+            'message' => 'Product attribute created successfully',
+            'data' => ProductAttributeResource::make($attribute),
+        ], 201);
     }
 
     public function show(string $id): JsonResponse
     {
-        $productAttribute = $this->productAttributeService->findByIdOrFail($id);
+        $attribute = $this->attributeService->findById($id);
 
-        return $this->sendSuccess(
-            new ProductAttributeResource($productAttribute),
-            'ProductAttribute başarıyla getirildi'
-        );
+        return response()->json([
+            'data' => ProductAttributeResource::make($attribute),
+        ]);
     }
 
     public function update(UpdateProductAttributeRequest $request, string $id): JsonResponse
     {
-        $productAttribute = $this->productAttributeService->update($id, $request->validated());
+        $attribute = $this->attributeService->update($id, $request->validated());
 
-        return $this->sendSuccess(
-            new ProductAttributeResource($productAttribute),
-            'ProductAttribute başarıyla güncellendi'
-        );
+        return response()->json([
+            'message' => 'Product attribute updated successfully',
+            'data' => ProductAttributeResource::make($attribute),
+        ]);
     }
 
     public function destroy(string $id): JsonResponse
     {
-        $this->productAttributeService->delete($id);
+        $this->attributeService->delete($id);
 
-        return $this->sendSuccess(
-            null,
-            'ProductAttribute başarıyla silindi'
-        );
+        return response()->json([
+            'message' => 'Product attribute deleted successfully',
+        ]);
+    }
+
+    public function filterable(): AnonymousResourceCollection
+    {
+        $attributes = $this->attributeService->getFilterable();
+
+        return ProductAttributeResource::collection($attributes);
+    }
+
+    public function required(): AnonymousResourceCollection
+    {
+        $attributes = $this->attributeService->getRequired();
+
+        return ProductAttributeResource::collection($attributes);
+    }
+
+    public function sorted(): AnonymousResourceCollection
+    {
+        $attributes = $this->attributeService->getAllSorted();
+
+        return ProductAttributeResource::collection($attributes);
     }
 }

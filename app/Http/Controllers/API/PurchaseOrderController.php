@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StorePurchaseOrderRequest;
-use App\Http\Requests\UpdatePurchaseOrderRequest;
+use App\Http\Controllers\API\BaseController;
+use App\Http\Requests\PurchaseOrder\StorePurchaseOrderRequest;
+use App\Http\Requests\PurchaseOrder\UpdatePurchaseOrderRequest;
 use App\Http\Resources\PurchaseOrderResource;
-use App\Services\PurchaseOrderService;
+use App\Services\Contracts\PurchaseOrderServiceInterface;
+use App\Models\PurchaseOrder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -15,65 +17,129 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class PurchaseOrderController extends BaseController
 {
     public function __construct(
-        protected PurchaseOrderService $purchaseOrderService
+        protected PurchaseOrderServiceInterface $purchaseOrderService
     ) {}
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    /**
+     * Display a listing of purchase orders.
+     */
+    public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', PurchaseOrder::class);
+
+        $branchId = $request->get('branch_id');
+        $supplierId = $request->get('supplier_id');
         $perPage = (int) $request->get('per_page', 15);
 
-        if ($request->has('per_page')) {
-            $purchaseOrders = $this->purchaseOrderService->getPaginated($perPage);
-
-            return $this->sendPaginated(
-                PurchaseOrderResource::collection($purchaseOrders),
-                'PurchaseOrders başarıyla getirildi'
-            );
+        if ($supplierId) {
+            $orders = $this->purchaseOrderService->getBySupplier($supplierId, $perPage);
+        } elseif ($branchId) {
+            $orders = $this->purchaseOrderService->getByBranch($branchId, $perPage);
+        } else {
+            $orders = $this->purchaseOrderService->getPaginated($perPage);
         }
 
-        $purchaseOrders = $this->purchaseOrderService->getAll();
-
-        return PurchaseOrderResource::collection($purchaseOrders);
+        return PurchaseOrderResource::collection($orders);
     }
 
-    public function store(StorePurchaseOrderRequest $request): JsonResponse
+    /**
+     * Get pending purchase orders.
+     */
+    public function pending(Request $request): AnonymousResourceCollection
     {
-        $purchaseOrder = $this->purchaseOrderService->create($request->validated());
+        $branchId = $request->get('branch_id');
+        $orders = $this->purchaseOrderService->getPending($branchId);
 
-        return $this->sendSuccess(
-            new PurchaseOrderResource($purchaseOrder),
-            'PurchaseOrder başarıyla oluşturuldu',
-            201
-        );
+        return PurchaseOrderResource::collection($orders);
     }
 
-    public function show(string $id): JsonResponse
+    /**
+     * Get overdue purchase orders.
+     */
+    public function overdue(Request $request): AnonymousResourceCollection
+    {
+        $branchId = $request->get('branch_id');
+        $orders = $this->purchaseOrderService->getOverdue($branchId);
+
+        return PurchaseOrderResource::collection($orders);
+    }
+
+    /**
+     * Store a newly created purchase order.
+     */
+    public function store(StorePurchaseOrderRequest $request): PurchaseOrderResource
+    {
+        $this->authorize('create', PurchaseOrder::class);
+
+        $purchaseOrder = $this->purchaseOrderService->createWithItems($request->validated());
+
+        return PurchaseOrderResource::make($purchaseOrder);
+    }
+
+    /**
+     * Display the specified purchase order.
+     */
+    public function show(string $id): PurchaseOrderResource
     {
         $purchaseOrder = $this->purchaseOrderService->findByIdOrFail($id);
 
-        return $this->sendSuccess(
-            new PurchaseOrderResource($purchaseOrder),
-            'PurchaseOrder başarıyla getirildi'
-        );
+        return PurchaseOrderResource::make($purchaseOrder);
     }
 
-    public function update(UpdatePurchaseOrderRequest $request, string $id): JsonResponse
+    /**
+     * Update the specified purchase order.
+     */
+    public function update(UpdatePurchaseOrderRequest $request, string $id): PurchaseOrderResource
     {
         $purchaseOrder = $this->purchaseOrderService->update($id, $request->validated());
 
-        return $this->sendSuccess(
-            new PurchaseOrderResource($purchaseOrder),
-            'PurchaseOrder başarıyla güncellendi'
-        );
+        return PurchaseOrderResource::make($purchaseOrder);
     }
 
+    /**
+     * Remove the specified purchase order.
+     */
     public function destroy(string $id): JsonResponse
     {
         $this->purchaseOrderService->delete($id);
 
-        return $this->sendSuccess(
-            null,
-            'PurchaseOrder başarıyla silindi'
+        return response()->json(['message' => 'Purchase order deleted successfully']);
+    }
+
+    /**
+     * Receive purchase order.
+     */
+    public function receive(Request $request, string $id): PurchaseOrderResource
+    {
+        $purchaseOrder = $this->purchaseOrderService->receive($id, $request->all());
+
+        return PurchaseOrderResource::make($purchaseOrder);
+    }
+
+    /**
+     * Cancel purchase order.
+     */
+    public function cancel(Request $request, string $id): PurchaseOrderResource
+    {
+        $purchaseOrder = $this->purchaseOrderService->cancel(
+            $id,
+            $request->get('reason')
         );
+
+        return PurchaseOrderResource::make($purchaseOrder);
+    }
+
+    /**
+     * Get purchase order totals by period.
+     */
+    public function totals(Request $request): JsonResponse
+    {
+        $totals = $this->purchaseOrderService->getTotalsByPeriod(
+            $request->get('start_date'),
+            $request->get('end_date'),
+            $request->get('branch_id')
+        );
+
+        return response()->json(['data' => $totals]);
     }
 }

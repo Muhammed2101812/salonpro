@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreEmployeeAttendanceRequest;
-use App\Http\Requests\UpdateEmployeeAttendanceRequest;
+use App\Http\Controllers\API\BaseController;
+use App\Http\Requests\EmployeeAttendance\StoreEmployeeAttendanceRequest;
+use App\Http\Requests\EmployeeAttendance\UpdateEmployeeAttendanceRequest;
 use App\Http\Resources\EmployeeAttendanceResource;
-use App\Services\EmployeeAttendanceService;
+use App\Services\Contracts\EmployeeAttendanceServiceInterface;
+use App\Models\EmployeeAttendance;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -15,65 +17,138 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class EmployeeAttendanceController extends BaseController
 {
     public function __construct(
-        protected EmployeeAttendanceService $employeeAttendanceService
+        protected EmployeeAttendanceServiceInterface $attendanceService
     ) {}
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    /**
+     * Display a listing of attendance records.
+     */
+    public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', EmployeeAttendance::class);
+
+        $employeeId = $request->get('employee_id');
+        $branchId = $request->get('branch_id');
         $perPage = (int) $request->get('per_page', 15);
 
-        if ($request->has('per_page')) {
-            $employeeAttendances = $this->employeeAttendanceService->getPaginated($perPage);
-
-            return $this->sendPaginated(
-                EmployeeAttendanceResource::collection($employeeAttendances),
-                'EmployeeAttendances başarıyla getirildi'
-            );
+        if ($employeeId) {
+            $attendance = $this->attendanceService->getByEmployee($employeeId, $perPage);
+        } else {
+            $attendance = $this->attendanceService->getPaginated($perPage);
         }
 
-        $employeeAttendances = $this->employeeAttendanceService->getAll();
-
-        return EmployeeAttendanceResource::collection($employeeAttendances);
+        return EmployeeAttendanceResource::collection($attendance);
     }
 
-    public function store(StoreEmployeeAttendanceRequest $request): JsonResponse
+    /**
+     * Get today's attendance.
+     */
+    public function today(Request $request): AnonymousResourceCollection
     {
-        $employeeAttendance = $this->employeeAttendanceService->create($request->validated());
+        $branchId = $request->get('branch_id');
+        $attendance = $this->attendanceService->getToday($branchId);
 
-        return $this->sendSuccess(
-            new EmployeeAttendanceResource($employeeAttendance),
-            'EmployeeAttendance başarıyla oluşturuldu',
-            201
-        );
+        return EmployeeAttendanceResource::collection($attendance);
     }
 
-    public function show(string $id): JsonResponse
+    /**
+     * Get active (clocked in) employees.
+     */
+    public function active(Request $request): AnonymousResourceCollection
     {
-        $employeeAttendance = $this->employeeAttendanceService->findByIdOrFail($id);
+        $branchId = $request->get('branch_id');
+        $attendance = $this->attendanceService->getActive($branchId);
 
-        return $this->sendSuccess(
-            new EmployeeAttendanceResource($employeeAttendance),
-            'EmployeeAttendance başarıyla getirildi'
-        );
+        return EmployeeAttendanceResource::collection($attendance);
     }
 
-    public function update(UpdateEmployeeAttendanceRequest $request, string $id): JsonResponse
+    /**
+     * Clock in employee.
+     */
+    public function clockIn(StoreEmployeeAttendanceRequest $request): EmployeeAttendanceResource
     {
-        $employeeAttendance = $this->employeeAttendanceService->update($id, $request->validated());
+        $attendance = $this->attendanceService->clockIn($request->validated());
 
-        return $this->sendSuccess(
-            new EmployeeAttendanceResource($employeeAttendance),
-            'EmployeeAttendance başarıyla güncellendi'
-        );
+        return EmployeeAttendanceResource::make($attendance);
     }
 
+    /**
+     * Clock out employee.
+     */
+    public function clockOut(Request $request, string $id): EmployeeAttendanceResource
+    {
+        $attendance = $this->attendanceService->clockOut($id, $request->all());
+
+        return EmployeeAttendanceResource::make($attendance);
+    }
+
+    /**
+     * Start break.
+     */
+    public function startBreak(string $id): EmployeeAttendanceResource
+    {
+        $attendance = $this->attendanceService->startBreak($id);
+
+        return EmployeeAttendanceResource::make($attendance);
+    }
+
+    /**
+     * End break.
+     */
+    public function endBreak(string $id): EmployeeAttendanceResource
+    {
+        $attendance = $this->attendanceService->endBreak($id);
+
+        return EmployeeAttendanceResource::make($attendance);
+    }
+
+    /**
+     * Get attendance summary.
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $request->validate([
+            'employee_id' => 'required|uuid|exists:employees,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $summary = $this->attendanceService->getSummary(
+            $request->get('employee_id'),
+            $request->get('start_date'),
+            $request->get('end_date')
+        );
+
+        return response()->json(['data' => $summary]);
+    }
+
+    /**
+     * Display the specified attendance.
+     */
+    public function show(string $id): EmployeeAttendanceResource
+    {
+        $attendance = $this->attendanceService->findByIdOrFail($id);
+
+        return EmployeeAttendanceResource::make($attendance);
+    }
+
+    /**
+     * Update the specified attendance.
+     */
+    public function update(UpdateEmployeeAttendanceRequest $request, string $id): EmployeeAttendanceResource
+    {
+        $attendance = $this->attendanceService->update($id, $request->validated());
+
+        return EmployeeAttendanceResource::make($attendance);
+    }
+
+    /**
+     * Remove the specified attendance.
+     */
     public function destroy(string $id): JsonResponse
     {
-        $this->employeeAttendanceService->delete($id);
+        $this->attendanceService->delete($id);
 
-        return $this->sendSuccess(
-            null,
-            'EmployeeAttendance başarıyla silindi'
-        );
+        return response()->json(['message' => 'Attendance record deleted successfully']);
     }
 }

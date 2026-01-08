@@ -2,78 +2,103 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreAppointmentHistoryRequest;
-use App\Http\Requests\UpdateAppointmentHistoryRequest;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\AppointmentHistoryResource;
-use App\Services\AppointmentHistoryService;
+use App\Services\Contracts\AppointmentHistoryServiceInterface;
+use App\Models\AppointmentHistory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class AppointmentHistoryController extends BaseController
+class AppointmentHistoryController extends Controller
 {
     public function __construct(
-        protected AppointmentHistoryService $appointmentHistoryService
+        private AppointmentHistoryServiceInterface $appointmentHistoryService
     ) {}
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $perPage = (int) $request->get('per_page', 15);
+        $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
-        if ($request->has('per_page')) {
-            $appointmentHistories = $this->appointmentHistoryService->getPaginated($perPage);
-
-            return $this->sendPaginated(
-                AppointmentHistoryResource::collection($appointmentHistories),
-                'AppointmentHistories başarıyla getirildi'
+        if ($request->has('appointment_id')) {
+            $history = $this->appointmentHistoryService->getAppointmentHistory(
+                $request->input('appointment_id')
+            );
+        } elseif ($request->has('user_id')) {
+            $history = $this->appointmentHistoryService->getChangesByUser(
+                $request->input('user_id'),
+                $request->input('per_page', 15)
+            );
+        } else {
+            $history = $this->appointmentHistoryService->getRecentChanges(
+                $request->input('limit', 50)
             );
         }
 
-        $appointmentHistories = $this->appointmentHistoryService->getAll();
-
-        return AppointmentHistoryResource::collection($appointmentHistories);
+        return AppointmentHistoryResource::collection($history);
     }
 
-    public function store(StoreAppointmentHistoryRequest $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $appointmentHistory = $this->appointmentHistoryService->create($request->validated());
+        $this->authorize('create', \App\Models\AppointmentHistory::class);
 
-        return $this->sendSuccess(
-            new AppointmentHistoryResource($appointmentHistory),
-            'AppointmentHistory başarıyla oluşturuldu',
-            201
+        $validated = $request->validate([
+            'appointment_id' => 'required|uuid|exists:appointments,id',
+            'action' => 'required|string|max:100',
+            'old_values' => 'nullable|json',
+            'new_values' => 'nullable|json',
+        ]);
+
+        $history = $this->appointmentHistoryService->logChange(
+            $validated['appointment_id'],
+            $validated['action'],
+            [
+                'old' => $validated['old_values'] ?? null,
+                'new' => $validated['new_values'] ?? null,
+            ]
         );
+
+        return AppointmentHistoryResource::make($history)->response()->setStatusCode(201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(string $id): AppointmentHistoryResource
     {
-        $appointmentHistory = $this->appointmentHistoryService->findByIdOrFail($id);
+        $history = \App\Models\AppointmentHistory::with(['appointment', 'user'])->findOrFail($id);
+        $this->authorize('view', $history);
 
-        return $this->sendSuccess(
-            new AppointmentHistoryResource($appointmentHistory),
-            'AppointmentHistory başarıyla getirildi'
-        );
+        return AppointmentHistoryResource::make($history);
     }
 
-    public function update(UpdateAppointmentHistoryRequest $request, string $id): JsonResponse
+    public function recentChanges(Request $request): AnonymousResourceCollection
     {
-        $appointmentHistory = $this->appointmentHistoryService->update($id, $request->validated());
+        $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
-        return $this->sendSuccess(
-            new AppointmentHistoryResource($appointmentHistory),
-            'AppointmentHistory başarıyla güncellendi'
-        );
+        $limit = $request->input('limit', 50);
+        $changes = $this->appointmentHistoryService->getRecentChanges($limit);
+
+        return AppointmentHistoryResource::collection($changes);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function appointmentHistory(string $appointmentId): AnonymousResourceCollection
     {
-        $this->appointmentHistoryService->delete($id);
+        $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
-        return $this->sendSuccess(
-            null,
-            'AppointmentHistory başarıyla silindi'
+        $history = $this->appointmentHistoryService->getAppointmentHistory($appointmentId);
+
+        return AppointmentHistoryResource::collection($history);
+    }
+
+    public function userChanges(Request $request, string $userId): AnonymousResourceCollection
+    {
+        $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
+
+        $changes = $this->appointmentHistoryService->getChangesByUser(
+            $userId,
+            $request->input('per_page', 15)
         );
+
+        return AppointmentHistoryResource::collection($changes);
     }
 }

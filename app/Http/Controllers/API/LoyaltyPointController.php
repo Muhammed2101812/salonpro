@@ -2,78 +2,127 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreLoyaltyPointRequest;
-use App\Http\Requests\UpdateLoyaltyPointRequest;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\LoyaltyPointResource;
-use App\Services\LoyaltyPointService;
+use App\Services\Contracts\LoyaltyPointServiceInterface;
+use App\Models\LoyaltyPoint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class LoyaltyPointController extends BaseController
+class LoyaltyPointController extends Controller
 {
     public function __construct(
-        protected LoyaltyPointService $loyaltyPointService
+        private LoyaltyPointServiceInterface $loyaltyPointService
     ) {}
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    public function balance(string $customerId): JsonResponse
     {
-        $perPage = (int) $request->get('per_page', 15);
+        $this->authorize('viewAny', \App\Models\LoyaltyPoint::class);
 
-        if ($request->has('per_page')) {
-            $loyaltyPoints = $this->loyaltyPointService->getPaginated($perPage);
+        $balance = $this->loyaltyPointService->getCustomerBalance($customerId);
 
-            return $this->sendPaginated(
-                LoyaltyPointResource::collection($loyaltyPoints),
-                'LoyaltyPoints başarıyla getirildi'
+        return response()->json([
+            'customer_id' => $customerId,
+            'balance' => $balance,
+        ]);
+    }
+
+    public function history(Request $request, string $customerId): AnonymousResourceCollection
+    {
+        $this->authorize('viewAny', \App\Models\LoyaltyPoint::class);
+
+        $history = $this->loyaltyPointService->getPointsHistory(
+            $customerId,
+            $request->input('per_page', 15)
+        );
+
+        return LoyaltyPointResource::collection($history);
+    }
+
+    public function award(Request $request, string $customerId): JsonResponse
+    {
+        $this->authorize('create', \App\Models\LoyaltyPoint::class);
+
+        $validated = $request->validate([
+            'points' => 'required|integer|min:1',
+            'reason' => 'required|string|max:255',
+            'reference_type' => 'nullable|string',
+            'reference_id' => 'nullable|uuid',
+            'expires_at' => 'nullable|date',
+        ]);
+
+        $transaction = $this->loyaltyPointService->awardPoints(
+            $customerId,
+            $validated['points'],
+            $validated['reason'],
+            [
+                'reference_type' => $validated['reference_type'] ?? null,
+                'reference_id' => $validated['reference_id'] ?? null,
+                'expires_at' => $validated['expires_at'] ?? null,
+            ]
+        );
+
+        return LoyaltyPointResource::make($transaction)->response()->setStatusCode(201);
+    }
+
+    public function redeem(Request $request, string $customerId): JsonResponse
+    {
+        $this->authorize('create', \App\Models\LoyaltyPoint::class);
+
+        $validated = $request->validate([
+            'points' => 'required|integer|min:1',
+            'reason' => 'required|string|max:255',
+            'reference_type' => 'nullable|string',
+            'reference_id' => 'nullable|uuid',
+        ]);
+
+        try {
+            $transaction = $this->loyaltyPointService->redeemPoints(
+                $customerId,
+                $validated['points'],
+                $validated['reason'],
+                [
+                    'reference_type' => $validated['reference_type'] ?? null,
+                    'reference_id' => $validated['reference_id'] ?? null,
+                ]
             );
+
+            return LoyaltyPointResource::make($transaction)->response()->setStatusCode(201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
         }
-
-        $loyaltyPoints = $this->loyaltyPointService->getAll();
-
-        return LoyaltyPointResource::collection($loyaltyPoints);
     }
 
-    public function store(StoreLoyaltyPointRequest $request): JsonResponse
+    public function expiringPoints(Request $request, string $customerId): AnonymousResourceCollection
     {
-        $loyaltyPoint = $this->loyaltyPointService->create($request->validated());
+        $this->authorize('viewAny', \App\Models\LoyaltyPoint::class);
 
-        return $this->sendSuccess(
-            new LoyaltyPointResource($loyaltyPoint),
-            'LoyaltyPoint başarıyla oluşturuldu',
-            201
-        );
+        $days = $request->input('days', 30);
+        $expiringPoints = $this->loyaltyPointService->getExpiringPoints($customerId, $days);
+
+        return LoyaltyPointResource::collection($expiringPoints);
     }
 
-    public function show(string $id): JsonResponse
+    public function calculatePoints(Request $request): JsonResponse
     {
-        $loyaltyPoint = $this->loyaltyPointService->findByIdOrFail($id);
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'customer_id' => 'nullable|uuid|exists:customers,id',
+        ]);
 
-        return $this->sendSuccess(
-            new LoyaltyPointResource($loyaltyPoint),
-            'LoyaltyPoint başarıyla getirildi'
+        $points = $this->loyaltyPointService->calculatePointsForPurchase(
+            $validated['amount'],
+            $validated['customer_id'] ?? null
         );
-    }
 
-    public function update(UpdateLoyaltyPointRequest $request, string $id): JsonResponse
-    {
-        $loyaltyPoint = $this->loyaltyPointService->update($id, $request->validated());
-
-        return $this->sendSuccess(
-            new LoyaltyPointResource($loyaltyPoint),
-            'LoyaltyPoint başarıyla güncellendi'
-        );
-    }
-
-    public function destroy(string $id): JsonResponse
-    {
-        $this->loyaltyPointService->delete($id);
-
-        return $this->sendSuccess(
-            null,
-            'LoyaltyPoint başarıyla silindi'
-        );
+        return response()->json([
+            'amount' => $validated['amount'],
+            'points' => $points,
+        ]);
     }
 }
