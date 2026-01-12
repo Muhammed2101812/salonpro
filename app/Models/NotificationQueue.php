@@ -43,4 +43,9 @@ class NotificationQueue extends Model
     {
         return $this->belongsTo(NotificationTemplate::class);
     }
+
+    public function recipient(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
+    }
 }

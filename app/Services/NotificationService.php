@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Repositories\Contracts\NotificationQueueRepositoryInterface;
 use App\Repositories\Contracts\NotificationTemplateRepositoryInterface;
 use App\Services\Contracts\NotificationServiceInterface;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
@@ -25,7 +26,7 @@ class NotificationService implements NotificationServiceInterface
             'channel' => $data['channel'], // email, sms, push
             'template_id' => $data['template_id'] ?? null,
             'subject' => $data['subject'] ?? null,
-            'content' => $data['content'],
+            'message' => $data['content'],
             'data' => $data['data'] ?? null,
             'scheduled_at' => $data['scheduled_at'] ?? null,
             'status' => 'pending',
@@ -141,8 +142,77 @@ class NotificationService implements NotificationServiceInterface
 
     private function sendPushNotification($notification)
     {
-        // TODO: Implement push notification logic using FCM or similar
+        if (! $notification->recipient) {
+            Log::warning("No recipient found for notification {$notification->id}");
+            return;
+        }
 
-        Log::info("Push notification sent for {$notification->id}");
+        // Check if recipient is a User and has push tokens
+        if (! method_exists($notification->recipient, 'pushNotificationTokens')) {
+            Log::warning("Recipient type {$notification->recipient_type} does not support push notifications");
+            return;
+        }
+
+        $tokens = $notification->recipient->pushNotificationTokens()
+            ->where('is_active', true)
+            ->pluck('token')
+            ->toArray();
+
+        if (empty($tokens)) {
+            Log::info("No active push tokens found for user {$notification->recipient_id}");
+            return;
+        }
+
+        $fcmKey = config('services.fcm.key');
+
+        if (! $fcmKey) {
+            Log::error("FCM key is not configured");
+            throw new \Exception("FCM key is not configured");
+        }
+
+        $payload = [
+            'registration_ids' => $tokens,
+            'notification' => [
+                'title' => $notification->subject ?? 'New Notification',
+                'body' => $notification->message ?? '',
+            ],
+            'data' => array_merge(
+                $notification->data ?? [],
+                ['notification_id' => $notification->id]
+            ),
+        ];
+
+        // Using FCM Legacy HTTP API
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $fcmKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
+
+        if ($response->successful()) {
+            $result = $response->json();
+            Log::info("Push notification sent for {$notification->id}", ['result' => $result]);
+
+            // Handle invalid tokens if needed based on response
+            if (isset($result['results'])) {
+                $this->handleFcmResponse($result['results'], $tokens);
+            }
+        } else {
+            Log::error("FCM send failed for {$notification->id}: " . $response->body());
+            throw new \Exception("FCM send failed: " . $response->status());
+        }
+    }
+
+    private function handleFcmResponse(array $results, array $tokens)
+    {
+        foreach ($results as $index => $result) {
+            if (isset($result['error'])) {
+                $token = $tokens[$index] ?? null;
+                if ($token && in_array($result['error'], ['NotRegistered', 'InvalidRegistration'])) {
+                    // Deactivate invalid token
+                    \App\Models\PushNotificationToken::where('token', $token)->update(['is_active' => false]);
+                    Log::info("Deactivated invalid push token: {$token}");
+                }
+            }
+        }
     }
 }

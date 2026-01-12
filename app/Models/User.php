@@ -162,4 +162,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(AppointmentCancellation::class, 'cancelled_by');
     }
+
+    /**
+     * Get the push notification tokens for the user.
+     */
+    public function pushNotificationTokens(): HasMany
+    {
+        return $this->hasMany(PushNotificationToken::class);
+    }
 }
