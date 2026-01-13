@@ -103,18 +103,35 @@
           </div>
 
           <!-- Segment Filtresi -->
-          <div class="flex rounded-lg border border-gray-200 overflow-hidden">
+          <div class="flex p-1 bg-gray-50 rounded-lg border border-gray-200">
+            <button
+               @click="filters.segment = ''"
+               :class="[
+                 'px-3 py-1.5 text-xs font-medium transition-all rounded-md',
+                 !filters.segment
+                   ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                   : 'text-gray-500 hover:text-gray-700'
+               ]"
+            >
+              Tümü
+            </button>
             <button
               v-for="segment in customerSegments"
               :key="segment.value"
-              @click="filters.segment = filters.segment === segment.value ? '' : segment.value"
+              @click="filters.segment = segment.value"
               :class="[
-                'px-3 py-2 text-xs font-medium transition-colors',
+                'px-3 py-1.5 text-xs font-medium transition-all rounded-md',
                 filters.segment === segment.value
-                  ? segment.activeClass
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                   : 'text-gray-500 hover:text-gray-700'
               ]"
             >
+              <span :class="['inline-block w-2 h-2 rounded-full mr-1.5', {
+                'bg-blue-500': segment.value === 'new',
+                'bg-purple-500': segment.value === 'loyal',
+                'bg-yellow-500': segment.value === 'vip',
+                'bg-red-500': segment.value === 'atRisk'
+              }]" v-if="filters.segment === segment.value"></span>
               {{ segment.label }}
             </button>
           </div>
@@ -294,22 +311,24 @@
                 placeholder="Şube Seçin"
             />
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Cinsiyet</label>
-              <div class="flex gap-2">
-                <Button
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cinsiyet</label>
+              <div class="flex p-1 bg-gray-50 rounded-lg border border-gray-200 h-10">
+                <button
                     type="button"
-                    :variant="formData.gender === 'male' ? 'primary' : 'outline'"
-                    class="flex-1"
+                    class="flex-1 text-sm font-medium transition-all rounded-md"
+                    :class="formData.gender === 'male' ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'"
                     @click="formData.gender = 'male'"
-                    label="Erkek"
-                />
-                 <Button
+                >
+                  Erkek
+                </button>
+                 <button
                     type="button"
-                    :variant="formData.gender === 'female' ? 'primary' : 'outline'"
-                    class="flex-1"
+                    class="flex-1 text-sm font-medium transition-all rounded-md"
+                    :class="formData.gender === 'female' ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'"
                     @click="formData.gender = 'female'"
-                    label="Kadın"
-                />
+                >
+                  Kadın
+                </button>
               </div>
             </div>
           </div>
@@ -324,7 +343,7 @@
               v-model="formData.notes"
               rows="3"
               placeholder="Müşteri hakkında özel notlar (alerji, tercihler vb.)"
-              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+              class="block w-full rounded-lg border border-gray-200 shadow-xs transition-all focus:outline-none text-sm px-3 py-2 placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary"
             ></textarea>
           </div>
 

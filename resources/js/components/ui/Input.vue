@@ -80,13 +80,13 @@ const sizeClasses = {
 }
 
 const inputClasses = computed(() => {
-  const base = 'block w-full rounded-lg border shadow-sm transition-colors focus:outline-none'
+  const base = 'block w-full rounded-lg border border-gray-300 shadow-sm transition-all focus:outline-none'
   const padding = slots.prefix ? 'pl-10' : slots.suffix ? 'pr-10' : ''
   const size = sizeClasses[props.size as keyof typeof sizeClasses] || sizeClasses.md
   
   const state = props.error
-    ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-1 focus:ring-red-500 focus:border-red-500'
-    : 'border-gray-300 focus:ring-1 focus:ring-primary focus:border-primary'
+    ? 'border-red-400 text-red-900 placeholder-red-300 focus:ring-2 focus:ring-red-500/20 focus:border-red-500'
+    : 'text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary'
     
   const disabled = props.disabled || props.readonly ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white'
 
