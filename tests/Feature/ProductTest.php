@@ -18,7 +18,14 @@ class ProductTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
         $this->user = User::factory()->create();
+        $this->user->givePermissionTo([
+            'products.view',
+            'products.create',
+            'products.update',
+            'products.delete',
+        ]);
     }
 
     public function test_can_list_products(): void
