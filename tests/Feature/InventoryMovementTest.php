@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\InventoryMovement;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class InventoryMovementTest extends TestCase
@@ -19,6 +20,13 @@ class InventoryMovementTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->create();
+
+        // Create and assign permissions
+        $permissions = ['inventory.view', 'inventory.create', 'inventory.update', 'inventory.delete'];
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+        $this->user->givePermissionTo($permissions);
     }
 
     public function test_can_list_inventoryMovements(): void
