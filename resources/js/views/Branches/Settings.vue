@@ -314,6 +314,7 @@ import { useBranchStore } from '@/stores/branch'
 import FormField from '@/components/ui/FormField.vue'
 import FormSelect from '@/components/ui/FormSelect.vue'
 import Button from '@/components/ui/Button.vue'
+import api from '@/services/api'
 
 const branchStore = useBranchStore()
 
@@ -392,9 +393,22 @@ const loadSettings = async () => {
 
   loading.value = true
   try {
-    // TODO: Load settings from API
-    // const response = await api.get(`/branches/${currentBranch.value.id}/settings`)
-    // settings.value = response.data
+    const response = await api.get<any>(`/branches/${currentBranch.value.id}/settings`)
+
+    // Merge response data with default settings to ensure structure
+    if (response) {
+      // We do a careful merge to avoid overwriting defaults with empty values if that's not intended,
+      // but usually the backend returns what is saved.
+      // Since response might not have all keys if they were never saved, we use a merge strategy.
+      // However, for simplicity and since we want to respect backend data:
+
+      // Basic merge
+      Object.keys(response).forEach(group => {
+        if (settings.value[group as keyof typeof settings.value]) {
+          Object.assign(settings.value[group as keyof typeof settings.value], response[group])
+        }
+      })
+    }
   } catch (error) {
     console.error('Failed to load settings:', error)
   } finally {
@@ -407,8 +421,7 @@ const saveSettings = async () => {
 
   saving.value = true
   try {
-    // TODO: Save settings to API
-    // await api.put(`/branches/${currentBranch.value.id}/settings`, settings.value)
+    await api.put(`/branches/${currentBranch.value.id}/settings`, settings.value)
     alert('Ayarlar başarıyla kaydedildi!')
   } catch (error) {
     console.error('Failed to save settings:', error)
