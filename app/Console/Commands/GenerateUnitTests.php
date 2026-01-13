@@ -24,6 +24,7 @@ class GenerateUnitTests extends Command
         $progressBar = $this->output->createProgressBar(count($services));
 
         foreach ($services as $serviceName) {
+            if (!is_string($serviceName)) continue;
             $this->generateServiceTest($serviceName);
             $progressBar->advance();
         }
@@ -37,6 +38,7 @@ class GenerateUnitTests extends Command
         $progressBar = $this->output->createProgressBar(count($repositories));
 
         foreach ($repositories as $repositoryName) {
+            if (!is_string($repositoryName)) continue;
             $this->generateRepositoryTest($repositoryName);
             $progressBar->advance();
         }

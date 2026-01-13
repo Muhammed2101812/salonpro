@@ -11,7 +11,7 @@ class UpdateServiceReviewRequest extends FormRequest
     public function authorize(): bool
     {
         $review = $this->route('review');
-        return $this->user()->can('update', $review);
+        return $this->user()?->can('update', $review) ?? false;
     }
 
     public function rules(): array

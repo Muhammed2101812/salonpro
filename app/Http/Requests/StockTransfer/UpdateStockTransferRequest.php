@@ -11,7 +11,7 @@ class UpdateStockTransferRequest extends FormRequest
     public function authorize(): bool
     {
         $transfer = $this->route('transfer');
-        return $this->user()->can('update', $transfer);
+        return $this->user()?->can('update', $transfer) ?? false;
     }
 
     public function rules(): array

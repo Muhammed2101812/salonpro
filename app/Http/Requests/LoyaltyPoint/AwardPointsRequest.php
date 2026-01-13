@@ -10,7 +10,7 @@ class AwardPointsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Models\LoyaltyPoint::class);
+        return $this->user()?->can('create', \App\Models\LoyaltyPoint::class) ?? false;
     }
 
     public function rules(): array

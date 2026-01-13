@@ -45,7 +45,7 @@ class InventoryMovementController extends BaseController
 
         try {
             $data = $request->validated();
-            $data['user_id'] = $request->user()->id; // Set current user
+            $data['user_id'] = $request->user()?->id; // Set current user, null safe
 
             $movement = $this->inventoryMovementService->create($data);
 

@@ -23,26 +23,47 @@ class InvoiceController extends Controller
         $this->authorize('viewAny', \App\Models\Invoice::class);
 
         if ($request->has('customer_id')) {
-            $invoices = $this->invoiceService->getCustomerInvoices(
-                $request->input('customer_id'),
-                $request->input('per_page', 15)
-            );
+            $customerId = $request->input('customer_id');
+            if (is_string($customerId)) {
+                $invoices = $this->invoiceService->getCustomerInvoices(
+                    $customerId,
+                    (int) $request->input('per_page', 15)
+                );
+            } else {
+                 $invoices = collect();
+            }
         } elseif ($request->has('branch_id')) {
-            $invoices = $this->invoiceService->getBranchInvoices(
-                $request->input('branch_id'),
-                $request->input('per_page', 15)
-            );
+             $branchId = $request->input('branch_id');
+             if (is_string($branchId)) {
+                $invoices = $this->invoiceService->getBranchInvoices(
+                    $branchId,
+                    (int) $request->input('per_page', 15)
+                );
+             } else {
+                $invoices = collect();
+             }
         } elseif ($request->has('status')) {
-            $invoices = $this->invoiceService->getInvoicesByStatus(
-                $request->input('status'),
-                $request->input('per_page', 15)
-            );
+             $status = $request->input('status');
+             if (is_string($status)) {
+                $invoices = $this->invoiceService->getInvoicesByStatus(
+                    $status,
+                    (int) $request->input('per_page', 15)
+                );
+             } else {
+                $invoices = collect();
+             }
         } else {
             // Default to branch invoices for current user
-            $invoices = $this->invoiceService->getBranchInvoices(
-                auth()->user()->branch_id,
-                $request->input('per_page', 15)
-            );
+            $branchId = auth()->user()?->branch_id;
+
+            if ($branchId) {
+                $invoices = $this->invoiceService->getBranchInvoices(
+                    $branchId,
+                    (int) $request->input('per_page', 15)
+                );
+            } else {
+                $invoices = collect();
+            }
         }
 
         return InvoiceResource::collection($invoices);

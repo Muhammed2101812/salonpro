@@ -36,7 +36,7 @@ class CreateAppointmentAction
                 'status' => $data->status,
                 'notes' => $data->notes,
                 'price' => $data->price,
-                'branch_id' => $data->branch_id ?? auth()->user()->branch_id,
+                'branch_id' => $data->branch_id ?? auth()->user()?->branch_id,
             ]);
 
             // Dispatch event

@@ -24,10 +24,17 @@ class BranchSettingController extends Controller
     {
         $this->authorize('viewAny', BranchSetting::class);
 
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
-        $group = $request->query('group');
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
 
-        $settings = $this->service->getAllForBranch($branchId, $group);
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
+
+        $group = $request->query('group');
+        // Ensure group is string or null
+        $groupStr = is_string($group) ? $group : null;
+
+        $settings = $this->service->getAllForBranch($branchId, $groupStr);
 
         return response()->json([
             'data' => $settings,
@@ -39,7 +46,11 @@ class BranchSettingController extends Controller
      */
     public function show(Request $request, string $key): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
 
         $value = $this->service->get($branchId, $key);
 
@@ -56,7 +67,12 @@ class BranchSettingController extends Controller
      */
     public function update(UpdateBranchSettingsRequest $request): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
+
         $settings = $request->validated()['settings'];
 
         $formattedSettings = [];
@@ -88,7 +104,11 @@ class BranchSettingController extends Controller
      */
     public function destroy(Request $request, string $key): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
 
         $result = $this->service->remove($branchId, $key);
 
@@ -108,7 +128,11 @@ class BranchSettingController extends Controller
      */
     public function business(Request $request): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
 
         $settings = $this->service->getBusinessSettings($branchId);
 
@@ -122,7 +146,11 @@ class BranchSettingController extends Controller
      */
     public function appointments(Request $request): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
 
         $settings = $this->service->getAppointmentSettings($branchId);
 
@@ -136,7 +164,11 @@ class BranchSettingController extends Controller
      */
     public function notifications(Request $request): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
 
         $settings = $this->service->getNotificationSettings($branchId);
 
@@ -150,7 +182,11 @@ class BranchSettingController extends Controller
      */
     public function financial(Request $request): JsonResponse
     {
-        $branchId = $request->header('X-Branch-ID') ?? $request->user()->branch_id;
+        $branchId = $request->header('X-Branch-ID') ?? $request->user()?->branch_id;
+
+        if (!$branchId) {
+             return response()->json(['message' => 'Branch ID required'], 400);
+        }
 
         $settings = $this->service->getFinancialSettings($branchId);
 
