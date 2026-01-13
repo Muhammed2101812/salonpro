@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\ServiceCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class ServiceCategoryTest extends TestCase
@@ -18,7 +19,11 @@ class ServiceCategoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Create the permission needed
+        Permission::create(['name' => 'services.manage-categories']);
+
         $this->user = User::factory()->create();
+        $this->user->givePermissionTo('services.manage-categories');
     }
 
     public function test_can_list_serviceCategorys(): void
@@ -50,7 +55,7 @@ class ServiceCategoryTest extends TestCase
                 'data' => ['id']
             ]);
 
-        $this->assertDatabaseHas('service-categories', [
+        $this->assertDatabaseHas('service_categories', [
             'id' => $response->json('data.id')
         ]);
     }
@@ -97,7 +102,7 @@ class ServiceCategoryTest extends TestCase
                 'success' => true
             ]);
 
-        $this->assertSoftDeleted('service-categories', [
+        $this->assertSoftDeleted('service_categories', [
             'id' => $serviceCategory->id
         ]);
     }
@@ -107,5 +112,28 @@ class ServiceCategoryTest extends TestCase
         $response = $this->getJson('/api/v1/service-categories');
 
         $response->assertUnauthorized();
+    }
+
+    public function test_cannot_create_service_category_without_permission(): void
+    {
+        $unauthorizedUser = User::factory()->create();
+        $data = ServiceCategory::factory()->make()->toArray();
+
+        $response = $this->actingAs($unauthorizedUser, 'sanctum')
+            ->postJson('/api/v1/service-categories', $data);
+
+        $response->assertForbidden();
+    }
+
+    public function test_cannot_update_service_category_without_permission(): void
+    {
+        $unauthorizedUser = User::factory()->create();
+        $serviceCategory = ServiceCategory::factory()->create();
+        $updateData = ServiceCategory::factory()->make()->toArray();
+
+        $response = $this->actingAs($unauthorizedUser, 'sanctum')
+            ->putJson("/api/v1/service-categories/{$serviceCategory->id}", $updateData);
+
+        $response->assertForbidden();
     }
 }

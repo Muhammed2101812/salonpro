@@ -13,7 +13,7 @@ class UpdateServiceCategoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // TODO: Add authorization logic based on roles/permissions
+        return $this->user()->can('services.manage-categories');
     }
 
     /**
