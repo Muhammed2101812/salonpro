@@ -10,7 +10,7 @@ class UpdateInventoryMovementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('inventory.update') ?? false;
+        return $this->user()->can('inventory.update');
     }
 
     public function rules(): array

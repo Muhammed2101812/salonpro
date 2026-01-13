@@ -25,14 +25,9 @@ class AuthController extends BaseController
     public function login(Request $request): JsonResponse
     {
         $request->validate(['email' => 'required|email', 'password' => 'required']);
-
-        $credentials = $request->only('email', 'password');
-
-        if (! Auth::attempt($credentials)) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages(['email' => ['The provided credentials are incorrect.']]);
         }
-
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 

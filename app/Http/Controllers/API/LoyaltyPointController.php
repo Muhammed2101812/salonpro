@@ -36,7 +36,7 @@ class LoyaltyPointController extends Controller
 
         $history = $this->loyaltyPointService->getPointsHistory(
             $customerId,
-            (int) $request->input('per_page', 15)
+            $request->input('per_page', 15)
         );
 
         return LoyaltyPointResource::collection($history);
@@ -102,7 +102,7 @@ class LoyaltyPointController extends Controller
     {
         $this->authorize('viewAny', \App\Models\LoyaltyPoint::class);
 
-        $days = (int) $request->input('days', 30);
+        $days = $request->input('days', 30);
         $expiringPoints = $this->loyaltyPointService->getExpiringPoints($customerId, $days);
 
         return LoyaltyPointResource::collection($expiringPoints);

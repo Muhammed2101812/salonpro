@@ -10,7 +10,7 @@ class StoreProductVariantRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\ProductVariant::class) ?? false;
+        return $this->user()->can('create', \App\Models\ProductVariant::class);
     }
 
     public function rules(): array

@@ -13,7 +13,7 @@ class StoreServiceCategoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->can('services.manage-categories') ?? false;
+        return $this->user()->can('services.manage-categories');
     }
 
     /**

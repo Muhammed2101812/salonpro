@@ -10,7 +10,7 @@ class ApplyCouponRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\CouponUsage::class) ?? false;
+        return $this->user()->can('create', \App\Models\CouponUsage::class);
     }
 
     public function rules(): array

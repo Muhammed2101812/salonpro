@@ -10,7 +10,7 @@ class StoreInvoiceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\Invoice::class) ?? false;
+        return $this->user()->can('create', \App\Models\Invoice::class);
     }
 
     public function rules(): array

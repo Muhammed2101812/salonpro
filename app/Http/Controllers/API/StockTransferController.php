@@ -23,49 +23,29 @@ class StockTransferController extends Controller
         $this->authorize('viewAny', \App\Models\StockTransfer::class);
 
         if ($request->has('source_branch_id')) {
-            $sourceBranchId = $request->input('source_branch_id');
-            if (is_string($sourceBranchId)) {
-                $transfers = $this->stockTransferService->getSourceBranchTransfers(
-                    $sourceBranchId,
-                    (int) $request->input('per_page', 15)
-                );
-            } else {
-                $transfers = collect();
-            }
+            $transfers = $this->stockTransferService->getSourceBranchTransfers(
+                $request->input('source_branch_id'),
+                $request->input('per_page', 15)
+            );
         } elseif ($request->has('destination_branch_id')) {
-            $destBranchId = $request->input('destination_branch_id');
-            if (is_string($destBranchId)) {
-                $transfers = $this->stockTransferService->getDestinationBranchTransfers(
-                    $destBranchId,
-                    (int) $request->input('per_page', 15)
-                );
-            } else {
-                $transfers = collect();
-            }
+            $transfers = $this->stockTransferService->getDestinationBranchTransfers(
+                $request->input('destination_branch_id'),
+                $request->input('per_page', 15)
+            );
         } elseif ($request->input('status') === 'pending') {
-            $branchId = $request->input('branch_id');
-            if (is_string($branchId)) {
-                 $transfers = $this->stockTransferService->getPendingTransfers(
-                    $branchId,
-                    (int) $request->input('per_page', 15)
-                );
-            } else {
-                 $transfers = collect();
-            }
+            $transfers = $this->stockTransferService->getPendingTransfers(
+                $request->input('branch_id'),
+                $request->input('per_page', 15)
+            );
         } elseif ($request->input('status') === 'in_transit') {
-             $branchId = $request->input('branch_id');
-             if (is_string($branchId)) {
-                $transfers = $this->stockTransferService->getInTransitTransfers(
-                    $branchId,
-                    (int) $request->input('per_page', 15)
-                );
-             } else {
-                 $transfers = collect();
-             }
+            $transfers = $this->stockTransferService->getInTransitTransfers(
+                $request->input('branch_id'),
+                $request->input('per_page', 15)
+            );
         } else {
             $transfers = \App\Models\StockTransfer::with([
-                'fromBranch', 'toBranch', 'createdBy', 'approvedBy'
-            ])->paginate((int) $request->input('per_page', 15));
+                'fromBranch', 'toBranch', 'productVariant.product', 'createdBy', 'approvedBy'
+            ])->paginate($request->input('per_page', 15));
         }
 
         return StockTransferResource::collection($transfers);
@@ -92,7 +72,7 @@ class StockTransferController extends Controller
     public function show(string $id): StockTransferResource
     {
         $transfer = \App\Models\StockTransfer::with([
-            'fromBranch', 'toBranch', 'createdBy', 'approvedBy', 'receivedBy'
+            'fromBranch', 'toBranch', 'productVariant.product', 'createdBy', 'approvedBy', 'receivedBy'
         ])->findOrFail($id);
 
         $this->authorize('view', $transfer);

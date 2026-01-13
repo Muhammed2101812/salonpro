@@ -10,7 +10,7 @@ class StoreServiceReviewRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\ServiceReview::class) ?? false;
+        return $this->user()->can('create', \App\Models\ServiceReview::class);
     }
 
     public function rules(): array

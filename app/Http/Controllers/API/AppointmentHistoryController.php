@@ -23,27 +23,17 @@ class AppointmentHistoryController extends Controller
         $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
         if ($request->has('appointment_id')) {
-            $appointmentId = $request->input('appointment_id');
-            // Ensure appointment_id is a string before passing to service
-            if (is_string($appointmentId)) {
-                $history = $this->appointmentHistoryService->getAppointmentHistory($appointmentId);
-            } else {
-                 $history = collect(); // Or handle error
-            }
+            $history = $this->appointmentHistoryService->getAppointmentHistory(
+                $request->input('appointment_id')
+            );
         } elseif ($request->has('user_id')) {
-             $userId = $request->input('user_id');
-             if (is_string($userId)) {
-                $history = $this->appointmentHistoryService->getChangesByUser(
-                    $userId,
-                    (int) $request->input('per_page', 15)
-                );
-             } else {
-                 $history = collect();
-             }
-
+            $history = $this->appointmentHistoryService->getChangesByUser(
+                $request->input('user_id'),
+                $request->input('per_page', 15)
+            );
         } else {
             $history = $this->appointmentHistoryService->getRecentChanges(
-                (int) $request->input('limit', 50)
+                $request->input('limit', 50)
             );
         }
 
@@ -85,7 +75,7 @@ class AppointmentHistoryController extends Controller
     {
         $this->authorize('viewAny', \App\Models\AppointmentHistory::class);
 
-        $limit = (int) $request->input('limit', 50);
+        $limit = $request->input('limit', 50);
         $changes = $this->appointmentHistoryService->getRecentChanges($limit);
 
         return AppointmentHistoryResource::collection($changes);
@@ -106,7 +96,7 @@ class AppointmentHistoryController extends Controller
 
         $changes = $this->appointmentHistoryService->getChangesByUser(
             $userId,
-            (int) $request->input('per_page', 15)
+            $request->input('per_page', 15)
         );
 
         return AppointmentHistoryResource::collection($changes);

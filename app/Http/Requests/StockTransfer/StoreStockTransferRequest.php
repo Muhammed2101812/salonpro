@@ -10,7 +10,7 @@ class StoreStockTransferRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\StockTransfer::class) ?? false;
+        return $this->user()->can('create', \App\Models\StockTransfer::class);
     }
 
     public function rules(): array

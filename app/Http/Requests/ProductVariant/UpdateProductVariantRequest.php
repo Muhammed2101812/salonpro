@@ -11,7 +11,7 @@ class UpdateProductVariantRequest extends FormRequest
     public function authorize(): bool
     {
         $variant = $this->route('variant');
-        return $this->user()?->can('update', $variant) ?? false;
+        return $this->user()->can('update', $variant);
     }
 
     public function rules(): array

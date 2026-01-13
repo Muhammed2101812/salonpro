@@ -34,20 +34,16 @@ class EnsureBranchAccess
         }
 
         // For route model binding, check if the model belongs to user's branch
-        $route = $request->route();
+        $routeParameters = $request->route()->parameters();
 
-        if ($route) {
-            $routeParameters = $route->parameters();
+        foreach ($routeParameters as $parameter) {
+            if (is_object($parameter) && method_exists($parameter, 'getAttribute')) {
+                $branchId = $parameter->getAttribute('branch_id');
 
-            foreach ($routeParameters as $parameter) {
-                if (is_object($parameter) && method_exists($parameter, 'getAttribute')) {
-                    $branchId = $parameter->getAttribute('branch_id');
-
-                    if ($branchId && $branchId !== $user->branch_id) {
-                        return response()->json([
-                            'message' => 'Bu kaynağa erişim yetkiniz bulunmamaktadır.',
-                        ], 403);
-                    }
+                if ($branchId && $branchId !== $user->branch_id) {
+                    return response()->json([
+                        'message' => 'Bu kaynağa erişim yetkiniz bulunmamaktadır.',
+                    ], 403);
                 }
             }
         }

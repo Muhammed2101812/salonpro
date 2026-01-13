@@ -23,17 +23,12 @@ class ProductVariantController extends Controller
         $this->authorize('viewAny', \App\Models\ProductVariant::class);
 
         if ($request->has('product_id')) {
-            $productId = $request->input('product_id');
-            if (is_string($productId)) {
-                $variants = $this->productVariantService->getProductVariants($productId);
-            } else {
-                $variants = collect();
-            }
+            $variants = $this->productVariantService->getProductVariants($request->input('product_id'));
         } elseif ($request->has('low_stock')) {
-            $threshold = (int) $request->input('threshold', 10);
+            $threshold = $request->input('threshold', 10);
             $variants = $this->productVariantService->getLowStockVariants($threshold);
         } else {
-            $variants = \App\Models\ProductVariant::with('product')->paginate((int) $request->input('per_page', 15));
+            $variants = \App\Models\ProductVariant::with('product')->paginate($request->input('per_page', 15));
         }
 
         return ProductVariantResource::collection($variants);

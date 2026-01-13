@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Dashboard;
 use App\Models\Appointment;
 use App\Models\Branch;
 use App\Models\Customer;
@@ -19,10 +20,7 @@ class DashboardController extends BaseController
 {
     public function index(): JsonResponse
     {
-        // There is no Dashboard model, so we authorize based on a permission string directly
-        // or check generic view permission.
-        // Assuming 'view-dashboard' permission exists.
-        $this->authorize('view-dashboard');
+        $this->authorize('viewAny', Dashboard::class);
 
         try {
             $stats = [
